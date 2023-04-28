@@ -1,0 +1,25 @@
+#!/bin/bash -l
+#SBATCH -J test_BGW
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=24
+#SBATCH -p compute
+#SBATCH -t 00:30:00
+
+# run via: sbatch comet.scr
+
+module purge && module load gnu openmpi_ib python
+
+export SCRATCH="/oasis/scratch/comet/$USER/temp_project"
+export TEMPDIRPATH=$SCRATCH/tmp
+
+#export BGW_TEST_MPI_NPROCS=48
+#export OMP_NUM_THREADS=1
+#export MPIEXEC="`which ibrun`"
+
+export BGW_TEST_MPI_NPROCS=12
+export OMP_NUM_THREADS=4
+export MPIEXEC="`which ibrun` --npernode 6"
+
+make check-parallel &> test.out
+
+echo "Exit status = $?"

@@ -1,0 +1,185 @@
+SPECIFICATION OF FILE FORMATS FROM EXTERNAL MEAN FIELD CODES
+
+BerkeleyGW generally depends on three kind of files that must be built by an external mean field codes, such as any DFT plane wave code. In particular, one needs files containing the mean field wavefunction [WFN files], the charge density [RHO] and the exchange correlation potential from DFT [VXC]. Wavefunction files are needed by all parts of the code, with various filenames. The epsilon executable uses an unshifted grid (WFN) and a shifted grid (WFNq). The sigma executable uses WFN_inner to construct the self-energy operator and evaluates matrix elements with WFN_outer. The kernel executable constructs kernel matrix elements with a coarse unshifted (WFN_co) and shifted grid (WFNq_co). The absorption and plotxct executables uses fine unshifted (WFN_fi) and shifted grids (WFNq_fi). Additionally, the sigma executable needs the charge-density RHO for GPP calculations, and needs the exchange-correlation potential VXC (unless its pre-computed matrix elements are supplied in a vxc.dat file). These files all share a common format, which begins with a header. The utility wfn_rho_vxc_info.x can read the information from the header and report it in a comprehensible format to the user.
+
+Contraints on the mean-field ab-initio calculation:
+- Currently, there is no support for ultrasoft or PAW pseudopotentials, and only norm-conserving ones work.
+- There is yet no official support for ab-initio spinors.
+
+Note: while BerkeleyGW was initially designed as a post-processing step after plane wave DFT codes, this isn't a limiting constrain for the choice of the Ab-initio code. If the mean field code uses for example a gaussian basis set, the plug-in needs to compute the Fourier transform of wavefunctions and density and prepare the file as follows below.
+
+Following below a description of the header of the WFN/RHO/VXC binary files, line by line. Each * represents a new line, followed by a description.
+
+* title, date, time.
+  title (str len=32): a descriptive string
+  date (str len=32): date in format "DD-MM-YYYY" + blank spaces
+  time (str len=32): file creation time in format "HH:MM:SS" + blank spaces
+* number_of_spins, number_G_vectors, number_of_symmetries, cell_symmetry, number_of_atoms, density_cutoff, number_of_kpoints, number_of_bands, max_num_G_vecs_per_kpoint, wavefunction_cutoff.
+  number_of_spins (int): 1 for non-spin polarized DFT calculation, 
+       or 2 otherwise
+  number_G_vectors (int): the total number of G vectors used in 
+       the ab-initio code.
+  number_of_symmetries (int): the number of symmetries recognized 
+       by the mean field code.
+  cell_symmetry (int): 0 for cubic symmetry or 1 for hexagonal symmetry;
+  number_of_atoms (int): number of atoms per unit cell;
+  density_cutoff (dble): in Rydbergs;
+  number_of_kpoints (int);
+  number_of_bands (int);
+  max_num_G_vecs_per_kpoint (int): maximum number of G vectors at any kpoint;
+  wavefunction_cutoff (dble): in Rydbergs.
+* FFT_grid, k-grid, k-shift.
+  FFT_grid (int array len=3): size of the FFT grid for wavefunctions
+  k-grid (int array len=3): size of the Monkhorst-Pack grid
+  k-shift (dble array len=3): 3 numbers from 0. to 1., representing the offset 
+       w.r.t. Gamma for the Monkhorst-Pack grid. 0. means Gamma centered, 
+       while 0.5 is the largest displacement;
+* unit_cell_volume, lattice_Constant, lattice_vectors, metric_tensor.
+  unit_cell_volume (dble): volume of the direct lattice unit cell in Bohr^3.
+  lattice_constant (dble): lattice constant for the crystal in Bohr, which 
+       will be used to express lenghts (i.e. alat for quantum espresso). Could
+       simply be set to 1. and express lattice vectors in Bohrs directly;
+  lattice_vectors (dble array len=9): the flattened 3x3 matrix of lattice
+       vectors for the lattice in direct space, in the order:
+       Lx1, Ly1, Lz1, Lx2, Ly2, Lz2, Lx3, Ly3, Lz3,
+       where xyz labels the cartesian components and 123 labels the lattice 
+       vector index. Expressed in units of lattice_constants
+  metric_tensor (dble array len=9): direct space metric tensor, flattened in 
+       the same way of lattice_vectors. In most cases, this can be just left 
+       as an identity matrix
+* reciprocal_unit_cell_volume, tpi_over_lattice_constant, reciprocal_lattice_vectors, reciprocal_metric_tensor.
+  reciprocal_unit_cell_volume (dble): volume of the reciprocal lattice unit 
+       cell in Bohr^-3. This should just be (8pi^3)/unit_cell_volume.
+  reciprocal_lattice_constant (dble): reciprocal lattice constant for the 
+       crystal in Bohr^-1. The following reciprocal_latitce_vectors will be 
+       expressed in units of this constant. It could just be set to one and 
+       express the reciprocal_lattice_vectors in Bohr^-1 directly;
+  reciprocal_lattice_vectors (dble array len=9): the flattened 3x3 matrix of 
+       reciprocal lattice vectors, in order:
+       Lx1, Ly1, Lz1, Lx2, Ly2, Lz2, Lx3, Ly3, Lz3,
+       where xyz labels the cartesian components and 123 labels the lattice 
+       vector index. Expressed in units of reciprocal_lattice_constants
+  metric_tensor (dble array len=9): direct space metric tensor, flattened in
+       the same way of lattice_vectors. In most cases, this can be just left
+       as an identity matrix.
+* symmetry rotation matrices (int len=(1:3, 1:3, 1:number of symmetries));
+       write here all the matrices representing the rotational symmetry 
+       operation of the crystal in exam, in units of lattice vectors times 2pi.
+       The matrix S(i,k,j) is written in order:
+       do j=1,num_symmetries
+         do k=1,3
+           do i=1,3
+* fractional translations (int len=(1:3, 1:number of symmetries));
+       In units of lattice vectors times 2pi;
+       Describes the fractional translation for each symmetry.
+       Must be ordered consistently with the above symmetry rotation matrices.
+       The matrix Translation(j,i) is ordered as:
+       do j=1,3
+         do i=1,num_symmetries
+* atomic positions, atomic numbers;
+  atomic positions (dble len=(1:3, 1:number of atoms))
+       In units of lattice constant, specifies the position of the atom; 
+  atomic numbers(1: number of atoms): the atomic number of each atom;
+       The two atomic_position and atomic_numbers are written to file as:
+       do i=1,number of atoms
+         position(1:3,i), atomic_number(i)
+* number of G-vectors for each k-point (int len=(1:number of k-points));
+* k-point weights(dble len=(1:number of k-points));
+       the k-point weight, from 0 to 1, for the Brillouin zone integration;
+* k-point coordinates (dble len=(1:3, 1:number of k-points));
+       the k-point coordinates in lattice vectors units.
+* lowest band index (int len=(1:number of k-points));
+       for each k-point, specifies the index of the lowest band to be used
+* HOMO index (int len=(1:number of k-points));
+       specifies the index of the highest occupied band, for each k-point.
+* energy eigenvalues (dble len=(1:number of bands,1:number of k-points,1:number of spins);
+       Array with band structure energies, in Rydberg units. 
+       The matrix energies(i,j,k) is written as:
+       do j=1,num_kpoints
+         do i=1,num_bands
+           do k = 1,num_spins   
+* occupations (dble len=(1:number of bands,1:number of k-points,1:number of spins));
+       A real number from 0 to 1, describing the occupation number of the Bloch
+       state. Ordered as the energy eigenvalues.
+
+* nrecord (int);
+       nrecord=1, it`s a number used to separate entries of the file.
+       It`s always equal to 1.
+* number_G_vectors (int);
+       Again, the total number of G vectors
+* G vectors coordinates (int len=(1:3,1:number_G_vectors));
+       The coordinates of G vectors in reciprocal lattice vectors units (so 
+       that it`s just an array of integers).
+       Matrix G(i,j) is written in order: 
+       do j=1,number_G_vectors     
+         do i=1,3
+       Note, G-vector components should be chosen in the interval [−n/2,n/2)
+       where n is the FFT grid. A full sphere must be used, not a half sphere 
+       as in the Hermitian FFT representation for a real function. 
+
+	 
+The header described above is common to WFN, RHO and VXC files, then they continue as follows below.
+
+Note also that the RHO and VXC coefficients are normalized such that their G = 0 component is the average value in real space. RHO is in Bohr^3, VXC is in Ry. WFN coefficients are instead normalized to 1 for each Bloch state.
+
+-------------------------------------------------------------------------------
+
+RHO file:
+
+* nrecord (int);
+       nrecord=1, it`s a separator
+* number_of_G_vectors (int);
+       Again, the number of G vectors, here should be equal to that in header
+* Coefficients(1:number_G_vectors,1:num_spin);
+       The coefficient for the charge density in plane-wave decomposition in 
+       atomic units (Bohr^3).
+       Matrix RHO(ig,is) is written as:
+       do is=1,num_spin
+         do ig=1,num_g_vectors
+
+-------------------------------------------------------------------------------
+
+VXC file:
+
+The recommended scheme is to use pre-computed exchange matrix elements in an ASCII file vxc.dat, because VXC is only applicable to a functional that consists of a local potential plus some fraction of exchange. Some hybrid functionals, and certainly self-consistent GW calculations, do not fall in this category. Matrix elements are in eV and are always written with real and imaginary parts (even in the real version of the code). The file may contain any number of k-points in any order. It contains a certain number of diagonal elements (ndiag) (i.e. a subset of the number of bands) and a certain number of off-diagonal elements (noffdiag). Each k-point block begins with the line:
+
+∗ kx, ky, kz [crystalcoordinates], ndiag*nspin, noffdiag*nspin
+
+There are then ndiag*nspin lines of the form 
+
+* ispin, idiag, Re⟨idiag| V |idiag⟩, Im⟨idiag| V |idiag⟩
+
+There are then noffdiag*nspin lines of the form 
+
+* ispin, ioff1, ioff2, Re⟨ioff1| V |ioff2⟩, Im⟨ioff1| V |ioff2⟩
+
+-------------------------------------------------------------------------------
+
+WFN file:
+
+Each set is preceded by an integer specifying how many records the G-vectors or data is broken up into, for ease of writing files from a code parallelized over G-vectors. Wavefunction files follow the header with a listing of all the G-vectors; for each k-point, there is first a list of G-vectors, and then the wavefunction coefficients for each band. The wavefunction coefficients must be normalized so that the sum of their squares is 1. 
+
+For each kpoint, ordered as the list of kpoints given in the header, WFN file additional entries are:
+
+* nrecord
+       An integer equal to 1, that separates entries
+* number_of_G_vectors;
+       (int) This is the number of G vectors used by the wavefunction at this 
+       k-point, i.e. a number <= than the total number of G vectors.
+       In many plane-wave codes, one only uses G vectors such that 
+       |k+G|^2 < plane_wave_cutoff, which therefore depends on k.
+* G_vectors_coordinates;
+       (int len=(1:3,number_of_G_vectors)), written as the list of G vectors in
+       the header, but this time it contains only the G vectors components that
+       are relevant for this kpoint.
+* nrecord
+       An integer equal	to 1, that separates entries
+* number_of_G_vectors;
+       (int) The same number as before
+* plane_wave_coefficients;
+       (dble or cplx len=(1:number_of_G_vectors)). The value of the plane
+       wave coefficients for this k-point.
+       The matrix WFN(ib,is,ig) for each kpoint is written as:
+       do ib=1,num_bands
+         do is=1,num_spin
+           do ig = 1,num_g_vectors

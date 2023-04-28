@@ -1,0 +1,19 @@
+
+To activate debugging features uncomment the following flag in the arch.mk file:
+
+    DEBUGFLAG = -DDEBUG -DVERBOSE
+
+
+For exuberant debuggig, see module push_pop_m in file: Common/push_pop.f90
+and edit the line:
+
+    integer, private            :: debug_level = 0                               
+
+with meaning:
+
+    0: no debugging trace
+    1: only node 0 writes trace
+    2: all nodes write trace. Very slow.         
+
+
+Recompile the code to activate debug features.

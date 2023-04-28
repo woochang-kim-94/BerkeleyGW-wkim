@@ -1,0 +1,50 @@
+Test : Parabands - Si, constrained spin pol.
+Enabled : Yes
+TestGroups : hdf5 serial parallel
+
+Unpack: data.tgz
+Copy: WFN_ref_no_pseudobands.h5
+Copy: parabands.inp
+
+###############################################################################
+
+Banner: npools=1 (0)
+
+Command: sed -i.bak 's/.*number_pools.*/number_pools 1/;s/.*output_wfn_file.*/output_wfn_file WFN_out_0.h5/' parabands.inp
+
+Executable: parabands.cplx.x
+Processors: 4
+Output: parabands_0.out
+Input: NONE
+
+Executable: compare_wfns.cplx.x
+Arguments: WFN_ref_no_pseudobands.h5 WFN_out_0.h5 --terse --tol_deg 1e-10 > compare_wfns_0.out
+
+Precision: 1e-10
+match; Maximum error in eigenvalues             ; LINE(compare_wfns_0.out, 1, 1); 0.0
+match; Maximum error in WFN orthonormality      ; LINE(compare_wfns_0.out, 3, 1); 0.0
+match; Maximum error in cross WFN orthonormality; LINE(compare_wfns_0.out, 4, 1); 0.0
+Precision: 1e-9
+match; Maximum error in reassembled Hamiltonian ; LINE(compare_wfns_0.out, 5, 1); 0.0
+
+###############################################################################
+
+Banner: npools=3 (1)
+
+Command: sed -i.bak 's/.*number_pools.*/number_pools 3/;s/.*output_wfn_file.*/output_wfn_file WFN_out_1.h5/' parabands.inp
+
+Executable: parabands.cplx.x
+Processors: 4
+Output: parabands_1.out
+Input: NONE
+
+Executable: compare_wfns.cplx.x
+Arguments: WFN_ref_no_pseudobands.h5 WFN_out_1.h5 --terse --tol_deg 1e-10 > compare_wfns_1.out
+
+Precision: 1e-10
+match; Maximum error in eigenvalues             ; LINE(compare_wfns_1.out, 1, 1); 0.0
+match; Maximum error in WFN orthonormality      ; LINE(compare_wfns_1.out, 3, 1); 0.0
+match; Maximum error in cross WFN orthonormality; LINE(compare_wfns_1.out, 4, 1); 0.0
+Precision: 1e-9
+match; Maximum error in reassembled Hamiltonian ; LINE(compare_wfns_1.out, 5, 1); 0.0
+

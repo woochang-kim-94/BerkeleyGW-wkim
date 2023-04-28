@@ -1,0 +1,18 @@
+#!/bin/bash -l
+
+# run via: qsub lonestar.scr
+
+#$ -N test_BGW
+#$ -cwd
+#$ -pe 4way 12
+#$ -q development
+#$ -l h_rt=01:00:00
+#$ -V
+
+export TEMPDIRPATH=$SCRATCH/tmp
+
+export MY_NSLOTS=4
+export MPIEXEC=`which ibrun`
+make check-parallel &> test.out
+
+echo "Exit status = $?"

@@ -1,0 +1,26 @@
+#!/bin/bash -l
+
+# run via: sbatch stampede.scr
+
+#SBATCH -J test_BGW
+#SBATCH -n 16
+#SBATCH -p development
+#SBATCH -t 00:45:00
+
+# required to have access to Time::HiRes Perl module
+module load perl
+
+export TEMPDIRPATH=$SCRATCH/tmp
+
+export MPIEXEC="`which ibrun`"
+export BGW_TEST_MPI_NPROCS=16
+
+# To run with X threads and Y=16/X MPI tasks, 
+# above set #SBATCH -N 1
+# above set #SBATCH -n Y
+# export BGW_TEST_MPI_NPROCS=Y
+# export OMP_NUM_THREADS=X
+
+make check-parallel &> test.out
+
+echo "Exit status = $?"

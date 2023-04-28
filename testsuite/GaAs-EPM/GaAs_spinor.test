@@ -1,0 +1,496 @@
+Test    : GaAs with EPM (spinor,cplx)
+Enabled : Yes
+TestGroups : binary hdf5 serial parallel
+
+# no need to test gsphere, kgrid, symmetries, or eigenvalues,
+# as these calculations are identical
+
+Executable : epm2bgw.x
+Processors : serial
+Output : WFN.out
+Input  : WFN.in PIPE
+
+Output : WFNq.out
+Input  : WFNq.in PIPE
+
+Output : WFN_co.out
+Input  : WFN_co.in PIPE
+
+Output : WFN_fi.out
+Input  : WFN_fi.in PIPE
+
+Output : WFNq_fi.out
+Input  : WFNq_fi.in PIPE
+
+# run wfnmix_spinor
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFN WFN_spinor R
+Command : mv WFN_spinor WFN
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFNq WFNq_spinor R
+Command : mv WFNq_spinor WFNq
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFN_inner WFN_inner_spinor R
+Command : mv WFN_inner_spinor WFN_inner
+
+Executable: wfnmix_spinor_rho_vxc.x
+Processors : serial
+Arguments: RHO RHO RHO_spinor
+Command : mv RHO_spinor RHO
+
+Executable: wfnmix_spinor_rho_vxc.x
+Processors : serial
+Arguments: VXC VXC VXC_spinor
+Command : mv VXC_spinor VXC
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFN_fi WFN_fi_spinor R
+Command : mv WFN_fi_spinor WFN_fi
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFNq_fi WFNq_fi_spinor R
+Command : mv WFNq_fi_spinor WFNq_fi
+
+# testing begins here
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_static.out
+Input  : epsilon_spinor.inp epsilon.inp
+
+Precision : 1e-13
+match ; Re chi(q1,0,0)       ; LINE(chi_converge.dat, 30, 2) ; -0.57760029E-06
+match ; Re chi(q1,Gmax,Gmax) ; LINE(chi_converge.dat, 30, 4) ; -0.76795260E-03
+match ; Re chi(q1,0,0)       ; LINE(chi_converge.dat, 92, 2) ; -0.24928474E-01
+match ; Re chi(q1,Gmax,Gmax) ; LINE(chi_converge.dat, 92, 4) ; -0.12781391E-02
+Precision : 3e-11
+match ; epsilon q1 ; GREP(eps_static.out, "q-pt      1: Head of Epsilon",         7, 0); 14.9234176133623
+Precision : 2e-13
+match ; eps inv q1 ; GREP(eps_static.out, "q-pt      1: Head of Epsilon Inverse", 8, 0); 0.0770203148897139
+match ; epsilon q2 ; GREP(eps_static.out, "q-pt      2: Head of Epsilon",         7, 0); 2.97351207417238
+match ; eps inv q2 ; GREP(eps_static.out, "q-pt      2: Head of Epsilon Inverse", 8, 0); 0.390620255028178
+match ; epsilon q3 ; GREP(eps_static.out, "q-pt      3: Head of Epsilon",         7, 0); 2.8027495957472
+match ; eps inv q3 ; GREP(eps_static.out, "q-pt      3: Head of Epsilon Inverse", 8, 0); 0.396981083283834
+match ; epsilonInv Head      ; GREP(epsilon.log, "inverse epsilon", 7, 1); 0.07702031
+
+Command : mv epsilon.log eps_static.log
+
+# For tricking eps0sym we link eps0mat.h5 to eps0mat
+Command : if [ -f eps0mat.h5 ]; then ln -s eps0mat.h5 eps0mat ; fi
+
+# We are not going to use the symmetrized eps0mat. It makes very little difference here.
+Executable : eps0sym.cplx.x
+Arguments : eps0mat eps0mat_sym > eps0sym.out
+
+Precision : 0.0011
+match ; max symmetry discrepancy ; GREP(eps0sym.out, "The max error in your matrix is", 8, 0); 0.69184E+02
+
+Executable : sigma.cplx.x
+Output : sig_HF.out
+Input  : sig_HF_spinor.inp sigma.inp
+
+# These numbers should be identical to the full GW Sigma calculation below.
+Precision : 2e-6
+match ; n4,  k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4,  6); -14.252939
+match ; n10, k2 Exchange             ; GREP(sigma_hp.log, "ik =   2",  4, 12);  -4.676235
+
+Command : mv sigma_hp.log sig_hp_HF.log
+
+Executable : sigma.cplx.x
+Output : sig_COHSEX.out
+Input  : sig_COHSEX_spinor.inp sigma.inp
+
+match ; n4, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 6);   9.187328
+match ; n4, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1",  6, 6);  -8.424123
+match ; n4, k1 Linear QP Correction ; GREP(sigma_hp.log, "ik =   1", 10, 6);  -5.444661
+
+match ; n10, k2 Screened Exchange    ; GREP(sigma_hp.log, "ik =   2",  5, 12);   2.328117
+match ; n10, k2 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   2",  6, 12);  -7.534184
+match ; n10, k2 Linear QP Correction ; GREP(sigma_hp.log, "ik =   2", 10, 12);   0.023357
+
+Command : mv sigma_hp.log sig_hp_COHSEX.log
+
+#Executable : sigma.cplx.x
+#Output : sig_COHSEX_offdiag.out
+#Input  : sig_COHSEX_offdiag_spinor.inp sigma.inp
+
+#Executable : offdiag.cplx.x
+#Processors : serial
+#Arguments : > sig_eigval.out
+
+#FIXME - there`s something rotten here...
+#Precision : 5e-6
+#match ; k1, Re Eigenvalue  4  ; GREP(sig_eigval.out, "ik =  1 ", 2, 7);  -5.445158
+#match ; k2, Re Eigenvalue 10  ; GREP(sig_eigval.out, "ik =  2 ", 2, 13);  0.117794
+
+#Command : mv sigma_hp.log sig_hp_COHSEX_offdiag.log
+
+Executable : sigma.cplx.x
+Processors : 4
+Output : sig_GPP.out
+Input  : sig_GPP_spinor.inp sigma.inp
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n4, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 6);   8.045074
+match ; n4, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 6); -14.252939
+match ; n4, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 6);   9.330292
+match ; n4, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1", 11, 6);  -6.607926
+match ; n4, k1 CH + Static Remainder; GREP(sigma_hp.log, "ik =   1",  6, 6);  -7.415517
+match ; n4, k1 Linear QP Correction ; GREP(sigma_hp.log, "ik =   1", 10, 6);  -1.885657
+
+match ; k-point 2 z-coordinate       ; GREP(sigma_hp.log, "ik =   2",  5, 0);    0.500000
+match ; n10, k2 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   2",  2, 12);   9.905659
+match ; n10, k2 Exchange             ; GREP(sigma_hp.log, "ik =   2",  4, 12);  -4.676235
+match ; n10, k2 Screened Exchange    ; GREP(sigma_hp.log, "ik =   2",  5, 12);   2.736528
+match ; n10, k2 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   2", 11, 12);  -6.215881
+match ; n10, k2 CH + Static Remainder; GREP(sigma_hp.log, "ik =   2",  6, 12);  -6.884029
+match ; n10, k2 Linear QP Correction ; GREP(sigma_hp.log, "ik =   2", 10, 12);   2.827626
+
+Command : mv sigma_hp.log sig_hp_GPP.log
+
+Command : ln -s WFN_inner WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel.out
+Input  : kernel_spinor.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel.out, " - Head :", 4); 3.615681327116E+0001
+match ; Norm of wing; GREP(kernel.out, " - Wing :", 4); 6.204297070686E+0000
+match ; Norm of body; GREP(kernel.out, " - Body :", 4); 4.455704229486E+0001
+match ; Norm of x   ; GREP(kernel.out, " - X    :", 4); 4.415164943164E+0001
+
+# BSE with velocity operator
+Executable : absorption.cplx.x
+Output : absp.out
+Input  : absorption_spinor.inp absorption.inp
+
+Precision : 0.0001
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4); 1728
+match ; Eigenvalue 4           ; LINE(eigenvalues.dat,  8, 1);  0.22832093E+01
+Precision : 8e-5
+match ; Transition mtxel 1     ; LINE(eigenvalues.dat,  8, 2);  0.12481063E+03
+match ; Eigenvalue 40          ; LINE(eigenvalues.dat, 44, 1);  0.37584270E+01
+Precision : 5e-4
+match ; Transition mtxel 10    ; LINE(eigenvalues.dat, 44, 2);  0.76727871E+01
+Precision : 2e-7
+match ; Sum rule               ; GREP(absp.out, "Sum rule (BSE)", 5);  0.84269128363060053
+
+# PlotXct
+#Copy : eigenvectors
+#Executable : plotxct.cplx.x
+#Output : plotxct.out
+#Input  : plotxct_spinor.inp plotxct.inp
+
+#Precision : 1.1e-6
+#match ; Grid Value  ; GREP(xct.000004_s1.a3Dr, "#    real", 3, 1); 2.723905E-02
+#match ; Hole z pos  ; GREP(xct.000004_s1.a3Dr, "# rh = ",   6, 0); 0.000000
+#match ; Spin        ; GREP(xct.000004_s1.a3Dr, "# spin = ", 4, 0); 1
+
+#Executable: volume.py
+#Arguments: WFN_fi.in tbpw xct.000004_s1.a3Dr a3dr xct.000004.xsf xsf true re true
+
+#match ; z grid steps ; GREP(xct.000004.xsf, "BEGIN_DATAGRID_3D", 3, 1); 25
+#match ; grid value   ; GREP(xct.000004.xsf, "BEGIN_DATAGRID_3D", 1, 8); -2.90442E-02
+
+# PlotXct with restrict_kpoints
+#Copy : eigenvectors
+#Executable : plotxct.cplx.x
+#Command : echo "restrict_kpoints 6" >> plotxct.inp
+#Output : plotxct.out
+#Input  : NONE
+
+#Precision : 1.1e-6
+#match ; Energy      ; GREP(plotxct.out, "Excitation energy", 3, 0); 2.283209280
+#match ; k-pts norm  ; GREP(plotxct.out, "Norm squared of the exciton", 4, 1); .989273986556286
+#match ; Grid Value  ; GREP(xct.000004_s1.a3Dr, "#    real", 3, 1); 2.450675E-02
+#match ; Hole z pos  ; GREP(xct.000004_s1.a3Dr, "# rh = ",   6, 0); 0.000000
+#match ; Spin        ; GREP(xct.000004_s1.a3Dr, "# spin = ", 4, 0); 1
+
+# NLO Two Photon
+#Command : mv WFNq_fi WFNq_fi_orig
+#Command : ln -s WFN_fi WFNq_fi
+#Executable : nonlinearoptics.cplx.x
+#Processors : 4
+#Output : nonlinearoptics_tp.out
+#Input  : nonlinearoptics_tp_spinor.inp nonlinearoptics.inp
+
+#Precision : 0.0001
+#match ; Eigenvalue 2nd Singlet ; LINE(osc.dat, 8, 2);  0.24826351E+01
+#match ; Osc 2nd Singlet ; LINE(osc.dat, 8, 3);  0.20352178E+01
+#match ; 2P Osc 2nd Singlet ; LINE(osc.dat, 8, 4);  0.12186196E+01
+#match ; 2P Max ; LINE(osc.dat, 8, 5); 8
+#match ; 2P Max Val ; LINE(osc.dat, 8, 6);  0.58971592E+01
+
+#Command : mv absorption_nl.dat absorp_tp.dat
+#Command : mv osc.dat osc.dat_tp
+
+# BSE with momentum operator
+# The eigenvalues would be identical to velocity operator in q->0 limit, and the transition
+# matrix elements should be very close, since EPM is a local potential.
+Executable : absorption.cplx.x
+Output : absp_mom.out
+Input  : absp_mom_spinor.inp absorption.inp
+
+Precision : 0.0001
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4); 1728
+match ; Eigenvalue 4           ; LINE(eigenvalues.dat,  8, 1);  0.22843439E+01
+Precision : 8e-5
+match ; Transition mtxel 1     ; LINE(eigenvalues.dat,  8, 2);  0.12376846E+03
+match ; Eigenvalue 40          ; LINE(eigenvalues.dat, 44, 1);  0.37517114E+01
+Precision : 6e-4
+match ; Transition mtxel 10    ; LINE(eigenvalues.dat, 44, 2);  0.59561544E+01
+Precision : 2e-7
+match ; Sum rule               ; GREP(absp_mom.out, "Sum rule (BSE)", 5);  0.84210556744510312
+
+#Command : echo "local_fields" >> absorption.inp
+# Not implemented with spinors just yet...
+#Executable : absorption.cplx.x
+#Output : absp_localfields.out
+#Input : NONE
+
+#Precision : 2e-8
+#match ; Static epsilon 1 ; GREP(absorption_eh.dat, " 0.000000000 ", 3);  11.103418564
+#match ; Peak   epsilon 2 ; GREP(absorption_eh.dat, " 3.850000000 ", 2); 10.395226413
+#match ; Peak   epsilon 1 ; GREP(absorption_eh.dat, " 3.850000000 ", 3); 10.502244752
+
+# BSE with momentum operator cell averaging
+Executable : absorption.cplx.x
+Output : absp_mom_ca.out
+Input  : absp_mom_ca_spinor.inp absorption.inp
+
+Precision : 0.0001
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4); 1728
+match ; Eigenvalue 4           ; LINE(eigenvalues.dat,  8, 1);  0.22843439E+01
+Precision : 8e-5
+match ; Transition mtxel 4     ; LINE(eigenvalues.dat,  8, 2);  0.12376846E+03
+match ; Eigenvalue 40          ; LINE(eigenvalues.dat, 44, 1);  0.37517114E+01
+Precision : 5e-4
+match ; Transition mtxel 40    ; LINE(eigenvalues.dat, 44, 2);  0.59561544E+01
+Precision : 2e-7
+match ; Sum rule               ; GREP(absp_mom_ca.out, "Sum rule (BSE)", 5);  0.84210556744510312
+
+#Executable : absorption.cplx.x
+#Output : absp_haydock.out
+#Input : absp_haydock_spinor.inp absorption.inp
+
+#Precision : 2e-8
+#match ; Static epsilon 1 ; GREP(absorption_eh.dat, " 0.000000000 ", 3);  14.581698313
+#match ; Peak   epsilon 2 ; GREP(absorption_eh.dat, " 3.850000000 ", 2); 17.138157501
+#match ; Peak   epsilon 1 ; GREP(absorption_eh.dat, " 3.850000000 ", 3); -4.523406720
+
+#Command : mv absorption.inp absp.inp; sed s/use_velocity/use_dos/ absp.inp > absorption.inp
+#Executable : absorption.cplx.x
+#Output : absp_jdos.out
+#Input : NONE
+
+#Precision : 2e-8
+#match ; Static epsilon 1 ; GREP(absorption_eh.dat, " 0.000000000 ", 3);  9.388180397
+#match ; Peak   epsilon 2 ; GREP(absorption_eh.dat, " 3.850000000 ", 2); 3.338233999
+#match ; Peak   epsilon 1 ; GREP(absorption_eh.dat, " 3.850000000 ", 3); 13.021215419
+
+# Full frequency
+
+Executable: scissors2eqp.x
+Arguments: WFNq 0 0 1.25 0 0 1.25 > scissors2eqp_q.out
+Command : mv eqp.dat eqp_q.dat
+Executable: scissors2eqp.x
+Arguments: WFN 0 0 1.25 0 0 1.25 > scissors2eqp.out
+
+Command : ln -s WFN_inner WFN_outer
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_ff.out
+Input  : eps_ff_spinor.inp epsilon.inp
+
+Precision : 7e-12
+match ; Re eps q1          ; GREP(eps_ff.out, "q-pt      1: Head of Epsilon",          7, 0); 5.436965954321662E+000
+Precision : 3e-13
+match ; Im eps q1          ; GREP(eps_ff.out, "q-pt      1: Head of Epsilon",          8, 0); 0.0
+match ; Re epsinv q1       ; GREP(eps_ff.out, "q-pt      1: Head of Epsilon Inverse",  8, 0); 1.956208342139506E-001
+match ; Im epsinv q1       ; GREP(eps_ff.out, "q-pt      1: Head of Epsilon Inverse",  9, 0); 0.0
+
+Precision : 1e-5
+match ; epsilon    Head 30.0 eV Re ; LINE(EpsDyn, 9, 2) ; 3.454744E-01
+match ; epsilon    Head 30.0 eV Im ; LINE(EpsDyn, 9, 3) ; 4.484178E-01
+match ; epsilonInv Head 30.0 eV Re ; LINE(EpsInvDyn, 21, 2) ; 5.738705E-01
+match ; epsilonInv Head 30.0 eV Im ; LINE(EpsInvDyn, 21, 3) ; -5.091707E-01
+
+Command : mv epsilon.log eps_ff.log
+
+# Uses WFN_outer
+Executable: scissors2eqp.x
+Arguments: WFN_outer 0 0 1.5 0 0 1.5 > scissors2eqp.out
+Command: mv eqp.dat eqp_outer.dat
+Executable: scissors2eqp.x
+Arguments: WFN_inner 0 0 1.25 0 0 1.25 > scissors2eqp.out
+
+Executable : sigma.cplx.x
+Processors : 4
+Output : sig_ff.out
+Input  : sig_ff_spinor.inp sigma.inp
+
+Precision : 2e-5
+match ; n3,  k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1", 2,  4);   8.045074
+match ; n3,  k1 Exchange             ; GREP(sigma_hp.log, "ik =   1", 4,  4); -14.252939
+match ; n3,  k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1", 5,  4);   7.129196
+match ; n3,  k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1", 6,  4);  -3.380932
+match ; n3,  k1 Imag SX              ; GREP(sigma_hp.log, "ik =   1", 1,  5);   1.122251
+match ; n3,  k1 Imag CH              ; GREP(sigma_hp.log, "ik =   1", 2,  5);  -1.574468
+match ; n10, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1", 2, 18);   9.243551
+match ; n10, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1", 4, 18); -5.410015
+match ; n10, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1", 5, 18);   1.835675
+match ; n10, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1", 6, 18);  -3.016443
+match ; n10, k1 Imag SX              ; GREP(sigma_hp.log, "ik =   1", 1, 19);   0.889475
+match ; n10, k1 Imag CH              ; GREP(sigma_hp.log, "ik =   1", 2, 19);  -1.356371
+match ; n3,  k3 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   3", 2,  4);   1.932049
+match ; n3,  k3 Exchange             ; GREP(sigma_hp.log, "ik =   3", 4,  4); -14.226161
+match ; n3,  k3 Screened Exchange    ; GREP(sigma_hp.log, "ik =   3", 5,  4);   7.871204
+match ; n3,  k3 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   3", 6,  4);  -3.967903
+match ; n3,  k3 Imag SX              ; GREP(sigma_hp.log, "ik =   3", 1,  5);   3.794042
+match ; n3,  k3 Imag CH              ; GREP(sigma_hp.log, "ik =   3", 2,  5);  -3.671611
+match ; n10, k3 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   3", 2, 18);   10.574825
+match ; n10, k3 Exchange             ; GREP(sigma_hp.log, "ik =   3", 4, 18); -4.202341
+match ; n10, k3 Screened Exchange    ; GREP(sigma_hp.log, "ik =   3", 5, 18);   1.469481
+match ; n10, k3 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   3", 6, 18);  -2.675255
+match ; n10, k3 Imag SX              ; GREP(sigma_hp.log, "ik =   3", 1, 19);   0.419615
+match ; n10, k3 Imag CH              ; GREP(sigma_hp.log, "ik =   3", 2, 19);  -0.845961
+
+Command : mv sigma_hp.log sig_hp_ff.log
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_ff_parallel_freq.out
+Input  : eps_ff_parallel_freq_spinor.inp epsilon.inp
+
+# numbers below should be all the same as eps_ff_spinor.inp results and number of processors must always be greater than nfreq_group in input file
+Precision : 7e-12
+match ; Re eps q1          ; GREP(eps_ff_parallel_freq.out, "q-pt      1: Head of Epsilon",          7, 0); 6.13955386367811
+Precision : 3e-13
+match ; Im eps q1          ; GREP(eps_ff_parallel_freq.out, "q-pt      1: Head of Epsilon",          8, 0); 0.0
+match ; Re epsinv q1       ; GREP(eps_ff_parallel_freq.out, "q-pt      1: Head of Epsilon Inverse",  8, 0); 0.180539609777306
+match ; Im epsinv q1       ; GREP(eps_ff_parallel_freq.out, "q-pt      1: Head of Epsilon Inverse",  9, 0); 0.0
+Precision : 1e-5
+match ; epsilon    Head 30.0 eV Re ; LINE(EpsDyn, 9, 2) ; 0.695678
+match ; epsilon    Head 30.0 eV Im ; LINE(EpsDyn, 9, 3) ; 0.116462
+match ; epsilonInv Head 30.0 eV Re ; LINE(EpsInvDyn, 21, 2) ; 1.342573
+match ; epsilonInv Head 30.0 eV Im ; LINE(EpsInvDyn, 21, 3) ; -0.304618
+
+Command : mv epsilon.log eps_ff_parallel_freq.log
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_ff_elements.out
+Input  : eps_ff_elements_spinor.inp epsilon.inp
+
+# should be all the same as eps_ff.inp results
+Precision : 7e-12
+match ; Re eps q1          ; GREP(eps_ff_elements.out, "q-pt      1: Head of Epsilon",          7, 0); 6.13955386367811
+Precision : 3e-13
+match ; Im eps q1          ; GREP(eps_ff_elements.out, "q-pt      1: Head of Epsilon",          8, 0); 0.0
+match ; Re epsinv q1       ; GREP(eps_ff_elements.out, "q-pt      1: Head of Epsilon Inverse",  8, 0); 0.180539609777306
+match ; Im epsinv q1       ; GREP(eps_ff_elements.out, "q-pt      1: Head of Epsilon Inverse",  9, 0); 0.0
+Precision : 1e-5
+match ; epsilon    Head 30.0 eV Re ; LINE(EpsDyn, 9, 2) ; 0.695678
+match ; epsilon    Head 30.0 eV Im ; LINE(EpsDyn, 9, 3) ; 0.116462
+match ; epsilonInv Head 30.0 eV Re ; LINE(EpsInvDyn, 21, 2) ; 1.342573
+match ; epsilonInv Head 30.0 eV Im ; LINE(EpsInvDyn, 21, 3) ; -0.304618
+
+Command : mv epsilon.log eps_ff_elements.log
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_ff_parallel_freq_elements.out
+Input  : eps_ff_parallel_freq_elements_spinor.inp epsilon.inp
+
+# numbers below should be all the same as eps_ff_spinor.inp results and number of processors must always be greater than nfreq_group in input file
+Precision : 7e-12
+match ; Re eps q1          ; GREP(eps_ff_parallel_freq_elements.out, "q-pt      1: Head of Epsilon",          7, 0); 6.13955386367811
+Precision : 3e-13
+match ; Im eps q1          ; GREP(eps_ff_parallel_freq_elements.out, "q-pt      1: Head of Epsilon",          8, 0); 0.0
+match ; Re epsinv q1       ; GREP(eps_ff_parallel_freq_elements.out, "q-pt      1: Head of Epsilon Inverse",  8, 0); 0.180539609777306
+match ; Im epsinv q1       ; GREP(eps_ff_parallel_freq_elements.out, "q-pt      1: Head of Epsilon Inverse",  9, 0); 0.0
+Precision : 1e-5
+match ; epsilon    Head 30.0 eV Re ; LINE(EpsDyn, 9, 2) ; 0.695678
+match ; epsilon    Head 30.0 eV Im ; LINE(EpsDyn, 9, 3) ; 0.116462
+match ; epsilonInv Head 30.0 eV Re ; LINE(EpsInvDyn, 21, 2) ; 1.342573
+match ; epsilonInv Head 30.0 eV Im ; LINE(EpsInvDyn, 21, 3) ; -0.304618
+
+Command : mv epsilon.log eps_ff_parallel_freq_elements.log
+
+Command : mv WFN_fi WFN_fi_bse
+
+Executable : epm2bgw.x
+Processors : serial
+Output : WFN_kpath.out
+Input  : WFN_kpath.in PIPE
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFN_fi WFN_fi_spinor R
+Command : mv WFN_fi_spinor WFN_fi
+
+# We skip matching meanfield eigenvalues from WFN_kpath.out,
+# as that will be unchanged upon doubling the number of bands.
+
+Executable : eqp.py
+Arguments : eqp1 sig_hp_GPP.log eqp_co.dat > eqp.out 
+ 
+match ; k-point 2 z-coord ; LINE(eqp_co.dat, 18, 3);  0.500
+match ; MF Eigenvalue     ; LINE(eqp_co.dat, 24, 3);  7.161621197
+match ; GW Eigenvalue     ; LINE(eqp_co.dat, 24, 4); -2.522081438
+
+Executable : wfn_rho_vxc_info.x
+Processors : serial
+Arguments : WFN_fi > WFN_kpath_info.out
+
+match ; Number of G-vectors ; GREP(WFN_kpath_info.out, "Number of G-vectors", 4, 0); 1459
+match ; k-grid x            ; GREP(WFN_kpath_info.out, "k-grid:",             2, 0);    0
+
+Executable : inteqp.cplx.x
+Processors : 4
+Output : inteqp.out
+Input : inteqp_spinor.inp inteqp.inp
+
+Precision : 1e-5
+match ; Cartesian kx coord  ; LINE(bandstructure.dat,    6, 3);   0.27419
+match ; MF Eigenvalue       ; LINE(bandstructure.dat,    6, 6);  -2.925582651
+match ; GW Eigenvalue       ; LINE(bandstructure.dat,    6, 7); -11.935396800
+match ; Difference          ; LINE(bandstructure.dat,    6, 8);  -9.009814020
+match ; Cartesian kx coord  ; LINE(bandstructure.dat, 2018, 3);   0.40813
+match ; MF Eigenvalue       ; LINE(bandstructure.dat, 2018, 6);  15.496296952
+match ; GW Eigenvalue       ; LINE(bandstructure.dat, 2018, 7);   9.642694605
+match ; Difference          ; LINE(bandstructure.dat, 2018, 8);  -5.853603030
+# below must match result in bandstructure.dat!
+match ; eqp.dat last band MF; LINE(eqp.dat, 2142, 3);  15.496296952
+match ; eqp.dat last band GW; LINE(eqp.dat, 2142, 4);   9.642694605
+
+# Full frequency(Shishkin and Kresse 2006)
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_ff1_elements.out
+Input  : eps_ff1_elements_spinor.inp epsilon.inp
+
+Precision : 7e-12
+match ; Re eps q1          ; GREP(eps_ff1_elements.out, "q-pt      1: Head of Epsilon",          7, 0); 6.08611192290713
+Precision : 3e-13
+match ; Im eps q1          ; GREP(eps_ff1_elements.out, "q-pt      1: Head of Epsilon",          8, 0); 0.0
+match ; Re epsinv q1       ; GREP(eps_ff1_elements.out, "q-pt      1: Head of Epsilon Inverse",  8, 0); 0.182134209423543
+match ; Im epsinv q1       ; GREP(eps_ff1_elements.out, "q-pt      1: Head of Epsilon Inverse",  9, 0); 0.0
+Precision : 1e-5
+match ; epsilon    Head 30.0 eV Re ; LINE(EpsDyn, 9, 2) ; 0.695417
+match ; epsilon    Head 30.0 eV Im ; LINE(EpsDyn, 9, 3) ; 0.116774
+match ; epsilonInv Head 30.0 eV Re ; LINE(EpsInvDyn, 21, 2) ; 1.342430
+match ; epsilonInv Head 30.0 eV Im ; LINE(EpsInvDyn, 21, 3) ; -0.305876 
+
+Command : mv epsilon.log eps_ff1_elements.log

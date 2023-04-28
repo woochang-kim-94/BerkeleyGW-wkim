@@ -1,0 +1,139 @@
+# --------------------------------------------------------------
+#                             job
+# --------------------------------------------------------------
+
+# ---- relax job
+
+#job relax                  # relax structure
+
+# ---- plane wave code jobs
+
+
+begin pw_jobs
+    pw_job nonselfcon
+end pw_jobs
+
+# ---- flags 
+
+# --------------------------------------------------------------
+#                           structure 
+# --------------------------------------------------------------
+ 
+begin latticevecs # a.u.
+coord     8.000000000000    0.000000000000    0.000000000000
+coord     0.000000000000    8.000000000000    0.000000000000
+coord     0.000000000000    0.000000000000    8.000000000000
+end latticevecs
+
+#
+# the coordinates of the atoms
+#
+
+coordinates_absolute
+begin coordinates # crystal coords
+newtype Si
+coord   0.0 0.0 0.0
+newtype H
+coord   1.61922  1.61922  1.61922
+coord  -1.61922 -1.61922  1.61922
+coord  -1.61922  1.61922 -1.61922
+coord   1.61922 -1.61922 -1.61922
+end coordinates # end of coords
+  
+pp_format 3
+begin pseudopotential
+pp_data 3 2.0 2.0 0.0 0.0
+pp_data 3 1.0 0.0 0.0 0.0
+end pseudopotential
+
+# --------------------------------------------------------------
+#                       plane wave parameters 
+# --------------------------------------------------------------
+
+
+# ---- exchange and correlation functional
+
+exchange_correlation ceperley_alder              # lda
+
+
+number_of_spins 1       # non-spin-polarized calculation
+
+# ---- diagonalization 
+
+diagonalization_method Grassmann_metal
+
+# determines size of hamiltonian matrix
+
+energy_cutoff 12 # Ry
+
+# determines size of submatrix for first diag
+# should be roughly 1/5 of energy_cutoff but not larger that 10
+
+submatrix_energy_cutoff 5 # Ry
+submatrix_diag
+
+# energy converges to 1e-6 only so acc. of 1e-7 is often sufficient
+# however, if you want force accuracy to n digits set accuracy_diag to less
+# than 1e-(2n)
+
+accuracy_diag 1e-14
+max_iter_diag 10
+#max_iter_diag_band 137
+#min_iter_diag 137
+
+
+k_grid  1 1 1
+k_grid_shift 0 0 0.001
+
+# ---- number of bands 
+
+number_bands 20
+eigspacefrac 1.0
+
+# ---- occupation
+
+occupy_levels normal
+#occupy_levels fixed
+#occupy_levels antiferro
+
+gaussian_smearing 0.005 # eV
+
+
+# --------------------------------------------------------------
+#                   self consistent iteration 
+# --------------------------------------------------------------
+
+# default 1e-6 good enough for an energy accuracy of at least 1e-6,
+# since the error enters the potential linearly, 
+# but the energy quadratically,
+# the energy converges faster than the potential
+# nothing smaller than 1e-6 is suggested. 
+
+potential_convergence_criterion 1e-6
+
+max_iter_scfloop 40
+#    max_iter_scfloop 3
+
+# screening_type vmix
+#screening_type previous
+screening_type atomic
+
+output_flags gwc
+
+
+
+# --------------------------------------------------------------
+#                     relaxation parameters 
+# --------------------------------------------------------------
+
+# maximum number of relaxation steps
+
+#relax_max_iter 100
+relax_max_iter 0
+relax_what     force
+relax_method   1
+relax_how      normal
+relax_accuracy 0.001d0
+begin stay_put
+stay_put 1
+end stay_put

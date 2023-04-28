@@ -1,0 +1,599 @@
+! ${mako_signature}
+! ${dont_edit}
+
+!>=========================================================================
+!!
+!! Module:
+!!
+!! bgw_mpi_m        Originally by FHJ     Last Modified 03/2018 (FHJ)
+!!
+!!     Wrappers around MPI functions. All functions work both with
+!!     MPI and serial runs. Right now, only MPI_Bcast is supported.
+!!     TODO: implement wrappers for MPI_Send, MPI_Recv, gather, etc.
+!!
+!!     This module uses python Mako template to generate Fortran code.
+!!     Make sure to run the `mako_preprocess.py` if you edit the source
+!!     .f90p file, and don`t edit the generated .f90 directly.
+!!
+!!=========================================================================
+
+#include "f_defs.h"
+
+<%
+import itertools
+#Note that `flavorles` routines such as `bgw_barrier` are not included here
+subs = ('bcast', 'gather', 'allgather', 'allgatherv')
+#NEVER include `str` here, it need to be
+dtypes = ('int', 'real', 'complex', 'logical')
+ranks = range(8)
+dtype2fortran = {
+  'str': 'character(len=*)',
+  'int': 'integer',
+  'real': 'real(DP)',
+  'complex': 'complex(DPC)',
+  'logical': 'logical'
+}
+
+dtype2MPI = {
+  'str': 'MPI_CHARACTER',
+  'int': 'MPI_INTEGER',
+  'real': 'MPI_REAL_DP',
+  'complex': 'MPI_COMPLEX_DPC',
+  'logical': 'MPI_LOGICAL'
+}
+
+
+def rank2array(rank):
+  assert rank>=0
+  if rank==0:
+    return ''
+  else:
+    return '(' + ','.join([':']*rank) + ')'
+
+
+def get_sub_labels(sub):
+  labels = []
+  for dtype, rank in itertools.product(dtypes, ranks):
+    labels.append(get_label(sub, dtype, rank))
+  #labels.append(get_label(sub, 'str', 0))
+  return labels
+
+
+def get_label(sub, dtype, rank):
+  assert sub in subs
+  assert dtype in dtypes or dtype=='str'
+  assert rank in ranks or rank=='lowlevel'
+  if dtype=='str':
+    return 'bgw_{}_{}'.format(sub, dtype)
+  return 'bgw_{}_{}_{}'.format(sub, dtype, rank)
+%>\
+
+module bgw_mpi_m
+  use, intrinsic :: iso_c_binding
+  use global_m
+
+  implicit none
+
+%for sub in subs:
+  interface bgw_${sub}
+     module procedure &
+%if sub=='bcast':
+       bgw_bcast_str, &
+%endif
+%for label in get_sub_labels(sub):
+       ${label}${', &' if not loop.last else ''}
+%endfor
+  end interface
+%endfor
+
+  public :: ${', '.join(['bgw_'+sub for sub in subs])}, &
+    bgw_barrier, bgw_comm_size
+
+contains
+
+
+!==============================================================================
+! Auxiliary routines
+!==============================================================================
+
+
+subroutine bgw_mpi_error(bgw_routine, mpi_routine, ierr, comm, root)
+  character(len=*), intent(in) :: bgw_routine
+  character(len=*), intent(in) :: mpi_routine
+  integer, intent(in) :: ierr
+  integer, intent(in), optional :: comm
+  integer, intent(in), optional :: root
+
+  character(len=256) :: error_str
+  integer :: comm_, root_
+
+  PUSH_SUB(bgw_mpi_error)
+
+#ifdef MPI
+  root_ = get_optional_arg(0, root)
+  comm_ = get_optional_arg(MPI_COMM_WORLD, comm)
+  if ((peinf%inode==root_.and.comm_==MPI_COMM_WORLD) .or. &
+    comm_/=MPI_COMM_WORLD) then
+    write(0,'(/3a)') 'Error in ', trim(bgw_routine), ':'
+    write(0,'(3a,i0/)') 'In call to ', trim(mpi_routine), ', got error=', ierr
+  endif
+  write(error_str,'(a,i0,4a)') 'Got error=', ierr, ' in ', &
+    trim(bgw_routine), ' when calling ', trim(mpi_routine)
+  call die(trim(error_str), only_root_writes=comm_==MPI_COMM_WORLD)
+#endif
+
+  POP_SUB(bgw_mpi_error)
+
+end subroutine bgw_mpi_error
+
+
+!==============================================================================
+! High-level routines
+!==============================================================================
+
+!------------------------------------------------------------------------------
+! Comm_size
+!------------------------------------------------------------------------------
+
+integer function bgw_comm_size(comm)
+  integer, intent(in), optional :: comm
+
+  integer :: comm_, ierr
+
+  PUSH_SUB(bgw_comm_size)
+
+  bgw_comm_size = 1
+#ifdef MPI
+  comm_ = get_optional_arg(MPI_COMM_WORLD, comm)
+  call MPI_Comm_size(comm_, bgw_comm_size, ierr)
+  if (ierr/=0) call bgw_mpi_error('bgw_comm_size', 'MPI_Comm_size', ierr, comm)
+#endif
+
+  POP_SUB(bgw_comm_size)
+
+end function bgw_comm_size
+
+!------------------------------------------------------------------------------
+! Comm_rank
+!------------------------------------------------------------------------------
+
+integer function bgw_comm_rank(comm)
+  integer, intent(in), optional :: comm
+
+  integer :: comm_, ierr
+
+  PUSH_SUB(bgw_comm_rank)
+
+  bgw_comm_rank = 0
+#ifdef MPI
+  comm_ = get_optional_arg(MPI_COMM_WORLD, comm)
+  call MPI_Comm_rank(comm_, bgw_comm_rank, ierr)
+  if (ierr/=0) call bgw_mpi_error('bgw_comm_rank', 'MPI_Comm_rank', ierr, comm)
+#endif
+
+  POP_SUB(bgw_comm_rank)
+
+end function bgw_comm_rank
+
+!------------------------------------------------------------------------------
+! Barrier
+!------------------------------------------------------------------------------
+
+subroutine bgw_barrier(comm)
+  integer, intent(in), optional :: comm
+
+  integer :: comm_, ierr
+
+  PUSH_SUB(bgw_barrier)
+
+#ifdef MPI
+  if (peinf%npes>1) then
+    comm_ = get_optional_arg(MPI_COMM_WORLD, comm)
+    call MPI_Barrier(comm_, ierr)
+    if (ierr/=0) call bgw_mpi_error('bgw_barrier', 'MPI_Barrier', ierr, comm)
+  endif
+#endif
+
+  POP_SUB(bgw_barrier)
+
+end subroutine bgw_barrier
+
+!------------------------------------------------------------------------------
+! Bcast
+!------------------------------------------------------------------------------
+
+%for dtype, rank in itertools.product(dtypes, ranks):
+<%
+  sub = 'bcast'
+  label_lowlevel = get_label(sub, dtype, 'lowlevel')
+  label = get_label(sub, dtype, rank)
+  dtype_fortran = dtype2fortran[dtype]
+  if rank==0:
+    target = ', target'
+  else:
+    target = ''
+%>\
+subroutine ${label}(x, root, comm)
+  ${dtype_fortran}, intent(inout)${target} :: x${rank2array(rank)}
+  integer, intent(in), optional :: root, comm
+%if rank==0:
+
+  ${dtype2fortran[dtype]}, pointer :: x_1d(:)
+%endif
+
+  PUSH_SUB(${label})
+%if rank==0:
+  call c_f_pointer(c_loc(x), x_1d, [1])
+  call ${label_lowlevel}(x_1d, 1, root=root, comm=comm)
+%else:
+  call ${label_lowlevel}(x, size(x), root=root, comm=comm)
+%endif
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+%endfor
+
+!------------------------------------------------------------------------------
+! Gather
+!------------------------------------------------------------------------------
+
+%for dtype, rank in itertools.product(dtypes, ranks):
+<%
+  sub = 'gather'
+  label_lowlevel = get_label(sub, dtype, 'lowlevel')
+  label = get_label(sub, dtype, rank)
+  dtype_fortran = dtype2fortran[dtype]
+  if rank==0:
+    target = ', target'
+  else:
+    target = ''
+%>\
+subroutine ${label}(x_in, x_out, root, comm)
+  ${dtype_fortran}, intent(in)${target} :: x_in${rank2array(rank)}
+  ${dtype_fortran}, intent(out)${target} :: x_out${rank2array(rank)}
+  integer, intent(in) :: root
+  integer, intent(in), optional :: comm
+%if rank==0:
+
+  ${dtype2fortran[dtype]}, pointer :: x_in_1d(:)
+  ${dtype2fortran[dtype]}, pointer :: x_out_1d(:)
+%endif
+
+  PUSH_SUB(${label})
+%if rank==0:
+  call c_f_pointer(c_loc(x_in), x_in_1d, [1])
+  call c_f_pointer(c_loc(x_out), x_out_1d, [1])
+  call ${label_lowlevel}(x_in_1d, x_out_1d, 1, root, comm=comm)
+%else:
+  call ${label_lowlevel}(x_in, x_out, size(x_in), root, comm=comm)
+%endif
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+%endfor
+
+!------------------------------------------------------------------------------
+! Allgather
+!------------------------------------------------------------------------------
+
+%for dtype, rank in itertools.product(dtypes, ranks):
+<%
+  sub = 'allgather'
+  label_lowlevel = get_label(sub, dtype, 'lowlevel')
+  label = get_label(sub, dtype, rank)
+  dtype_fortran = dtype2fortran[dtype]
+  if rank==0:
+    target = ', target'
+  else:
+    target = ''
+%>\
+subroutine ${label}(x_in, x_out, comm)
+  ${dtype_fortran}, intent(in)${target} :: x_in${rank2array(rank)}
+  ${dtype_fortran}, intent(out)${target} :: x_out${rank2array(rank)}
+  integer, intent(in), optional :: comm
+%if rank==0:
+
+  ${dtype2fortran[dtype]}, pointer :: x_in_1d(:)
+  ${dtype2fortran[dtype]}, pointer :: x_out_1d(:)
+%endif
+
+  PUSH_SUB(${label})
+%if rank==0:
+  call c_f_pointer(c_loc(x_in), x_in_1d, [1])
+  call c_f_pointer(c_loc(x_out), x_out_1d, [1])
+  call ${label_lowlevel}(x_in_1d, x_out_1d, 1, comm=comm)
+%else:
+  call ${label_lowlevel}(x_in, x_out, size(x_in), comm=comm)
+%endif
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+%endfor
+
+!------------------------------------------------------------------------------
+! Allgatherv
+!------------------------------------------------------------------------------
+
+%for dtype, rank in itertools.product(dtypes, ranks):
+<%
+  sub = 'allgatherv'
+  label_lowlevel = get_label(sub, dtype, 'lowlevel')
+  label = get_label(sub, dtype, rank)
+  dtype_fortran = dtype2fortran[dtype]
+  if rank==0:
+    target = ', target'
+  else:
+    target = ''
+%>\
+subroutine ${label}(x_in, x_out, recvcounts, displs, comm)
+  ${dtype_fortran}, intent(in)${target} :: x_in${rank2array(rank)}
+  ${dtype_fortran}, intent(out)${target} :: x_out${rank2array(rank)}
+  integer, optional, target, intent(in) :: recvcounts(:)
+  integer, optional, target, intent(in) :: displs(:)
+  integer, intent(in), optional :: comm
+
+%if rank==0:
+  ${dtype2fortran[dtype]}, pointer :: x_in_1d(:)
+  ${dtype2fortran[dtype]}, pointer :: x_out_1d(:)
+%endif
+  integer, pointer :: recvcounts_(:)
+  integer, pointer :: displs_(:)
+  integer :: npes, siz, ipe
+
+  PUSH_SUB(${label})
+
+  if ((.not.present(recvcounts)) .or. (.not.present(displs))) then
+    npes = peinf%npes
+    if (present(comm)) npes = bgw_comm_size(comm)
+  endif
+
+  if (present(recvcounts)) then
+    recvcounts_ => recvcounts
+    %if rank==0:
+    siz = 1
+    %else:
+    if (present(comm)) then
+      ipe = bgw_comm_rank(comm)
+    else
+      ipe = peinf%inode
+    endif
+    siz = recvcounts(ipe+1)
+    %endif
+  else
+    %if rank==0:
+    siz = 1
+    %else:
+    siz = size(x_in)
+    %endif
+    SAFE_ALLOCATE(recvcounts_, (npes))
+    recvcounts_(:) = 0
+    call bgw_allgather([siz], recvcounts_)
+  endif
+
+  if (present(displs)) then
+    displs_ => displs
+  else
+    SAFE_ALLOCATE(displs_, (npes))
+    displs_(1) = 0
+    do ipe = 2, npes
+      displs_(ipe) = displs_(ipe-1) + recvcounts_(ipe-1)
+    enddo
+  endif
+
+%if rank==0:
+  call c_f_pointer(c_loc(x_in), x_in_1d, [1])
+  call c_f_pointer(c_loc(x_out), x_out_1d, [1])
+  call ${label_lowlevel}(x_in_1d, x_out_1d, 1, recvcounts_, displs_, comm)
+%else:
+  call ${label_lowlevel}(x_in, x_out, siz, recvcounts_, displs_, comm)
+%endif
+
+  if (.not.present(recvcounts)) then
+    SAFE_DEALLOCATE_P(recvcounts_)
+  endif
+  if (.not.present(displs)) then
+    SAFE_DEALLOCATE_P(displs_)
+  endif
+
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+%endfor
+
+
+!==============================================================================
+! Low-level implementations
+!==============================================================================
+
+!------------------------------------------------------------------------------
+! Bcast: str
+!------------------------------------------------------------------------------
+
+
+<%
+  sub = 'bcast'
+  dtype = 'str'
+  label = get_label(sub, dtype, 0)
+  dtype_mpi = dtype2MPI[dtype]
+  dtype_fortran = dtype2fortran[dtype]
+%>\
+subroutine ${label}(x, root, comm)
+  ${dtype_fortran}, intent(inout) :: x
+  integer, intent(in), optional :: root, comm
+
+  integer :: root_, comm_, ierr
+
+  PUSH_SUB(${label})
+
+#ifdef MPI
+  if (peinf%npes>1) then
+    root_ = get_optional_arg(0, root)
+    comm_ = get_optional_arg(MPI_COMM_WORLD, comm)
+%if sub=='bcast':
+    call MPI_Bcast(x, len(x), ${dtype_mpi}, root_, comm_, ierr)
+%endif
+    if (ierr/=0) call bgw_mpi_error('${label}', 'MPI_Bcast', ierr, comm, root)
+  endif
+#endif
+
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+
+!------------------------------------------------------------------------------
+! Bcast: int, real, complex, logical
+!------------------------------------------------------------------------------
+
+
+%for dtype in dtypes:
+<%
+  sub = 'bcast'
+  label = get_label(sub, dtype, 'lowlevel')
+  dtype_mpi = dtype2MPI[dtype]
+  dtype_fortran = dtype2fortran[dtype]
+%>\
+subroutine ${label}(x, siz, root, comm)
+  ${dtype_fortran}, intent(inout) :: x(*)
+  integer, intent(in) :: siz
+  integer, intent(in), optional :: root, comm
+
+  integer :: root_, comm_, ierr
+
+  PUSH_SUB(${label})
+
+#ifdef MPI
+  if (peinf%npes>1) then
+    root_ = get_optional_arg(0, root)
+    comm_ = get_optional_arg(MPI_COMM_WORLD, comm)
+    call MPI_Bcast(x, siz, ${dtype_mpi}, root_, comm_, ierr)
+    if (ierr/=0) call bgw_mpi_error('${label}', 'MPI_Bcast', ierr, comm, root)
+  endif
+#endif
+
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+%endfor
+
+!------------------------------------------------------------------------------
+! Gather: int, real, complex, logical
+!------------------------------------------------------------------------------
+
+%for dtype in dtypes:
+<%
+  sub = 'gather'
+  label = get_label(sub, dtype, 'lowlevel')
+  dtype_mpi = dtype2MPI[dtype]
+  dtype_fortran = dtype2fortran[dtype]
+%>\
+subroutine ${label}(x_in, x_out, siz, root, comm)
+  ${dtype_fortran}, intent(in) :: x_in(*)
+  ${dtype_fortran}, intent(out) :: x_out(*)
+  integer, intent(in) :: siz
+  integer, intent(in) :: root
+  integer, intent(in), optional :: comm
+
+  integer :: comm_, ierr
+
+  PUSH_SUB(${label})
+
+  if (peinf%npes>1) then
+#ifdef MPI
+    comm_ = get_optional_arg(MPI_COMM_WORLD, comm)
+    call MPI_Gather(x_in, siz, ${dtype_mpi}, &
+      x_out, siz, ${dtype_mpi}, comm_, root, ierr)
+    if (ierr/=0) call bgw_mpi_error('${label}', 'MPI_Allgather', ierr, comm, root)
+#endif
+  else
+    x_out(1:siz) = x_in(1:siz)
+  endif
+
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+%endfor
+
+!------------------------------------------------------------------------------
+! Allgather: int, real, complex, logical
+!------------------------------------------------------------------------------
+
+%for dtype in dtypes:
+<%
+  sub = 'allgather'
+  label = get_label(sub, dtype, 'lowlevel')
+  dtype_mpi = dtype2MPI[dtype]
+  dtype_fortran = dtype2fortran[dtype]
+%>\
+subroutine ${label}(x_in, x_out, siz, comm)
+  ${dtype_fortran}, intent(in) :: x_in(*)
+  ${dtype_fortran}, intent(out) :: x_out(*)
+  integer, intent(in) :: siz
+  integer, intent(in), optional :: comm
+
+  integer :: comm_, ierr
+
+  PUSH_SUB(${label})
+
+  if (peinf%npes>1) then
+#ifdef MPI
+    comm_ = get_optional_arg(MPI_COMM_WORLD, comm)
+    call MPI_Allgather(x_in, siz, ${dtype_mpi}, &
+      x_out, siz, ${dtype_mpi}, comm_, ierr)
+    if (ierr/=0) call bgw_mpi_error('${label}', 'MPI_Allgather', ierr, comm)
+#endif
+  else
+    x_out(1:siz) = x_in(1:siz)
+  endif
+
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+%endfor
+
+!------------------------------------------------------------------------------
+! Allgatherv: int, real, complex, logical
+!------------------------------------------------------------------------------
+
+%for dtype in dtypes:
+<%
+  sub = 'allgatherv'
+  label = get_label(sub, dtype, 'lowlevel')
+  dtype_mpi = dtype2MPI[dtype]
+  dtype_fortran = dtype2fortran[dtype]
+%>\
+subroutine ${label}(x_in, x_out, siz, recvcounts, displs, comm)
+  ${dtype_fortran}, intent(in) :: x_in(*)
+  ${dtype_fortran}, intent(out) :: x_out(*)
+  integer, intent(in) :: siz, recvcounts(*), displs(*)
+  integer, intent(in), optional :: comm
+
+  integer :: comm_, ierr
+
+  PUSH_SUB(${label})
+
+  if (peinf%npes>1) then
+#ifdef MPI
+    comm_ = get_optional_arg(MPI_COMM_WORLD, comm)
+    call MPI_Allgatherv(x_in, siz, ${dtype_mpi}, &
+      x_out, recvcounts, displs, ${dtype_mpi}, comm_, ierr)
+    if (ierr/=0) call bgw_mpi_error('${label}', 'MPI_Allgatherv', ierr, comm)
+#endif
+  else
+    x_out(1:siz) = x_in(1:siz)
+  endif
+
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+%endfor
+
+end module bgw_mpi_m

@@ -1,0 +1,18 @@
+#!/bin/bash -l
+
+#$ -pe mpi 24
+#$ -N test_BGW
+#$ -l h_rt=00:30:00
+
+cd $SGE_O_WORKDIR
+export BGW_TEST_MPI_NPROCS=24
+
+# Load environment modules
+. /usr/share/Modules/init/bash
+module purge
+module load mvapich2-2.1/intel
+
+export MPIEXEC="`which mpirun`"
+make check-parallel &> test.out
+
+echo "Exit status = $?"

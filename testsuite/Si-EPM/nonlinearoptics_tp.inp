@@ -1,0 +1,22 @@
+# absp.inp (Two Photon)
+
+two_photon_job
+
+# fine grid is used to actually do the diagonalization; here the bands
+# count down/up from the Fermi level (as appropriate)
+number_val_bands_fine 4
+number_cond_bands_fine 4
+
+# What type of operator do we use.  See explanation in diag code
+use_momentum
+polarization 0.0 0.0 1.0
+
+# If we have already calculated vmtxel_uf, read it in.
+#read_vmtxel_nl
+
+# In eV, width of Lorentzian broadening
+energy_resolution 0.025
+
+# Are the grids (fine from diag calc) to be expanded using symmetries?
+#use_symmetries_fine_grid
+#use_symmetries_shifted_grid

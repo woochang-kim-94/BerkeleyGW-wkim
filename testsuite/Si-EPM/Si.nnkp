@@ -1,0 +1,13 @@
+begin kpoints
+ 8
+   0.0 0.0 0.0
+   0.5 0.0 0.0
+   0.0 0.5 0.0
+   0.0 0.0 0.5
+   0.5 0.5 0.0
+   0.5 0.0 0.5
+   0.0 0.5 0.5
+   0.5 0.5 0.5
+end kpoints
+
+# note: we do not care about the rest of the nnkp file, actually.

@@ -1,0 +1,75 @@
+diff -rupN espresso-4.3.2_orig/PH/openfilq.f90 espresso-4.3.2/PH/openfilq.f90
+--- espresso-4.3.2_orig/PH/openfilq.f90	2012-10-09 16:36:57.172466000 -0700
++++ espresso-4.3.2/PH/openfilq.f90	2012-10-09 16:39:03.199783000 -0700
+@@ -15,7 +15,7 @@ SUBROUTINE openfilq()
+   USE kinds,          ONLY : DP
+   USE control_flags, ONLY : modenum
+   USE units_ph,       ONLY : iuwfc, iudwf, iubar, iucom, iudvkb3, &
+-                             iudrhous, iuebar, iudrho, iudyn, iudvscf, &
++                             iudrhous, iuebar, iudrho, iudyn, iudvscf, iudvscf_e, &
+                              lrwfc, lrdwf, lrbar, lrcom, lrdvkb3, &
+                              lrdrhous, lrebar, lrdrho, lint3paw, iuint3paw
+   USE io_files,       ONLY : tmp_dir, diropn
+@@ -146,14 +146,18 @@ SUBROUTINE openfilq()
+   ENDIF
+   !
+   !   An optional file for electron-phonon calculations containing deltaVscf
++  !   and an optional file with electric deltaVscf
+   !
+ 400 IF (fildvscf.NE.' ') THEN
+      iudvscf = 27
++     iudvscf_e = 35
+      IF ( me_pool == 0 ) THEN
+         IF(dvscf_dir.NE.' ') then
+            CALL diropn (iudvscf, fildvscf, lrdrho, exst, dvscf_dir)
++           CALL diropn (iudvscf_e, trim(fildvscf)//'.E', lrdrho, exst, dvscf_dir)
+         ELSE
+           CALL diropn (iudvscf, fildvscf, lrdrho, exst )
++          CALL diropn (iudvscf_e, trim(fildvscf)//'.E', lrdrho, exst )
+         ENDIF
+         IF (okpaw) THEN
+            filint=TRIM(fildvscf)//'_paw'
+diff -rupN espresso-4.3.2_orig/PH/phcom.f90 espresso-4.3.2/PH/phcom.f90
+--- espresso-4.3.2_orig/PH/phcom.f90	2012-10-09 16:36:57.176466000 -0700
++++ espresso-4.3.2/PH/phcom.f90	2012-10-09 16:39:22.704985000 -0700
+@@ -380,6 +380,7 @@ MODULE units_ph
+        iupdyn,    & ! the unit for the partial dynamical matrix
+        iunrec,    & ! the unit with the recover data
+        iudvscf,   & ! the unit where the delta Vscf is written
++       iudvscf_e, & ! the unit where the delta Vscf (electric) is written
+        iudrho,    & ! the unit where the delta rho is written
+        lrdrho,    & ! the length of the deltarho files
+        iucom,     & ! the unit of the bare commutator in US case
+diff -rupN espresso-4.3.2_orig/PH/solve_e.f90 espresso-4.3.2/PH/solve_e.f90
+--- espresso-4.3.2_orig/PH/solve_e.f90	2012-10-09 16:36:57.174466000 -0700
++++ espresso-4.3.2/PH/solve_e.f90	2012-10-09 16:39:13.843893000 -0700
+@@ -43,8 +43,8 @@ subroutine solve_e
+ 
+   USE eqv,                   ONLY : dpsi, dvpsi, eprec
+   USE units_ph,              ONLY : lrdwf, iudwf, lrwfc, iuwfc, lrdrho, &
+-                                    iudrho
+-  USE output,                ONLY : fildrho
++                                    iudrho, iudvscf_e
++  USE output,                ONLY : fildrho, fildvscf
+   USE control_ph,            ONLY : ext_recover, rec_code, &
+                                     lnoloc, nbnd_occ, convt, tr2_ph, nmix_ph, &
+                                     alpha_mix, lgamma_gamma, niter_ph, &
+@@ -393,6 +393,18 @@ subroutine solve_e
+ 
+   enddo
+ 155 continue
++
++! begin DAS. from solve_linter.f90 for phonons
++  if (convt) then
++    if (fildvscf.ne.' ') then
++      do ipol = 1, 3
++        call davcio_drho ( dvscfin(1,1,ipol), lrdrho, iudvscf_e, &
++          ipol, +1 )
++      end do
++    end if
++  endif
++! end DAS
++
+   deallocate (h_diag)
+   deallocate (aux1)
+   deallocate (dbecsum)

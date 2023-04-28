@@ -1,0 +1,85 @@
+diff -ur espresso-4.3.2/PP/plan_avg.f90 espresso-4.3.2-patch/PP/plan_avg.f90
+--- espresso-4.3.2/PP/plan_avg.f90	2011-07-14 04:22:39.000000000 -0400
++++ espresso-4.3.2-patch/PP/plan_avg.f90	2011-07-14 04:22:39.000000000 -0400
+@@ -123,10 +123,14 @@
+         ENDDO
+      ENDDO
+      !
++     CLOSE (UNIT = iunplot, STATUS = 'keep')
++     !
+   ENDIF
+   !
+   DEALLOCATE (plan)
+   DEALLOCATE (averag)
++  !
++  CALL stop_pp ( )
+ 
+ CONTAINS
+ !
+diff -ur espresso-4.3.2/PW/pw_restart.f90 espresso-4.3.2-patch/PW/pw_restart.f90
+--- espresso-4.3.2/PW/pw_restart.f90	2011-07-14 04:22:40.000000000 -0400
++++ espresso-4.3.2-patch/PW/pw_restart.f90	2011-07-14 04:22:40.000000000 -0400
+@@ -1981,9 +1981,15 @@
+       ierr = 0
+       IF ( lpw_read ) RETURN
+       !
+-      IF ( ionode ) &
++      IF ( ionode ) THEN
++         !
+          CALL iotk_open_read( iunpun, FILE = TRIM( dirname ) // '/' // &
+                             & TRIM( xmlpun ), IERR = ierr )
++         IF ( ierr > 0 ) &
++            CALL iotk_open_read( iunpun, FILE = TRIM( dirname ) // '/' // &
++                               & TRIM( xmlpun ) // '.bck', IERR = ierr )
++         !
++      END IF
+       !
+       CALL mp_bcast( ierr, ionode_id, intra_image_comm )
+       !
+@@ -2927,6 +2933,9 @@
+          !
+          CALL iotk_open_read( iunpun, FILE = TRIM( dirname ) // '/' // &
+                             & TRIM( xmlpun ), IERR = ierr )
++         IF ( ierr > 0 ) &
++            CALL iotk_open_read( iunpun, FILE = TRIM( dirname ) // '/' // &
++                               & TRIM( xmlpun ) // '.bck', IERR = ierr )
+          !
+       END IF
+       !
+diff -ur espresso-4.3.2/PW/setup.f90 espresso-4.3.2-patch/PW/setup.f90
+--- espresso-4.3.2/PW/setup.f90	2011-07-14 01:22:40.000000000 -0700
++++ espresso-4.3.2-patch/PW/setup.f90	2011-10-06 10:35:05.383930820 -0700
+@@ -83,6 +83,7 @@
+ #endif
+   USE funct,              ONLY : dft_is_meta, dft_is_hybrid, dft_is_gradient
+   USE paw_variables,      ONLY : okpaw
++  USE input_parameters,   ONLY : k_points
+ ! DCC
+ !  USE ee_mod,             ONLY : do_coarse, do_mltgrid
+ 
+@@ -91,7 +92,7 @@
+   !
+   INTEGER  :: na, nt, input_nks, is, ierr, ibnd, ik
+   LOGICAL  :: magnetic_sym
+-  REAL(DP) :: iocc, ionic_charge
++  REAL(DP) :: iocc, ionic_charge, norm
+   !
+   LOGICAL, EXTERNAL  :: check_para_diag
+   INTEGER, EXTERNAL :: set_Hubbard_l
+@@ -522,8 +523,15 @@
+      ! ... If some symmetries of the lattice are missing in the crystal,
+      ! ... "irreducible_BZ" computes the missing k-points.
+      !
+-     CALL irreducible_BZ (nrot, s, nsym, time_reversal, at, bg, npk, &
++     IF ( k_points == 'automatic' ) THEN ! unfold k-points only in this case
++       CALL irreducible_BZ (nrot, s, nsym, time_reversal, at, bg, npk, &
+                           nkstot, xk, wk, t_rev)
++     ELSE
++       ! normalize weights to one
++       !
++       norm = SUM (wk(1:nkstot))
++       if ( norm > 0.0D0 ) wk(1:nkstot) = wk(1:nkstot) / norm
++     END IF
+      !
+   END IF
+   !

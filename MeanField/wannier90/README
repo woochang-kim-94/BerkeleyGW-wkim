@@ -1,0 +1,27 @@
+wannier2bgw.py
+
+Wannier90 UNK file to BerkeleyGW WFN file converter
+Author: Zhenglu Li, 2022
+
+Functions:
+1) Convert Wannier90 preprocessing UNK files to BGW WFN. This allows
+   BerkeleyGW interfaces with ALL DFT codes which have interface to Wannier90
+
+2) Convert Wannier90-interpolated wavefunctions on arbitrary k-grids (patched,
+   high-symmetry lines, non-uniform, extremely fine, grids) to BGW WFN.
+
+   This funciton requires a modified version of Wannier90 to print out UWK files
+   with diagonalization coefficients. Gauge is consistent between W90 and BGW.
+
+   UWK file is the periodic part of Wannier-Bloch basis function on real-space FFT
+   grids.  This file can be obtained by modifications of Wannier90. 
+
+   Contact Zhenglu Li for the modified version of Wannier90 (lzlwell@berkeley.edu).
+
+3) Based on 2), with the modified version of Wannier90, one can use the outputs to 
+   modify EPW code. Therefore, EPW and BGW can use EXACTLY THE SAME interpolated
+   wavefunctions. This is useful since the interpolated electron-phonon matrix elements
+   from EPW and the interpolated BSE kernel matrix elements are in the SAME GAUGE.
+   This is critical for a number of calculations where the scattering amplitudes 
+   can be directly added together from different physical processes (e-ph, e-h).
+

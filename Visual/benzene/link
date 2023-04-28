@@ -1,0 +1,4 @@
+#
+ln -s ../../examples/DFT/pseudo/ld1/C.UPF ./C.UPF
+ln -s ../../examples/DFT/pseudo/ld1/H.UPF ./H.UPF
+#

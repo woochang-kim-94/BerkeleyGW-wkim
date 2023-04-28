@@ -1,0 +1,22 @@
+#
+# Index of state to be plotted, as it appears in eigenvectors
+#
+plot_state 26
+
+#
+# Size of supercell
+#
+supercell_size 1 1 8
+
+#
+# coordinates of hole, in units of lattice vectors
+# (usually, hole in the center of the supercell)
+#
+hole_position    0.0    0.0    0.10
+
+# EXPERIMENTAL FEATURES FOR TESTING PURPOSES ONLY
+# See comments in Common/checkbz.f90 for more details
+# Replace unfolded BZ with full BZ
+#fullbz_replace
+# Write unfolded BZ and full BZ to files
+#fullbz_write

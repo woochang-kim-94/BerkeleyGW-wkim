@@ -1,0 +1,18 @@
+#!/bin/bash -l
+
+#PBS -l nodes=1:ppn=12
+#PBS -N test_BGW
+#PBS -l walltime=02:00:00
+#PBS -V
+
+cd $PBS_O_WORKDIR
+
+export TEMPDIRPATH=$HOME/tmp
+
+export BGW_TEST_MPI_NPROCS=4
+module load mvapich2-2.0/intel
+export MPIEXEC="`which mpirun`"
+#export MPIEXEC="`which mpirun_rsh` -hostfile $PBS_NODEFILE"
+make check-parallel &> test.out
+
+echo "Exit status = $?"

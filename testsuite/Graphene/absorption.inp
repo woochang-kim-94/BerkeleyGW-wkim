@@ -1,0 +1,22 @@
+diagonalization
+
+number_val_bands_coarse 2
+number_val_bands_fine 2
+number_cond_bands_coarse 1
+number_cond_bands_fine 1
+
+use_symmetries_coarse_grid
+use_symmetries_fine_grid
+use_symmetries_shifted_grid
+
+screening_graphene
+cell_slab_truncation
+
+use_momentum
+polarization 1.0 1.0 0.0
+
+eqp_co_corrections
+
+lorentzian_broadening
+energy_resolution 0.05
+kernel_k_interpolation

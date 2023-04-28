@@ -1,0 +1,39 @@
+#!/bin/bash -l
+
+# FHJ: Test script for singularity runs. Many variables here are hard coded
+# due to the way we build our singularity images for the testsuite.
+
+ulimit -s unlimited
+export OMP_STACKSIZE=32M
+export LC_ALL=C
+export TEMPDIRPATH=/tmp
+
+# This is used by MVAPICH2
+export MV2_SMP_USE_CMA=0
+export MV2_ENABLE_AFFINITY=0
+
+# FHJ: User should ideally export MPIEXEC before running this script
+if [ -z "$MPIEXEC" ]; then
+	which omp_info &> /dev/null
+	if [ $? -eq 0 ]; then
+		# FHJ: OpenMPI runs considerably faster when we explicitly tell it to use
+		# sm btl. We also need to specify the isolated plm otherwise it complains
+		# that there is no ssh installed in the box.
+		export MPIEXEC="`which mpiexec` --mca btl sm,self --mca plm isolated"
+	else
+		export MPIEXEC="`which mpiexec`"
+	fi
+fi
+
+# FHJ: Default parameter for testsuite runs
+if [ -z "$OMP_NUM_THREADS" ]; then
+	export OMP_NUM_THREADS=2
+fi
+if [ -z "$BGW_TEST_MPI_NPROCS" ]; then
+	export BGW_TEST_MPI_NPROCS=2
+fi
+
+# FHJ: Don't put anything else after this line, otherwise the return code
+# of this script will be messed up!
+make check-parallel
+#

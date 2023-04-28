@@ -1,0 +1,45 @@
+================================================================================
+BerkeleyGW Doxygen documentation
+================================================================================
+
+  Version 2.0   (May, 2018)
+  To be announced.
+
+  Version 1.2   (Aug, 2016)
+  F. H. da Jornada, J. Deslippe, D. Vigil-Fowler, J. I. Mustafa, T. Rangel,
+  F. Bruneval, F. Liu, D. Y. Qiu, D. A. Strubbe, G. Samsonidze, J. Lischner.
+
+  Version 1.1   (June, 2014)
+  Version 1.0	(July, 2011) J. Deslippe, M. Jain, D. A. Strubbe, G. Samsonidze
+  Version 0.5	J. Deslippe, D. Prendergast, L. Yang, F. Ribeiro, G. Samsonidze (2008)
+  Version 0.2	M. L. Tiago, C. Spataru, S. Ismail-Beigi (2004)
+
+--------------------------------------------------------------------------------
+
+Description
+-----------
+
+ This directory automatically generates documentation for BerkeleyGW 
+using Doxygen. This is aimed towards developers, and end-users might
+as well just ignore this directory.
+
+ To create the documentation, simply type `make`. You`ll need doxygen and
+graphviz installed. Then open doxygen/html/index.html in a web browser.
+
+
+Obtaining Doxygen and Graphviz
+------------------------------ 
+
+ Doxygen and graphviz are available at:
+
+ http://www.doxygen.org/
+ http://www.graphviz.org/
+
+ Alternatively, if you have a Debian-based distribution, such as
+Ubuntu, you can ask your administrator to install the following packages:
+
+ apt-get install doxygen graphviz
+
+or on MacOS with MacPorts (www.macports.org):
+
+ port install doxygen graphviz

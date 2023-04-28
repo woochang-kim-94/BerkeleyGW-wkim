@@ -1,0 +1,50 @@
+Test: Si2 with SAPO (real)
+Enabled: Yes
+TestGroups : binary hdf5 serial parallel
+
+# This test was based on the Si2_sapo example. The only relevant change is
+# that the number of bands was decreased from 100 to 24, because
+# wfn_dotproduct.x computes (Nb)^2 overlaps.
+#
+# Felipe H. da Jornada, May 2014, Berkeley
+
+Unpack: wfns.tar.xz
+
+Executable: mf_convert_wrapper.sh
+Processors: serial
+Arguments: wfn.real.ascii wfn.real > wfn.real.out
+
+Executable: mf_convert_wrapper.sh
+Processors: serial
+Arguments: wfn.real.sapo.ref.ascii wfn.real.sapo.ref > wfn.real.sapo.ref.out
+
+# TODO: We should convert these files from ascii to binary.
+Copy: vkb.complex
+Copy: vsc.real
+
+Executable: sapo.real.x
+Processors: 4
+Output: sapo.out
+Input: sapo.inp
+
+Precision: 1e-4
+match ; Maximum deviation from orthonormality; GREP(sapo.out, "max ( < nk | mk > - delta_nm )", 12); 0.0
+
+Executable: wfn_dotproduct.x
+Processors: serial
+Arguments: B wfn.real.sapo.ref wfn.real.sapo > wfn_dotproduct.out
+
+Copy: analyze_dotproduct.py
+
+# All norms should match to within 1e-4
+Command: python analyze_dotproduct.py wfn_dotproduct.out > analyze.out
+
+Precision: 1e-4
+match ; Max error in overlap, k-point 1; GREP(analyze.out, "error for k-point 1", 8); 0.0
+match ; Max error in overlap, k-point 2; GREP(analyze.out, "error for k-point 2", 8); 0.0
+match ; Max error in overlap, k-point 3; GREP(analyze.out, "error for k-point 3", 8); 0.0
+match ; Max error in overlap, k-point 4; GREP(analyze.out, "error for k-point 4", 8); 0.0
+match ; Max error in overlap, k-point 5; GREP(analyze.out, "error for k-point 5", 8); 0.0
+match ; Max error in overlap, k-point 6; GREP(analyze.out, "error for k-point 6", 8); 0.0
+match ; Max error in overlap, k-point 7; GREP(analyze.out, "error for k-point 7", 8); 0.0
+match ; Max error in overlap, k-point 8; GREP(analyze.out, "error for k-point 8", 8); 0.0

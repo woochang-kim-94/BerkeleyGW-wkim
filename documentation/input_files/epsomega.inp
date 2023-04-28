@@ -1,0 +1,11 @@
+eps0mat      ! epsmat file, full-frequency or static
+RHO          ! RHO file for Plasmon-Pole
+0.0 0.0 0.0  ! q-vector in crystal coordinates
+1 0 0        ! G-vector in crystal coordinates
+1 0 0        ! G`-vector in crystal coordinates
+201          ! nFreq, for static epsmat. For full-freq., overwritten from file
+0.5          ! dDeltaFreq in eV, in case of static epsmat. See above.
+2.0          ! dBrdning in eV, in case of static epsmat. See above.
+epsPP.dat    ! Plasmon-Pole epsilon, Re and Im parts
+epsR.dat     ! Retarded epsilon, Re and Im parts
+epsA.dat     ! Advanced epsilon, Re and Im parts

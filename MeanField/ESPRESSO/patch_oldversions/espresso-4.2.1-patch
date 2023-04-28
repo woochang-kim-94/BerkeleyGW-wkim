@@ -1,0 +1,48 @@
+diff -ur espresso-4.2.1/PP/plan_avg.f90 espresso-4.2.1-patch/PP/plan_avg.f90
+--- espresso-4.2.1/PP/plan_avg.f90	2010-03-17 07:13:31.000000000 -0700
++++ espresso-4.2.1-patch/PP/plan_avg.f90	2010-05-11 16:56:22.000000000 -0700
+@@ -118,10 +118,14 @@
+         ENDDO
+      ENDDO
+      !
++     CLOSE (UNIT = iunplot, STATUS = 'keep')
++     !
+   ENDIF
+   !
+   DEALLOCATE (plan)
+   DEALLOCATE (averag)
++  !
++  CALL stop_pp ( )
+ 
+ CONTAINS
+ !
+diff -ur espresso-4.2.1/PW/pw_restart.f90 espresso-4.2.1-patch/PW/pw_restart.f90
+--- espresso-4.2.1/PW/pw_restart.f90	2010-06-18 01:30:44.000000000 -0700
++++ espresso-4.2.1-patch/PW/pw_restart.f90	2010-07-25 23:59:03.000000000 -0700
+@@ -1905,9 +1905,15 @@
+       ierr = 0
+       IF ( lpw_read ) RETURN
+       !
+-      IF ( ionode ) &
++      IF ( ionode ) THEN
++         !
+          CALL iotk_open_read( iunpun, FILE = TRIM( dirname ) // '/' // &
+                             & TRIM( xmlpun ), IERR = ierr )
++         IF ( ierr > 0 ) &
++            CALL iotk_open_read( iunpun, FILE = TRIM( dirname ) // '/' // &
++                               & TRIM( xmlpun ) // '.bck', IERR = ierr )
++         !
++      END IF
+       !
+       CALL mp_bcast( ierr, ionode_id, intra_image_comm )
+       !
+@@ -2799,6 +2805,9 @@
+          !
+          CALL iotk_open_read( iunpun, FILE = TRIM( dirname ) // '/' // &
+                             & TRIM( xmlpun ), IERR = ierr )
++         IF ( ierr > 0 ) &
++            CALL iotk_open_read( iunpun, FILE = TRIM( dirname ) // '/' // &
++                               & TRIM( xmlpun ) // '.bck', IERR = ierr )
+          !
+       END IF
+       !

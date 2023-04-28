@@ -1,0 +1,84 @@
+.keyword-group {
+background-color: #fafafa;
+padding: 10px;
+/*box-shadow: 0 0 3px #a0a0a0;*/
+box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+border-radius: 0.1rem;
+padding-bottom: 1px;
+}
+
+.h5-spec-group {
+/*
+padding-top: 10px;
+padding-bottom: 10px;
+padding-right: 10px;
+*/
+/*
+border-left: 2px solid rgb(200,200,200);
+padding-left: 10px;
+*/
+line-height: 1.4;
+
+background-color: #fafafa;
+padding-left: 10px;
+padding-top: 10px;
+padding-bottom: 10px;
+/*box-shadow: 0 0 3px #a0a0a0;*/
+box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+border-radius: 0.1rem;
+margin-top: 20px;
+margin-bottom: 20px;
+}
+
+.h5-spec-group p {
+margin: 0px;
+}
+
+.h5-spec-group-desc {
+/*
+padding-top: 10px;
+padding-bottom: 10px;
+*/
+padding: 0px;
+}
+
+.h5-spec-dataset-desc {
+margin-top: 20px;
+margin-bottom: 20px;
+padding-left: 5px;
+border-left: 1px solid rgb(200,200,200);
+}
+
+.h5-spec-group-children {
+margin-left: 40px;
+}
+
+.h5-path-parent {
+font-color: rgb(200,200,200);
+}
+
+.h5-path-mine {
+font-color: black;
+font-weight: bold;
+}
+
+.h5-keyword {
+font-weight: bolder;
+color: rgb(150,150,150);
+}
+
+/*
+.code {
+border: 1px solid rgb(180,180,180);
+border-radius: 0.2rem;
+padding: 0px 1px 0px 1px;
+}
+.md-typeset code {
+border: 1px solid rgb(180,180,180);
+border-radius: 0.2rem;
+padding: 0px 1px 0px 1px;
+}
+*/
+.md-typeset code {
+background-color: white;
+}

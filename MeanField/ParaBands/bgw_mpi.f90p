@@ -1,0 +1,89 @@
+! ${mako_signature}
+! ${dont_edit}
+
+#include "f_defs.h"
+
+<%
+  import itertools
+  dtypes = ('int', 'real', 'complex', 'logical')
+  ranks = range(8)
+  dtype2fortran = {
+    'int': 'integer',
+    'real': 'real(DP)',
+    'complex': 'complex(DPC)',
+    'logical': 'logical'
+  }
+  dtype2MPI = {
+    'int': 'MPI_INTEGER',
+    'real': 'MPI_REAL_DP',
+    'complex': 'MPI_COMPLEX_DPC',
+    'logical': 'MPI_LOGICAL'
+  }
+  def rank2array(rank):
+    if rank==0:
+      return ''
+    else:
+      return '(' + ','.join([':']*rank) + ')'
+%>\
+
+module bgw_mpi_m
+
+  use global_m
+
+  implicit none
+
+  interface bgw_bcast
+    module procedure &
+%for dtype, rank in itertools.product(dtypes, ranks):
+%if loop.index>0:
+, &
+%endif
+      bgw_bcast_${dtype}${rank}\
+%endfor
+
+  end interface
+
+  public :: bgw_bcast
+
+contains
+
+%for dtype, rank in itertools.product(dtypes, ranks):
+
+subroutine bgw_bcast_${dtype}${rank}(x, root, comm)
+  ${dtype2fortran[dtype]}, intent(inout) :: x${rank2array(rank)}
+  integer, intent(in), optional :: root, comm
+
+  integer :: root_, comm_, error
+
+  PUSH_SUB(bgw_bcast_${dtype}${rank})
+
+#ifdef MPI
+  if (peinf%npes>1) then
+    root_ = 0
+    comm_ = MPI_COMM_WORLD
+    if (present(root)) root_ = root
+    if (present(comm)) comm_ = comm
+    %if rank>0:
+    call MPI_Bcast(x, size(x), ${dtype2MPI[dtype]}, root_, comm_, error)
+    %else:
+    call MPI_Bcast(x, 1, ${dtype2MPI[dtype]}, root_, comm_, error)
+    %endif
+    if (error/=0) then
+      if ((peinf%inode==root_.and.comm_==MPI_COMM_WORLD) .or. &
+        comm_/=MPI_COMM_WORLD) then
+        write(0,'(/a)') 'Error in bgw_bcast_${dtype}${rank}:'
+        write(0,'(a,i0/)') 'In call to MPI_Bcast, got error=',error
+      endif
+      call die('Got error/=0 for MPI_Bcast in bgw_bcast_${dtype}${rank}', &
+        only_root_writes=comm_==MPI_COMM_WORLD)
+    endif
+  endif
+#endif
+
+  POP_SUB(bgw_bcast_${dtype}${rank})
+
+end subroutine bgw_bcast_${dtype}${rank}
+
+%endfor
+
+end module bgw_mpi_m

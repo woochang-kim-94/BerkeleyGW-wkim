@@ -1,0 +1,15 @@
+number_bands 36
+
+band_index_min 1
+band_index_max 16
+
+screening_semiconductor
+
+begin kpoints
+  0.000000000  0.000000000  0.000000000   1.0
+  0.000000000  0.000000000  0.500000000   1.0
+  0.000000000  0.500000000  0.500000000   1.0
+end
+
+exact_static_ch 1
+dont_use_vxcdat

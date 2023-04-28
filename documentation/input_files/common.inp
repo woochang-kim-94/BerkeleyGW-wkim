@@ -1,0 +1,66 @@
+# ### Truncation schemes for the Coulomb potential
+#
+# Since BerkerleyGW is a plane-wave-based code, one must
+# truncate the Coulomb potential to avoid spurious interactions
+# between repeated supercells when dealing with systems with reduced
+# dimensionality. Make sure you understand how to setup your mean-field
+# calculation so that the supercell is large enough to perform a
+# truncation of the Coulomb potential.
+#
+#
+# Truncate the Coulomb potential based on the Wigner-Seitz cell.
+# This is the recommended truncation for 0D systems.
+#cell_box_truncation
+#
+# Truncation scheme for 1D systems, such as carbon nanotubes. The
+# $z$ direction is assumed to be periodic, and $x$ and $y$ confined.
+#cell_wire_truncation
+#
+# Truncation scheme for 2D systems, such as graphene or monolayer
+# MoS2. The $z$ direction is assumed to be confined, and $x$ and $y$
+# periodic.
+#cell_slab_truncation
+#
+# Truncate the Coulomb potential based on an analytical scheme.
+# This is ok for quasi-spherical systems, such as CH4 molecule or C60,
+# but the [[cell_box_truncation]] is the most general and recommended
+# scheme. When using spherical truncation, you must also specify the
+# radius for the truncation in [[spherical_truncation]].
+#spherical_truncation
+#
+# This specifies the radius of for spherical truncation, in Bohr,
+# so that the Coulomb potential $v(r)$ is zero for $r$ larger than
+# these values. This flag is to be used together with [[spherical_truncation]].
+#coulomb_truncation_radius   10.00
+
+
+# Specify the Fermi level (in eV), if you want implicit doping
+# Note that value refers to energies *after* scissor shift or eqp corrections.
+# See also [[fermi_level_absolute]] and [[fermi_level_relative]] to control
+# the meaning of the Fermi level.
+#fermi_level             0.0
+
+# The Fermi level in keyword [[fermi_level]] can be treated as an absolute
+# value or relative to that found from the mean field (default)
+#
+#
+#fermi_level_absolute
+#fermi_level_relative
+
+
+# Read from traditional simple binary format for epsmat/eps0mat instead of HDF5 file format.
+# Relevant only if code is compiled with HDF5 support.
+#dont_use_hdf5
+
+
+# Verbosity level, options are:
+#
+# - 1: default
+# - 2: medium - info about k-points, symmetries, and eqp corrections.
+# - 3: high   - full dump of the reduced and unfolded k-points.
+# - 4: log    - log of various function calls. Use to debug code.
+# - 5: debug  - extra debug statements. Use to debug code.
+# - 6: max    - only use if instructed to, severe performance downgrade.
+# Note that verbosity levels are cumulative. Most users will want to stick
+# with level 1 and, at most, level 3. Only use level 4+ if debugging the code.
+#verbosity 1

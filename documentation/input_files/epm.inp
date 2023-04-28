@@ -1,0 +1,101 @@
+# BEWARE: you cannot comment out tags with # in EPM!
+# any occurrence of a tag will be found and read.
+
+# These parameters are only for epm2bgw
+real_or_complex 1        # 1 = real, 2 = complex. default is complex. 
+wfng_flag T              # Write wavefunction file (default F)
+wfng_file WFN            # filename (default WFN)
+KPointNumbers 5 5 5      # number of points in k-grid in each direction b1,b2,b3
+KPointOffsets 0.5 0.5 0.5 # shift in k-grid in each direction b1,b2,b3
+rhog_flag T              # Write density file (default F)
+rhog_file RHO            # filename (default RHO)
+vxcg_flag T              # Write xc potential file (default F)
+vxcg_file VXC            # filename (default VXC)
+vxc_flag T               # Write VXC matrix element file (default F)
+vxc_file vxc.dat         # filename (default vxc.dat)
+vxc_diag_nmin 1          # minimum band to write diagonal matrix elements (default 0)
+vxc_diag_nmax 8          # maximum band to write diagonal matrix elements (default 0)
+vxc_offdiag_nmin 1       # minimum band to write off-diagonal matrix elements (default 0)
+vxc_offdiag_nmax 8       # maximum band to write off-diagonal matrix elements (default 0)
+disable_symmetries F     # set to true to write no symmetries (default F)
+# EPM does not really do a spin-polarized calculation, but can write two copies of everything
+nspin 1                  # set to 2 to write spin up and spin down (default 1)
+temperature 0            # kT in eV for Fermi-Dirac distribution occupations (only for BerkeleyGW output)
+                         # The Fermi level is taken as the mid-gap.
+FFTGrid 16 16 16         # FFT grid for computing density (default: determined from EnergyCutoff)
+
+# These parameters are common to epm and epm2bgw
+# Set form factor parameters (see examples in form_factors.dat),
+# or default is to use V(q) from atomPotentialMod (only for H,Si,Ga,As)
+FormFactors 5.43  -0.224  0.055  0.072  0.000  0.000  0.000
+
+# 0 is for LAPACK direct diagonalization (default), 1 for conjugate gradients
+DiagonalizationSwitch 0
+AbsoluteTolerance -1.0d0  # tolerance for LAPACK diagonalization (default -1 means machine precision)
+CGIterationPeriod 5       # parameter for conjugate gradients (default 3)
+CGTolerance 1.0d-10       # parameter for conjugate gradients (1d-5)
+
+InputEnergiesInEV          # Rydberg is default
+EnergyCutoff 11.0          # plane-wave cutoff for the potential (and wavefunctions)
+
+NumberOfDimensions 3              # dimensionality of the system (default 3)
+#LatticeConstantFormat Angstrom   # default is Bohr
+LatticeConstant 10.2612           # in units given above
+LatticeVectors                    # in lattice constant units
+0.0 0.5 0.5
+0.5 0.0 0.5
+0.5 0.5 0.0
+
+NumberOfAtoms 2
+NumberOfSpecies 1
+ChemicalSpeciesLabel              # index, atomic number, name
+1 14 Si
+AtomicCoordinatesFormat ScaledByLatticeVectors
+  # ScaledByLatticeVectors (default) is in crystal coordinates
+  # ScaledCartesian is in units of LatticeConstant
+AtomicCoordinatesAndAtomicSpecies  # x, y, z, species index
+-0.125 -0.125 -0.125 1
+ 0.125  0.125  0.125 1
+
+NumberOfBands 8
+NumberOfOccupiedBands 4      # note: you cannot really do metals, occupations are fixed.
+
+KPointsScale ReciprocalLatticeVectors # default; other choice is TwoPi/a
+KPointsList 19          # number of k-points supplied
+  0.100000000  0.100000000  0.100000000  2.0  # kx, ky, kz, weight (will be renormalized)
+  0.100000000  0.100000000  0.300000000  6.0
+  0.100000000  0.100000000  0.500000000  6.0
+  0.100000000  0.100000000  0.700000000  6.0
+  0.100000000  0.100000000  0.900000000  6.0
+  0.100000000  0.300000000  0.300000000  6.0
+  0.100000000  0.300000000  0.500000000 12.0
+  0.100000000  0.300000000  0.700000000 12.0
+  0.100000000  0.300000000  0.900000000 12.0
+  0.100000000  0.500000000  0.500000000  6.0
+  0.100000000  0.500000000  0.700000000 12.0
+  0.100000000  0.500000000  0.900000000  6.0
+  0.100000000  0.700000000  0.700000000  6.0
+  0.300000000  0.300000000  0.300000000  2.0
+  0.300000000  0.300000000  0.500000000  6.0
+  0.300000000  0.300000000  0.700000000  6.0
+  0.300000000  0.500000000  0.500000000  6.0
+  0.300000000  0.500000000  0.700000000  6.0
+  0.500000000  0.500000000  0.500000000  1.0
+
+# for plotting band structures; used if KPointsList not present
+NumberOfLines 4
+NumberOfDivisions 20
+KPointsScale ReciprocalLatticeVectors # same as above
+KPointsAndLabels
+0.500 0.500 0.500 L
+0.000 0.000 0.000 G
+0.500 0.000 0.500 X
+0.625 0.250 0.625 U
+0.000 0.000 0.000 G
+
+# These parameters are only for epm. Find band gap and effective mass.
+gap_flag F              # default F
+gap_file bandgap.dat    # filename (default gap.dat)
+# Note: effective mass only works for silicon-like band structures.
+mass_flag F             # default F
+mass_file effmass.dat   # filename (default mass_file)

@@ -1,0 +1,144 @@
+================================================================================
+BSE code: Absorption
+================================================================================
+
+  Version 1.2   (Aug, 2016)
+  F. H. da Jornada, J. Deslippe, D. Vigil-Fowler, J. I. Mustafa, T. Rangel,
+  F. Bruneval, F. Liu, D. Y. Qiu, D. A. Strubbe, G. Samsonidze, J. Lischner.
+
+  Version 1.1   (June, 2014)
+  Version 1.0	(July, 2011) J. Deslippe, M. Jain, D. A. Strubbe, G. Samsonidze
+  Version 0.5	J. Deslippe, D. Prendergast, L. Yang, F. Ribeiro, G. Samsonidze (2008)
+  Version 0.2	M. L. Tiago, C. Spataru, S. Ismail-Beigi (2004)
+
+--------------------------------------------------------------------------------
+
+Description:
+
+This code is the second half of the BSE code.  It interpolates the coarse grid
+electron-hole kernel onto the fine grid and then diagonalized the BSE equation.
+The output is the electron-hole eigenfunctions and eigenvalues as well the
+absorption spectra.
+
+--------------------------------------------------------------------------------
+
+Required Input:
+
+	absorption.inp	Input parameters.  See detailed explanation below.
+	WFN_fi		Wavefunctions in unshifted fine grid
+			(conduction and valence for momentum operator,
+			conduction for velocity operator).
+	WFNq_fi		Wavefunctions in shifted fine grid
+			(not needed for momentum operator,
+			valence for velocity operator).
+	WFN_co		Wavefunctions on unshifted coarse grid.
+			Must be the same as used for Kernel.
+#BEGIN_INTERNAL_ONLY
+	WFNq_co 	Coarse grid wavefunctions for Finite Q.
+#END_INTERNAL_ONLY
+	eps0mat(.h5)	Must be same as used in Kernel.
+			The file has a ".h5" extension if the code is compiled
+			with HDF5 support (for specification, see epsmat.h5.spec).
+	epsmat(.h5)	Must be same as used in Kernel.
+			The file has a ".h5" extension if the code is compiled
+			with HDF5 support (for specification, see epsmat.h5.spec).
+
+	bsedmat		BSE matrix elements in coarse grid, direct part. This
+			should be generated with Kernel code using same WFN_co.
+	bsexmat		BSE exchange matrix elements.  This should be generated
+			with Kernel code using same WFN_co.
+
+	or
+
+	bsemat.h5	Includes data from both of above if compiled with HDF5 support.
+			For specification, see bsemat.h5.spec. Note that
+			you can use the bsemat_hdf5_upgrade.py utility to
+			upgrade a bsemat.h5 file generated with BerkeleyGW
+			prior to 1.2 (r6974).
+
+Additional Input:
+
+	eqp.dat		A list of quasiparticle energy corrections for the bands in WFN_fi.
+                        Used if eqp_corrections is set in absorption.inp.
+	eqp_q.dat	A list of quasiparticle energy corrections for the bands in WFNq_fi.
+                        Used if eqp_corrections is set in absorption.inp.
+	eqp_co.dat	A list of quasiparticle energy corrections for the bands in WFN_co.
+                        Used if eqp_co_corrections is set in absorption.inp.
+
+	kpoints		A list of k-points in unshifted fine grid. EXPERIMENTAL.
+			If absent k-points from WFN_fi file are used.
+	kpoints_co	A list of k-points in unshifted coarse grid. EXPERIMENTAL.
+			If absent k-points from WFN_co file are used.
+
+Auxiliary Files: (output files from previous runs - used as input to speed up calculation)
+
+	dtmat		Transformation matrices, dcc/dvv use for interpolation
+			between coarse and fine grid.  This file must be consistent
+			with your bsedmat and bsexmat files and corresponding
+			coarse and fine wavefunctions.
+			NOTE: the file format for dtmat was changed in BerkeleyGW 1.1.0	(r5961)
+	vmtxel		Optical matrix elements (velocity or momentum) between
+			single particle states.
+	epsdiag.dat	Diagonal elements of dielectric matrix on the q-grid.
+			Must be consistent with epsmat and eps0mat.
+	eigenvalues.dat	Contains electron-hole eigenvalues and transition matrix elements.
+
+
+--------------------------------------------------------------------------------
+
+	absorption.inp	Please see example absorption.inp in this directory
+			for more complete options.
+
+--------------------------------------------------------------------------------
+
+Output Files:
+
+	eigenvalues.dat	  	Has eigenvalues/transition matrix elements of e-h states,
+			  	eigenvalues in eV, mtxels in atomic units.
+	eigenvalues_noeh.dat	As above but for non-interacting e-h transitions, showing
+                                k-point, bands, and spin for each.
+	eigenvectors	  	Has the excitonic wavefunctions in Bloch space: A_svck 
+	absorption_eh.dat	Dielectric function and density of excitonic states.
+			  	Four Columns
+			  	energy (in eV) | epsilon_2 | epsilon_1 | DOS
+			 	DOS is normalized (\int (DOS) d(omega) = 1)
+	absorption_noeh.dat	Non-interacting (RPA) dielectric function and joint density
+				of states.  Four columns:
+				energy (in eV) | epsilon_2 | epsilon_1 | JDOS
+				JDOS is normalized (\int (JDOS) d(omega) = 1)
+        dvmat_norm.dat		The norms of the dvv overlap matrices between the valence 
+                        	band k on the fine grid and the closest k-point on the coarse grid
+        dcmat_norm.dat		The norms of the dcc overlap matrices between the conduction
+                        	band k on the fine grid and the closest k-point on the coarse grid
+	eqp.dat, eqp_q.dat      Quasiparticle corrections for WFN_fi and WFNq_fi interpolated from
+                                the coarse grid if eqp_co_corrections is used.
+        bandstructure.dat       Same as eqp.dat and eqp_q.dat but in a format suitable for plotting
+                                as a bandstructure.
+
+--------------------------------------------------------------------------------
+
+Tricks and hints:
+
+1. To optimize distribution of work among PEs, choose the number of
+PEs so that Nk*Nc*Nv in the fine grid is a multiple of the
+number of PEs. The parallelization is first done over over k-points.
+
+2. The Brillouin zone is built using a Wigner-Seitz construction;
+this way the head matrix elements are easily calculated.
+
+3. Check if the transformation matrices have norm close to 1! They
+are usually normalized (look at the end of intwfn.f90). The norms are in
+the files dvmat_norm.dat and dcmat_norm.dat.
+ 
+4. Unfolding of irreducible BZ: if you want to skip the unfolding and
+use the set of k-points in WFN_fi as a sampling of the whole BZ, specify
+the no_symmetries_* options in absorption.inp.
+
+5. The "number_eigenvalues" keyword: using this keyword tells the code 
+to store only the first nn eigenvalues/eigenvectors. So far, this option 
+is implemented only with the SCALAPACK diagonalization routines. 
+
+6.  Analyzing eigenvectors.  We have a tool called summarize_eigenvectors to read in
+and analyze eigenvectors for a group of exciton states.  For specific states
+specified, it sums the total contribution from each k-point.
+Please see the example input summarize_eigenvectors.inp.

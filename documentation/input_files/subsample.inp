@@ -1,0 +1,18 @@
+5                        ! Total number of subsampled k-points in each file
+4                        ! Number of files (should be one file per coarse point)
+0.00000 0.00000 0.00000  ! list of k-points
+0.00000 0.50000 0.00000
+0.50000 0.00000 0.00000
+0.50000 0.50000 0.00000
+1/bsemat.h5              ! List of subsampled bsemat.h5 file names and path
+2/bsemat.h5              ! must be in same order as k-point list
+3/bsemat.h5
+4/bsemat.h5
+1/WFN_co                 ! List of subsampled wavefunction file names and path
+2/WFN_co                 ! must be in same order as k-point list
+3/WFN_co
+4/WFN_co
+1/WFNq_co                 ! Optional: List of shifted subsampled wavefunction file names and paths
+2/WFNq_co                 ! Only used with finite Q calculation
+3/WFNq_co
+4/WFNq_co

@@ -1,0 +1,22 @@
+
+This directory contains patches for older versions of espresso that fixes bugs 
+listed below. Assuming BerkeleyGW is installed in $BGWPATH/BerkeleyGW,
+to apply the patch execute the following command 
+in the directory containing the espresso-xxx directory:
+
+% patch -p0 -i $BGWPATH/BerkeleyGW/MeanField/ESPRESSO/patch_oldversions/espresso-xxx-patch
+
+espresso buglist:
+
+(1) <<< THIS IS FIXED IN QUANTUM ESPRESSO 5.0 >>>
+If you run espresso nscf calculation with startingwfc set to file 
+you may get error message saying "cannot read wfc : file not found". 
+This happens because subroutine verify_tmpdir in PW/input.f90 renames 
+data-file.xml to data-file.xml.bck and subroutines read_planewaves and 
+read_wavefunctions in PW/pw_restart.f90 try to read from data-file.xml 
+which doesn't exist. To get around this problem read from .xml.bck in 
+read_planewaves and read_wavefunctions if opening .xml returns error.
+
+(2) <<< THIS IS FIXED IN QUANTUM ESPRESSO 5.0 >>>
+Missing "CALL stop_pp ( )" at the end of PP/plan_avg.f90 causes it 
+to crash sometimes.

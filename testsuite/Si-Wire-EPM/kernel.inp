@@ -1,0 +1,8 @@
+number_val_bands 3
+number_cond_bands 4
+
+cell_wire_truncation
+
+use_symmetries_coarse_grid
+
+screening_semiconductor

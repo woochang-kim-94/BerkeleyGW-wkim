@@ -1,0 +1,69 @@
+# This file contains all the references for the BerkeleyGW code in a text
+# format. It gets transformed into a Fortran file "references.f90" by the
+# preprocessing in "references.f90p".
+#
+# Instructions:
+# 1) The format of this file is "REFERECE_LABEL:", where the
+#    colon is mandatory.
+# 2) Generate the formatted reference for a new paper by going to
+#    https://citation.crosscite.org/, pasting the paper DOI, and selecting
+#    "american-physics-society" as the formatting style.
+# 3) After you finished editting the file, run `dev-scripts/mako_preprocess.py`
+
+
+Deslippe2012:
+J. Deslippe, G. Samsonidze, D. A. Strubbe, M. Jain, M. L. Cohen, and S. G. Louie, BerkeleyGW: A Massively Parallel Computer Package for the Calculation of the Quasiparticle and Optical Properties of Materials and Nanostructures, Computer Physics Communications 183, 1269 (2012).
+
+Hybertsen1986:
+M. S. Hybertsen and S. G. Louie, Electron Correlation in Semiconductors and Insulators: Band Gaps and Quasiparticle Energies, Phys. Rev. B 34, 5390 (1986).
+
+Rohlfing2000:
+M. Rohlfing and S. G. Louie, Electron-Hole Excitations and Optical Spectra from First Principles, Phys. Rev. B 62, 4927 (2000).
+
+IsmailBeigi2016:
+S. Ismail-Beigi, Truncation of Periodic Image Interactions for Confined Systems, Phys. Rev. B 73, 233103 (2006).
+
+Samsonidze2011:
+G. Samsonidze, M. Jain, J. Deslippe, M. L. Cohen, and S. G. Louie, Simple Approximate Physical Orbitals For GW Quasiparticle Calculations, Phys. Rev. Lett. 107, 186404 (2011).
+
+Deslippe2013:
+J. Deslippe, G. Samsonidze, M. Jain, M. L. Cohen, and S. G. Louie, Coulomb-Hole Summations and Energies For GW calculations with Limited Number of Empty Orbitals: A Modified Static Remainder Approach, Phys. Rev. B 87, 165124 (2013).
+
+Liu2015:
+F. Liu, L. Lin, D. Vigil-Fowler, J. Lischner, A. F. Kemper, S. Sharifzadeh, F. H. da Jornada, J. Deslippe, C. Yang, J. B. Neaton, and S. G. Louie, Numerical Integration for Ab Initio Many-Electron Self Energy Calculations within the GW Approximation, Journal of Computational Physics 286, 1 (2015).
+
+Qiu2015:
+D. Y. Qiu, T. Cao, and S. G. Louie, Nonanalyticity, Valley Quantum Phases, and Lightlike Exciton Dispersion in Monolayer Transition Metal Dichalcogenides: Theory and First-Principles Calculations, Phys. Rev. Lett. 115, (2015).
+
+Shao2016:
+M. Shao, F. H. da Jornada, C. Yang, J. Deslippe, and S. G. Louie, Structure Preserving Parallel Algorithms for Solving the Bethe-Salpeter Eigenvalue Problem, Linear Algebra and Its Applications 488, 148 (2016).
+
+Jornada2017:
+F. H. da Jornada, D. Y. Qiu, and S. G. Louie, Nonuniform Sampling Schemes of the Brillouin Zone for Many-Electron Perturbation-Theory Calculations in Reduced Dimensionality, Phys. Rev. B 95, 035109 (2017).
+
+Shao2018:
+M. Shao, F. H. da Jornada, L. Lin, C. Yang, J. Deslippe, and S. G. Louie, A Structure Preserving Lanczos Algorithm for Computing the Optical Absorption Spectrum, SIAM J. Matrix Anal. & Appl. 39, 683 (2018).
+
+DelBen2019Subspace:
+M. Del Ben, F. H. da Jornada, G. Antonius, T. Rangel, S. G. Louie, J. Deslippe, and A. Canning, Static Subspace Approximation for the Evaluation of G0W0 Quasiparticle Energies within a Sum-over-Bands Approach, Phys. Rev. B 99, 125128 (2019).
+
+DelBen2019LargeScale:
+M. Del Ben, F. H. da Jornada, A. Canning, N. Wichmann, K. Raman, R. Sasanka, C. Yang, S. G. Louie, and J. Deslippe, Large-Scale GW Calculations on Pre-Exascale HPC Systems, Computer Physics Communications 235, 187 (2019).
+
+Jornada2020:
+F. H. da Jornada, L. Xian, A. Rubio, and S. G. Louie, Universal Slow Plasmons and Giant Field Enhancement in Atomically Thin Quasi-Two-Dimensional Metals, Nat Commun 11, 1013 (2020).
+
+Li2019:
+Z. Li, G. Antonius, M. Wu, F. H. da Jornada, and S. G. Louie, Electron-Phonon Coupling from Ab Initio Linear-Response Theory within the GW Method: Correlation-Enhanced Interactions and Superconductivity in Ba1-xKxBiO3, Phys. Rev. Lett. 122, 186402 (2019).
+
+Barker2018:
+B. A. Barker, and S. G. Louie, Electronic and Optical Properties of Solids with Strong Spin-Orbit Coupling, U. C. Berkeley PhD dissertation (2018).
+
+Wu2020:
+M. Wu, and S. G. Louie, Spin-Orbit Coupling, Broken Time-Reversal Symmetry, and Polarizability Self-Consistency in GW and GW-BSE Theory with Applications to Two-Dimensional Materials, U. C. Berkeley PhD dissertation (2020).
+
+Wu2019:
+M. Wu, Z. Li, T. Cao, and S. G. Louie, Physical Origin of Giant Excitonic and Magneto-Optical Responses in Two-Dimensional Ferromagnetic Insulators, Nat. Commun. 10, 2371 (2019).
+
+Zhao2021:
+F. Zhao, and S. G. Louie, Topological Electronic Properties and Optical Properties of Graphene Nanoribbons and Carbon Conjugated Systems, U. C. Berkeley PhD dissertation (2021).

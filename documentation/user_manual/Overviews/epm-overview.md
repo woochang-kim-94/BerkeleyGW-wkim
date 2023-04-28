@@ -1,0 +1,111 @@
+# `EPM` code
+
+> "The empirical pseudopotential method never lost a battle to experiment."
+> -- Marvin L. Cohen, 2008
+
+## Overview
+
+EPM stands for Empirical Pseudopotential Method. It is the plane-wave 
+part of TBPW-1.1 modified to generate input files for BerkeleyGW. 
+Numerous other corrections and improvements have also been made
+by Georgy Samsonidze and David Strubbe.
+TBPW-1.1 is available for download from <http://www.mcc.uiuc.edu/software/>,
+and the full documentation at:
+<http://www.mcc.uiuc.edu/downloads/tbpwdoc1.1.pdf>.
+
+
+The input variables are described in [`epm.inp`](epm-input.md). Most variables are common to both
+`epm.x` and `epm2bgw.x`, but a few are just for one or the other.
+
+The real wavefunctions for systems with inversion symmetry 
+are obtained by applying the Gram-Schmidt process adapted from 
+`paratecSGL-1.1.3/src/para/gwreal.f90`
+
+To plot silicon band structure calculated with the EPM executable:
+```
+epm.x < silicon-epm.in
+gnuplot bands.plt
+```
+Uses variables `NumberOfLines`, `NumberOfDivisions`, `KPointsAndLabels`.
+
+To use the explicit form factors and to compute the band gap and 
+the effective masses (mass only correct for Si-like band structures):
+```
+epm.x < silicon-epm-ff.in
+```
+Uses variables `gap_flag`, `gap_file`, `mass_flag`, `mass_file`.
+
+To generate input files for BerkeleyGW executable, use `epm2bgw.x`.
+The scripts `epm2bgw_cplx.sh` and `epm2bgw_cplx_spin.sh` are just for use
+with the testsuite. They force complex, or complex and spin-polarized.
+
+You can find the actual input files for GW/BSE calculations on top of 
+EPM in directory `examples/EPM,` as well as testsuite directories
+`Si-EPM`, `GaAs-EPM`, and `Si-Wire-EPM`.
+
+The k-points for the EPM input files can be generated using utility 
+[`kgrid`](kgrid).
+
+Virtual crystal approximation (`VCA`) is implemented within EPM in 
+the form of two pre-processing scripts, `ff2vq.py` and `vca.py`.
+
+`ff2vq.py` reads EPM form factors from file `form_factors.dat`, fits them 
+to the chosen functional form of the $V(q)$ potential, writes potential 
+coefficients to file `v_of_q.dat`, and writes new form factors computed 
+from $V(q)$ to file `vq2ff.dat`. This procedure is described by equations 
+(8) and (9) and the accompanying text in Phys. Rev. B 84, 195201 (2011).
+
+`vca.py` reads $V(q)$ potential coefficients from file `v_of_q.dat`, 
+employs the virtual crystal approximation to compute hybrid form 
+factors, and writes them to file `vca_ff.dat`. The potential mixing 
+is controlled by identifiers host_material and doping_level hard 
+coded below. This procedure is described by equations (10) -- (12) 
+and the accompanying text in Phys. Rev. B 84, 195201 (2011).
+
+The original form factors from file `form_factors.dat` or the hybrid 
+ones from file `vca_ff.dat` can be fed to `epm.x` and `epm2bgw.x` using 
+keywords `LatticeConstant` and `FormFactors` in the input file for `epm.x` 
+or `epm2bgw.x`. See example of using these keywords in `silicon-epm-ff.in`
+in the `Meanfield/EPM` directory.
+
+The original code that EPM was based on, TBPW-1.1, was written by:
+
+ * Dyutiman Das, UIUC
+ * William Mattson, UIUC
+ * Nichols A. Romero, UIUC
+ * Richard M. Martin, UIUC
+
+
+## Description of TBPW-1.1 Software
+
+The full documentation of the TBPW code is available at
+<http://www.mcc.uiuc.edu/downloads/tbpwdoc1.1.pdf>.
+
+TBPW is an electronic structure code primarily intended for pedagogical
+purposes. It is written from the ground-up in a modular style using Fortran 90.
+This code is composed of two distinct parts: a tightbinding (TB) and plane wave
+(PW). Additionally, there is a plane wave density (PWD) code which outputs the
+electron density on a grid.
+
+The main characteristics of these codes are:
+
+ * Readily provides band structure plots
+ * TB implemented using a rotation matrix formalism allows the use of orbitals with arbitrary angular momentum l
+ * PW implemented using the option of diagonalisation via direct-inversion
+
+Send email to tbpw-subscribe@mcc.uiuc.edu to subscribe to the mailing list, tbpw@mcc.uiuc.edu
+
+This material is based upon work supported by the NSF under Award No. 99-76550 and the DOE under Award No. DEFG-96-ER45439.
+
+Developed by Electronic Structure Group, University of Illinois, Department of Physics, <http://www.physics.uiuc.edu/research/ElectronicStructure/> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the Software), to deal with the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+ * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimers.
+ * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimers in the documentation and/or other materials provided with the distribution.
+ * Neither the names of the Electronic Structure Group, the University of Illinois, nor the names of its contributors may be used to endorse or promote products derived from this Software without specific prior written permission.
+
+THE SOFTWARE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+
+## Copyright
+
+University of Illinois Open Source License. Copyright (c) 2003, University of Illinois Board of Trustees. All rights reserved. Users also agree to terms of License Agreement available at http://www.mcc.uiuc.edu/

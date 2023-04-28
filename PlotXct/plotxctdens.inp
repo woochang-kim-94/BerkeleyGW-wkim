@@ -1,0 +1,65 @@
+#
+# Indexes of states to be plotted, as they appear in eigenvectors
+# right now they need to be a contiguous block if both are zero
+# then every state is plotted
+#
+plot_state_low 1
+plot_state_high 2
+
+#
+# Index of spin component of the exciton to plot. Default is 1. 
+#
+plot_spin 1
+
+#
+# Size of supercell
+#
+supercell_size 1 1 1
+
+# input option 'restrict_kpoints' reduces the sum over k-points
+# above to a sum over the specified number that give most of the contribution
+# to the norm of eigenvectors. This is handy if there are many k-points
+# but only a few of them give sizable contribution.
+# this definitely only works for 1 state at a time right now, and it needs
+# to be tested if this will be workable for excited stated densities at all.
+#restrict_kpoints 5
+
+# Verbosity level, options are:
+# 1 = default
+# 2 = medium - info about k-points, symmetries, and eqp corrections.
+# 3 = high   - full dump of the reduced and unfolded k-points.
+# 4 = log    - log of various function calls. Use to debug code.
+# 5 = debug  - extra debug statements. Use to debug code.
+# 6 = max    - only use if instructed to, severe performance downgrade.
+# Note that verbosity levels are cumulative. Most users will want to stick
+# with level 1 and, at most, level 3. Only use level 4+ if debugging the code.
+#verbosity 1
+
+
+# EXPERIMENTAL FEATURES FOR TESTING PURPOSES ONLY
+# 'unfolded BZ' is from the kpoints in the WFN file
+# 'full BZ' is generated from the kgrid parameters in the WFN file
+# See comments in Common/checkbz.f90 for more details
+# Replace unfolded BZ with full BZ
+#fullbz_replace
+# Write unfolded BZ and full BZ to files
+#fullbz_write
+
+#BEGIN_INTERNAL_ONLY
+
+# The following flags control whether the fine/q-shifted grids must be unfolded
+# with the symmetry operations. You should use the same flags from your
+# absorption calculation.
+
+# Use symmetries to unfold fine grid?
+#no_symmetries_fine_grid
+#use_symmetries_fine_grid
+
+# Use symmetries to unfold q-shifted grid?
+#no_symmetries_shifted_grid
+#use_symmetries_shifted_grid
+
+# Uncomment this option to bypass the extra checks that are performed when
+# unfolding the BZ. This is usually safe to do if you are not unfolding the BZ.
+#no_bz_check
+#END_INTERNAL_ONLY

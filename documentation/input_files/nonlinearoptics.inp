@@ -1,0 +1,54 @@
+# nonlinearoptics.inp
+
+# Two Photon Calculation type of run
+#two_photon_job
+#
+# Ultra fast type of run
+#ultrafast_job
+
+# fine grid is used to actually do the diagonalization; here the bands
+# count down/up from the Fermi level (as appropriate)
+number_val_bands_fine 10
+number_cond_bands_fine 10
+
+# Use the velocity operator rather than momentum
+# See explanation in BSE directory
+#use_velocity
+#
+# Finite q shift for velocity operator
+#q_shift 0.0 0.00 0.00 
+#
+# Use the momentum operator rather than velocity
+use_momentum
+#
+# Direction of the polarization for momentum operator
+polarization 0.0 0.0 1.0
+
+# If we have already calculated matrix elements 
+# (stored in file vmtxel_nl) read them in.
+#read_vmtxel_nl
+
+# Width of Lorentzian broadening
+#[unit=eV]
+energy_resolution 0.025
+
+%include scissors.inp
+
+# Are the grids (fine from diag calc) to be expanded using symmetries?
+#use_symmetries_fine_grid
+#use_symmetries_shifted_grid
+
+#BEGIN_INTERNAL_ONLY
+# 'unfolded BZ' is from the kpoints in the WFN file
+# 'full BZ' is generated from the kgrid parameters in the WFN file
+# See comments in Common/checkbz.f90 for more details
+# Replace unfolded BZ with full BZ
+#fullbz_replace
+# Write unfolded BZ and full BZ to files
+#fullbz_write
+#END_INTERNAL_ONLY
+
+# Only when [[two_photon_job]] is used.
+# One can limit the number of final states to consider in the two-photon process
+# to a subset of neig (the default value used).
+#number_of_final_states 500

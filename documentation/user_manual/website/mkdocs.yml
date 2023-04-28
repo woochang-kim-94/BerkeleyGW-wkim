@@ -1,0 +1,122 @@
+#python:
+#   version: 2 # for unicode
+#   setup_py_install: true
+
+markdown_extensions:
+    - fenced_code
+    - codehilite
+    - footnotes
+    - admonition
+    - attr_list
+    - pymdownx.arithmatex:
+        generic: false
+    - pymdownx.details
+    #- extra
+    - pymdownx.extra
+    #- pymdownx.extrarawhtml
+
+plugins:
+    - search
+    #- blocker
+
+# Required to load the MathJax javascript for the mdx_math.py
+#extra_javascript: ['https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML']
+extra_javascript:
+  - 'stylesheets/scripts.js'
+    #- 'https://polyfill.io/v3/polyfill.min.js?features=es6'
+  - 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js'
+
+extra_css:
+  - 'stylesheets/extra.css'
+
+site_name: BerkeleyGW 3.0 manual
+nav:
+  - index.md
+  - Overview:
+    - General overview: overview.md
+    - Typical workflow: overview-workflow.md
+    - License: license.md
+    - Contributors: contributors.md
+    - Changelog: changelog.md
+  - Compiling and testing:
+    - Compilation: compilation.md
+    - Compilation flags: compilation-flags.md
+    - Testsuite: testsuite.md
+  - Mean-field:
+    - Overview: meanfield.md
+    - Details: meanfield-details.md
+    - Built-in codes:
+      - EPM:
+        - Overview: epm-overview.md
+        - Input keywords (epm.inp): epm-input.md
+      - Parabands:
+        - Overview: parabands-overview.md
+        - Input keywords (parabands.inp): parabands-keywords.md
+      - SAPO:
+        - Overview: sapo-overview.md
+    - External codes:
+      - Quantum ESPRESSO:
+        - Overview: espresso-overview.md
+        - pw2bgw input (pw2bgw.inp): pw2bgw-input.md
+        - kgrid input (kgrid.inp): kgrid-input.md
+      - PARATEC: paratec-overview.md
+      - Abinit (abi2bgw): abi2bgw-input.md
+      - Octopus: octopus-overview.md
+      - JDFTx: jdftx-overview.md
+      - RMGDFT: rmgdft-overview.md
+      - SIESTA: siesta-overview.md
+      - StochasticGW (bgw2sgw):
+        - Overview: 'bgw2sgw-overview.md'
+        - bgw2sgw: 'bgw2sgw-keywords.md'
+    - Utilities:
+      - Misc utilities: meanfield-utilities.md
+      - Visual package: visual-overview.md
+      - icm input (icm.inp): icm.md
+      - surface input (surface.inp): surface.md
+      - gsphere input (gsphere.inp): gsphere-input.md
+  - Epsilon code:
+    - Overview: 'epsilon-overview.md'
+    - Input keywords (epsilon.inp): 'epsilon-keywords.md'
+    - Utilities:
+      - epsinvomega: epsinvomega-input.md
+      - epsomega: epsomega-input.md
+      - epsmat_intp: epsmat_intp-input.md
+      - epsmat_merge: epsmat_merge-input.md
+      - epsmat_old2hdf5: epsmat_old2hdf5-input.md
+      - epsconv: epsconv-input.md
+  - Sigma code:
+    - Overview: 'sigma-overview.md'
+    - Input keywords (sigma.inp): 'sigma-keywords.md'
+    - Utilities:
+      - sig2wan: 'sig2wan-input.md'
+  - Kernel code:
+    - Overview: 'kernel-overview.md'
+    - Input keywords (kernel.inp): 'kernel-keywords.md'
+  - Absorption code:
+    - Overview: 'absorption-overview.md'
+    - Input keywords (absorption.inp): 'absorption-keywords.md'
+    - Utilities:
+      - summarize_eigenvectors: summarize_eigenvectors-input.md
+      - PlotXct:
+        - Overview: 'plotxct-overview.md'
+        - Input keywords (plotxct.inp): 'plotxct-keywords.md'
+  - Inteqp code:
+    - Overview: 'inteqp-overview.md'
+    - Input keywords (inteqp.inp): 'inteqp-keywords.md'
+  - Subsampling:
+    - Overview: 'subsample-overview.md'
+    - NNS: 'NNS.md'
+    - CSI: 'CSI.md'
+  - NonlinearOptics:
+    - Overview: 'nonlinearoptics-overview.md'
+    - Input keywords (nonlinearoptics.inp): 'nonlinearoptics-keywords.md'
+  - File formats:
+    - wfn.h5: 'wfn_h5_spec.md'
+    - epsmat.h5: 'epsmat_h5_spec.md'
+    - bsemat.h5: 'bsemat_h5_spec.md'
+    - eigenvectors.h5: 'eigenvectors_h5_spec.md'
+
+theme:
+  name: material
+  logo: bgw.svg
+  favicon: bgw_black.svg

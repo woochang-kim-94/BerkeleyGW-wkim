@@ -1,0 +1,15 @@
+#!/usr/bin/env ipython
+
+fnames = !find . -name make_deps.mk
+for fname in fnames:
+    print(fname)
+    f = open(fname, 'r')
+    f.readline()
+    f.readline()
+    for line in f.readlines():
+        t1, t2 = line.split(':')
+        mod_name = t1.split()[0][:-2]
+        if t1.find(mod_name+'_m.mod') == -1:
+            continue
+        if mod_name != mod_name.lower():
+            print(mod_name)

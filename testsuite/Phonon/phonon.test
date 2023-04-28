@@ -1,0 +1,31 @@
+Test    : Electron-phonon coupling
+Enabled : Yes
+TestGroups : hdf5 serial parallel
+
+Command: cp $TESTDIR/* $WORKDIR/
+
+## Test program
+#Executable : test_gkq.cplx.x
+#Processors : 4
+#Output : test_gkq.out
+#Input : NONE
+#
+#Precision : 1e-15
+#Match ; Number of errors  ; GREP(test_gkq.out,   "Number of errors", 5,  0); 0
+#
+#Executable : test_gkq.cplx.x
+#Processors : serial
+#Output : test_gkq.out
+#Input : NONE
+#
+#Precision : 1e-15
+#match ; Number of errors  ; GREP(test_gkq.out,   "Number of errors", 5,  0); 0
+#
+# Conversion utility
+#Executable :  abi2bgw_gkq.py
+#Processors : serial
+#Output : abi2bgw_gkq.out
+#Input : abi2bgw_gkq.in PIPE NOCOPY
+#
+#Precision : 1e-15
+#match ; Success  ; GREP(abi2bgw_gkq.out,   "Success", 3,  0); 0

@@ -1,0 +1,17 @@
+diagonalization
+
+number_val_bands_coarse 8
+number_val_bands_fine 8
+number_cond_bands_coarse 8
+number_cond_bands_fine 8
+
+use_symmetries_coarse_grid
+no_symmetries_fine_grid
+no_symmetries_shifted_grid
+
+screening_semiconductor
+
+use_velocity
+
+gaussian_broadening
+energy_resolution 0.15

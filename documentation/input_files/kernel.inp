@@ -1,0 +1,173 @@
+# kernel.inp
+
+# Number of valence bands to include in the kernel of the BSE,
+# counting down from the highest occupied state.
+number_val_bands 3
+
+# Number of conduction bands to include in the kernel of the BSE,
+# counting up from lowest unnocupied state.
+number_cond_bands 3
+
+# Energy cutoff for the screened Coulomb interaction, in Ry. The screened
+# Coulomb interaction $W_{GG'}(q)$ will contain all G-vectors with kinetic energy
+# $|q+G|^2$ up to this cutoff. Default is the epsilon_cutoff used in the
+# epsilon code. This value cannot be larger then the epsilon_cutoff or
+# the bare_coulomb_cutoff.
+#screened_coulomb_cutoff  35.0
+
+# Energy cutoff for the bare Coulomb interaction, in Ry. The bare Coulomb
+# interaction $v(G+q)$ will contain all G-vectors with kinetic energy
+# $|q+G|^2$ up to this cutoff. Default is the WFN cutoff.
+#bare_coulomb_cutoff      60.0
+
+%include screening.inp
+%include common.inp
+
+# Read WFN_co/WFNq_co in HDF5 format (i.e. read from WFN_co.h5/WFNq_co.h5).
+#use_wfn_hdf5
+#
+# Define minimum band block size when reading WFN, default is a block of 128 Mb minimum,
+# used mainly for debugging.
+#wfn_hdf5_min_band_block 2
+
+# These flags define whether to use symmetries to unfold
+# the Brillouin zone or not in file `WFN_co`
+# ([[use_symmetries_coarse_grid]], [[no_symmetries_coarse_grid]]).
+#
+# In most cases, you probably want to use symmetries to unfold
+# the grid in `WFN_co`.
+#
+# !!! Warning
+#     Default is not to unfold!
+#
+#
+#no_symmetries_coarse_grid
+#use_symmetries_coarse_grid
+
+# Write the bare Coulomb potential $v(q+G)$ to file
+#write_vcoul
+
+# Low communication
+# The default behavior of the code is to distribute the dielectric matrix 
+# among the processors. While this minimizes memory usage, it also
+# increases the communication. By using the low_comm flag, each processor
+# will store the whole dielectric matrix. It is advisable to use this flag
+# whenever each PE has enough memory to hold the whole epsmat file.
+#low_comm
+
+# Low Memory option
+# Calculate matrix elements separately for each k,c,v,k',c',v' pair
+#low_memory
+
+# EXPERIMENTAL FEATURES FOR TESTING PURPOSES ONLY
+
+# High Memory option
+# Save all wavefunction FFTs when calculating the BSE kernel.
+# Overwrites the low_memory option.
+#high_memory
+
+# 'unfolded BZ' is from the kpoints in the WFN file
+# 'full BZ' is generated from the kgrid parameters in the WFN file
+# See comments in Common/checkbz.f90 for more details
+# Replace unfolded BZ with full BZ
+#fullbz_replace
+# Write unfolded BZ and full BZ to files
+#fullbz_write
+
+# Rotation of the k-points may bring G-vectors outside of the sphere.
+# Use the following keywords to specify whether to die if some of
+# the G-vectors fall outside of the sphere. The default is to ignore.
+# Set to die in case screened_coulomb_cutoff = bare_coulomb_cutoff.
+# Set to ignore in case screened_coulomb_cutoff < bare_coulomb_cutoff.
+#die_outside_sphere
+#ignore_outside_sphere
+
+# Flag to read k-points from the 'kpoints' file.
+# The default is to read k-points from the wfn file.
+#read_kpoints
+
+# Calculates the kernel for all $(n_1,n_2)\rightarrow(n_1',n_2')$ transitions,
+# and not only the pairs involving $(v,c)\rightarrow(v'c')$ transitions
+# necessary within by the Tamm-Dancoff approximation (TDA).
+#
+# Notes:
+#
+# 1.  With this option BerkeleyGW will calculate transitions beyond those needed
+#     by the full BSE, such as $(v,v)\rightarrow(c,c)$.
+# 2.  In principle, one should *always* calculate these extra kernel blocks,
+#     because the interpolation routine in absorption mixes wavefunction
+#     characters, in particular for metallic and narrow-gap semiconductors.
+# 3.  You do not need these extended kernel blocks *only* if you are *not
+#     interpolating* later on. However, the only way to do non-TDA absorption
+#     calculation right now is with the extended kernel flag, i.e., there's no
+#     intermediate option to include only $(v,c)\rightarrow(c'v')$ transitions
+#     but not $(v,v)\rightarrow(c'c')$.
+# 4.  Only parallelization such that number of processors $\le$ $k^2$ is
+#     supported.
+#
+#extended_kernel
+
+# Computes finite Q kernel (see [`Kernel Overview`](kernel-overview.md)). 
+# Use the flag as follows:
+#
+# `exciton_Q_shift Qflag Qx Qy Qz` 
+#
+# where
+#
+# 1. `Qflag`  0 : read $\psi_{vk+Q}$ from `WFNq_co`
+# 2. `Qflag`  1 : standard kernel calculation, ($Q=0$)
+# 3. `Qflag`  2 : $Q$ shift is assumed commensurate with the kgrid so that $\psi_{vk+Q}$
+# can be read from `WFN_co`.
+#
+# `Qx` `Qy` `Qz`, specify the shift between the `WFN_co` and `WFNq_co` in crystal coordinates. 
+# Note: this $Q$ shift is not the center-of-mass momentum for the exciton being computed. There is a 
+# relative negative sign! See [`Kernel Overview`](kernel-overview.md). 
+#
+# !!! Warning
+#     Does not work with [[use_symmetries_coarse_grid]], WFN_co and WFNq_co must be
+#     computed on the full BZ.
+#
+#exciton_Q_shift
+
+#BEGIN_INTERNAL_ONLY
+# Use this flag when WFN_co does not contain all k-points on a uniform grid
+# but instead contains patches of k-points on a uniform grid. This is useful for 
+# calculating the kernel using very fine k-point sampling in a small region of
+# k-space.
+# Please be careful when using this and compare results with the full grid!
+#patched_sampling_co
+
+# BSE calculation (default)
+#bse
+# or TD Hartree-Fock/TDDFT calculation
+#tddft
+
+# Setting several range-separation hybrid parameters
+# when doing TDDFT in the code. The code will decide whether to do
+# just TDHF or also do TDDFT based on these parameters. For now
+# these are not implemented correctly -- but will be soon
+#short_range_frac_fock
+#long_range_frac_fock
+#screening_length
+
+# For TD Hartree-Fock, no epsmat/eps0mat files are needed.
+# Instead provide a list of q-points and the grid size.
+# The list of q-points should not be reduced with time
+# reversal symmetry - because BerkeleyGW never uses time
+# reversal symmetry to unfold the q/k-points. Instead,
+# inversion symmetry does the job in the real version of
+# the code.
+# qx qy qz 1/scale_factor is_q0
+# scale_factor is for specifying values such as 1/3
+# You can generate this list with kgrid.x: just set the shifts to zero and use
+# same grid numbers as for WFN_co. Then replace the zero vector with q0.
+#number_qpoints  1
+#begin qpoints
+#  0.0  0.0  0.0  1.0  1
+#end
+#qgrid  1  1  1
+
+# Whether we want to check WFN norms. Use with pseudobands.
+#dont_check_norms
+
+#END_INTERNAL_ONLY

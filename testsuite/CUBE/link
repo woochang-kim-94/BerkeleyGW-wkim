@@ -1,0 +1,4 @@
+#
+ln -s ../../pseudo/ld1/C.UPF ./C.UPF
+ln -s ../../pseudo/ld1/H.UPF ./H.UPF
+#

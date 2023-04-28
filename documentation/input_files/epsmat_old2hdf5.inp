@@ -1,0 +1,5 @@
+epsmat       ! Name of input file
+epsmat.h5    ! Name of output file
+WFN          ! Name of wave function file to extract header from
+icutv        ! truncation flag (0=no truncation, 2=spherical, 4=wire, 5=box, 6=slab)
+truncval     ! truncation radius, for spherical truncation. Otherwise, ignored

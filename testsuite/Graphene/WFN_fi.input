@@ -1,0 +1,56 @@
+#
+#       Graphene
+#
+#
+# tell the code what to do
+
+begin pw_jobs
+pw_job nonselfcon
+end pw_jobs
+
+# --------------------------- STRUCTURE --------------------------------
+#
+# the coordinates of the atoms
+#
+
+begin coordinates
+newtype C 0.0 0.0
+coord  0.1666666666667  0.3333333333333  0.00
+coord -0.1666666666667 -0.3333333333333  0.00
+end coordinates
+
+#
+#  the lattice vectors in cartesian coordinates
+# 
+
+begin latticevecs
+coord    1.000000  0.000000  0.000000
+coord   -0.500000  .866025403784438646763  0.000000
+coord    0.000000  0.000000  5.42573955
+volume 457.054125
+end latticevecs
+
+pp_format 3
+begin pseudopotential
+pp_data 2 2.0 1.8 0.2
+end pseudopotential
+mix_method pulay_tf
+
+screening_type previous
+
+k_grid 16 16 1
+k_grid_shift 0.0 0.0 0.0
+
+number_bands 16
+energy_cutoff 18
+eigspacefrac 0.75
+submatrix_energy_cutoff 10
+accuracy_diag 1e-11
+max_iter_scfloop 40
+max_iter_diag 4
+diagonalization_method Primme
+
+output_flags gwr_gwscreening
+num_gwout 5
+#gw_shift 0.0 0.0 0.005
+

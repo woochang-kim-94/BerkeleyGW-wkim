@@ -1,0 +1,54 @@
+================================================================================
+BSE code: Inteqp
+================================================================================
+
+  Version 1.2   (Aug, 2016)
+  F. H. da Jornada, J. Deslippe, D. Vigil-Fowler, J. I. Mustafa, T. Rangel,
+  F. Bruneval, F. Liu, D. Y. Qiu, D. A. Strubbe, G. Samsonidze, J. Lischner.
+
+  Version 1.0	(July, 2011) J. Deslippe, D. A. Strubbe
+
+--------------------------------------------------------------------------------
+
+Description:
+
+This code takes the eqp_co.dat file from Sigma and
+interpolates it from the coarse to the fine grid using wavefunction
+projections (to resolve band crossings) and linear interpolation
+in the Brillouin zone.
+
+--------------------------------------------------------------------------------
+
+Required Input:
+
+	inteqp.inp	Input parameters. See example absorption.inp in this directory
+			for complete options (noting which sections apply to inteqp).
+	WFN_fi		Wavefunctions in unshifted fine grid.
+	WFN_co		Wavefunctions on coarse grid.
+	eqp_co.dat	A list of quasiparticle energy corrections
+			for the bands in WFN_co. 
+
+Optional Input:
+
+        WFNq_fi         Wavefunctions in shifted fine grid
+                        (used for valence bands if use_velocity is selected)
+
+Auxiliary Files: (output files from previous runs - used as input to speed up calculation)
+
+	dtmat		Transformation matrices, dcc/dvv use for interpolation
+			between coarse and fine grid.  This file must be consistent
+			with your bsedmat and bsexmat files and corresponding
+			coarse and fine wavefunctions.
+			NOTE: the file format for dtmat was changed in BerkeleyGW 1.1.0	(r5961)
+
+--------------------------------------------------------------------------------
+
+Output Files:
+
+        bandstructure.dat	The GW bandstructure on the fine grid.	
+        eqp.dat                 Quasiparticle energy corrections for the bands in WFN_fi.
+        eqp_q.dat               Quasiparticle energy corrections for the bands in WFNq_fi (if use_velocity).
+        dvmat_norm.dat		The norms of the dvv overlap matrices between the valence 
+                        	band k on the fine grid and the closest k-point on the coarse grid
+        dcmat_norm.dat		The norms of the dcc overlap matrices between the conduction
+                        	band k on the fine grid and the closest k-point on the coarse grid

@@ -1,0 +1,26 @@
+#!/bin/bash -l
+#SBATCH -J test_BGW
+#SBATCH -N 2
+#SBATCH -p debug
+#SBATCH -t 00:30:00
+#SBATCH --export=ALL
+
+# run via: sbatch edison.scr
+
+export TEMPDIRPATH=$SCRATCH/tmp
+
+# Modify the below to change the number of threads per 
+# MPI task if using OMP or threaded libraries
+export OMP_NUM_THREADS=2
+#export OMP_NUM_THREADS=1
+
+# Uncomment below to set number of
+# procs in testsuite
+export BGW_TEST_MPI_NPROCS=24
+#export BGW_TEST_MPI_NPROCS=48
+
+export MPIEXEC="`which srun` -c $OMP_NUM_THREADS"
+
+make check-parallel &> test.out
+
+echo "Exit status = $?"

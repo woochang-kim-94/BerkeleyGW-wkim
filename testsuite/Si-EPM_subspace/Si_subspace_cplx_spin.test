@@ -1,0 +1,287 @@
+Test    : Silicon subspace with EPM (complex, spin-polarized)
+Enabled : Yes
+TestGroups : binary hdf5 serial parallel
+
+# DO NOT MAKE CHANGES HERE INDEPENDENTLY! They MUST follow the values in
+# Si_cplx.test (generated from Si.test) or spin-polarization is broken.
+# Running the command "diff -y Si_cplx.test Si_cplx_spin.test --width=200"
+# should result in only a small number of lines of difference, all of which have comments
+# around them noting how and why they differ.
+
+Command: cp $TESTDIR/WFN*.in $WORKDIR/
+# FHJ: The following sed is always executed
+Command: sed -i.bak 's/^real_or_complex.*/real_or_complex 2/;s/^nspin.*/nspin 2/' WFN*.in
+
+###############################################################################
+Banner: EPM-WFN
+###############################################################################
+
+Executable : epm2bgw.x
+Processors : serial
+Output : WFN.out
+Input  : WFN.in PIPE NOCOPY
+
+Precision : 6e-15
+match ; Eigenvalue  1 at k-pt 1   ; GREP(WFN.out,   "kpoint          1", 2,  1); -0.1283435360829054
+match ; Eigenvalue 10 at k-pt 1   ; GREP(WFN.out,   "kpoint          1", 2, 10);  1.3282472551260550
+match ; Eigenvalue 18 at k-pt 2   ; GREP(WFN.out,   "kpoint          2", 2, 18);  2.3490532646407310
+
+Output : WFNq.out
+Input  : WFNq.in PIPE NOCOPY
+
+match ; Eigenvalue  1 at k-pt 1   ; GREP(WFNq.out,   "kpoint          1", 2,  1); -0.1278872033838455
+match ; Eigenvalue  1 at k-pt 2   ; GREP(WFNq.out,   "kpoint          2", 2,  1); -0.1287983831755248
+match ; Eigenvalue  4 at k-pt 3   ; GREP(WFNq.out,   "kpoint          3", 2,  4);  0.6800817811482534
+
+Output : WFN_co.out
+Input  : WFN_co.in PIPE NOCOPY
+
+match ; Eigenvalue  1 at k-pt 1   ; GREP(WFN_co.out, "kpoint          1", 2,  1); -0.1875783994953054
+match ; Eigenvalue  1 at k-pt 3   ; GREP(WFN_co.out, "kpoint          3", 2,  1);  0.1223225560313585
+match ; Eigenvalue 18 at k-pt 3   ; GREP(WFN_co.out, "kpoint          3", 2, 18);  2.2892013856110280
+
+###############################################################################
+Banner: Full Frequency: Subspace Contour Deformation (complex-spin)
+###############################################################################
+
+# Run subspace and keep all eigenvectors, this ensure that results will match the full calculation
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_cd_subspace.out
+Input  : eps_cd_subspace.inp epsilon.inp
+
+Precision : 8e-12
+match ; Re eps q1          ; GREP(eps_cd_subspace.out, "q-pt      1: Head of Epsilon",          7, 0); 1.126674527407858E+001
+Precision : 1e-13
+match ; Im eps q1          ; GREP(eps_cd_subspace.out, "q-pt      1: Head of Epsilon",          8, 0); 0.0
+match ; Re epsinv q1       ; GREP(eps_cd_subspace.out, "q-pt      1: Head of Epsilon Inverse",  8, 0); 9.648428196707495E-002
+match ; Im epsinv q1       ; GREP(eps_cd_subspace.out, "q-pt      1: Head of Epsilon Inverse",  9, 0); 0.0
+# here there is a missmatch in the definition of the coulomb operator in subspace, keep
+# a large value for epsilon and a small one for the inverse
+Precision : 1e-2
+match ; epsilon    Head imag freq, Re ; LINE(EpsDyn, 11, 2) ; 1.109906E+00
+match ; epsilon    Head imag freq, Im ; LINE(EpsDyn, 11, 3) ; 0.0
+Precision : 1e-5
+match ; epsilonInv Head imag freq, Re ; LINE(EpsInvDyn, 11, 2) ; 9.016851E-01
+match ; epsilonInv Head imag freq, Im ; LINE(EpsInvDyn, 11, 3) ; 0.0
+
+Command : mv epsilon.log eps_cd_subspace.log
+
+# Run sigma, same input as sig_cd, but different ouput
+Executable : sigma.cplx.x
+Processors : 4
+Output : sig_cd_subspace.out
+Input  : sig_cd.inp sigma.inp
+
+Precision : 2e-5
+match ; n2, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 6);  10.035862
+match ; n2, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 6); -14.234668
+match ; n2, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 6);   2.089547
+match ; n2, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 7);   0.000000
+match ; n2, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 6);  -2.109259
+
+# supposed to be equal to above due to degeneracy and band-averaging
+match ; n3, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 8);  10.035862
+match ; n3, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 8); -14.234668
+match ; n3, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 8);   2.089547
+match ; n3, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 9);   0.0
+match ; n3, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 8);  -2.109259
+
+match ; n5, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 12);  13.331588
+match ; n5, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 12);  -4.938779
+match ; n5, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 12);  -4.179383
+match ; n5, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 13);  -0.037363
+match ; n5, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 12);   4.213426
+
+# offdiagonals
+# this is a diagonal actually and must match exactly the unsymmetrized diagonal value
+match ; n1 x n8 k1 Exchange         ; GREP(sigma_hp.log, "1   1   1   real",  5, 0); -17.224976
+match ; n1 x n8 k1 Re Cor           ; GREP(sigma_hp.log, "1   1   1   real",  8, 0); -11.639131
+match ; n1 x n8 k1 Imag Cor         ; GREP(sigma_hp.log, "1   1   1   imag",  8, 0);   1.386347
+# this is some other offdiagonal
+match ; n1 x n8 k1 Exchange         ; GREP(sigma_hp.log, "1   8   1   real",  5, 0);   0.000026
+match ; n1 x n8 k1 Re Cor           ; GREP(sigma_hp.log, "1   8   1   real",  8, 0);  0.001612
+match ; n1 x n8 k1 Imag Cor         ; GREP(sigma_hp.log, "1   8   1   imag",  8, 0);  -0.000001
+# this one is zero by symmetry
+Precision : 1e-3
+match ; n2 x n1 k1 Re Cor           ; GREP(sigma_hp.log, "2   1   2   real",  8, 0);  0.0
+Precision : 1e-6
+match ; n2 x n1 k1 Imag Cor         ; GREP(sigma_hp.log, "2   1   2   imag",  8, 0);  0.0
+match ; n2 x n1 k1 Exchange         ; GREP(sigma_hp.log, "2   1   2   real",  5, 0);  0.0
+
+Command : mv sigma_hp.log sig_hp_cd_subspace.log
+
+# Run subspace and keep all eigenvectors, subspace I/O
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_cd_subspace_io.out
+Input  : eps_cd_subspace_io.inp epsilon.inp
+
+Precision : 8e-12
+match ; Re eps q1          ; GREP(eps_cd_subspace_io.out, "q-pt      1: Head of Epsilon",          7, 0); 1.126674527407858E+001
+Precision : 1e-13
+match ; Im eps q1          ; GREP(eps_cd_subspace_io.out, "q-pt      1: Head of Epsilon",          8, 0); 0.0
+# here there is a missmatch in the definition of the coulomb operator in subspace, keep
+# a large value for epsilon and a small one for the inverse
+Precision : 1e-2
+match ; epsilon    Head imag freq, Re ; LINE(EpsDyn, 11, 2) ; 1.109906E+00
+match ; epsilon    Head imag freq, Im ; LINE(EpsDyn, 11, 3) ; 0.0
+Precision : 1e-5
+match ; epsilonInv Head imag freq, Re ; LINE(EpsInvDyn, 11, 2) ; 9.016851E-01
+match ; epsilonInv Head imag freq, Im ; LINE(EpsInvDyn, 11, 3) ; 0.0
+
+Command : mv epsilon.log eps_cd_subspace_io.log
+
+# Run sigma, read subspace basis and expand subspace in sigma
+Executable : sigma.cplx.x
+Processors : 4
+Output : sig_cd_readsub.out
+Input  : sig_cd_readsub.inp  sigma.inp
+
+Precision : 2e-5
+match ; n2, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 6);  10.035862
+match ; n2, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 6); -14.234668
+match ; n2, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 6);   2.089547
+match ; n2, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 7);   0.000000
+match ; n2, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 6);  -2.109259
+
+# supposed to be equal to above due to degeneracy and band-averaging
+match ; n3, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 8);  10.035862
+match ; n3, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 8); -14.234668
+match ; n3, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 8);   2.089547
+match ; n3, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 9);   0.0
+match ; n3, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 8);  -2.109259
+
+match ; n5, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 12);  13.331588
+match ; n5, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 12);  -4.938779
+match ; n5, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 12);  -4.179383
+match ; n5, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 13);  -0.037363
+match ; n5, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 12);   4.213426
+
+# offdiagonals
+# this is a diagonal actually and must match exactly the unsymmetrized diagonal value
+match ; n1 x n8 k1 Exchange         ; GREP(sigma_hp.log, "1   1   1   real",  5, 0); -17.224976
+match ; n1 x n8 k1 Re Cor           ; GREP(sigma_hp.log, "1   1   1   real",  8, 0); -11.639131
+match ; n1 x n8 k1 Imag Cor         ; GREP(sigma_hp.log, "1   1   1   imag",  8, 0);   1.386347
+# this is some other offdiagonal
+match ; n1 x n8 k1 Exchange         ; GREP(sigma_hp.log, "1   8   1   real",  5, 0);   0.000026
+match ; n1 x n8 k1 Re Cor           ; GREP(sigma_hp.log, "1   8   1   real",  8, 0);  0.001612
+match ; n1 x n8 k1 Imag Cor         ; GREP(sigma_hp.log, "1   8   1   imag",  8, 0);  -0.000001
+# this one is zero by symmetry
+Precision : 1e-3
+match ; n2 x n1 k1 Re Cor           ; GREP(sigma_hp.log, "2   1   2   real",  8, 0);  0.0
+Precision : 1e-6
+match ; n2 x n1 k1 Imag Cor         ; GREP(sigma_hp.log, "2   1   2   imag",  8, 0);  0.0
+match ; n2 x n1 k1 Exchange         ; GREP(sigma_hp.log, "2   1   2   real",  5, 0);  0.0
+
+Command : mv sigma_hp.log sig_hp_cd_readsub.log
+
+# Run sigma, read subspace basis and use basis for the full calculation
+Executable : sigma.cplx.x
+Processors : 4
+Output : sig_cd_readsub_dosub.out
+Input  : sig_cd_readsub_dosub.inp  sigma.inp
+
+Precision : 2e-5
+match ; n2, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 6);  10.035862
+match ; n2, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 6); -14.234668
+match ; n2, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 6);   2.089547
+match ; n2, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 7);   0.000000
+match ; n2, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 6);  -2.109259
+
+# supposed to be equal to above due to degeneracy and band-averaging
+match ; n3, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 8);  10.035862
+match ; n3, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 8); -14.234668
+match ; n3, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 8);   2.089547
+match ; n3, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 9);   0.0
+match ; n3, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 8);  -2.109259
+
+match ; n5, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 12);  13.331588
+match ; n5, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 12);  -4.938779
+match ; n5, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 12);  -4.179383
+match ; n5, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 13);  -0.037363
+match ; n5, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 12);   4.213426
+
+# offdiagonals
+# this is a diagonal actually and must match exactly the unsymmetrized diagonal value
+match ; n1 x n8 k1 Exchange         ; GREP(sigma_hp.log, "1   1   1   real",  5, 0); -17.224976
+match ; n1 x n8 k1 Re Cor           ; GREP(sigma_hp.log, "1   1   1   real",  8, 0); -11.639131
+match ; n1 x n8 k1 Imag Cor         ; GREP(sigma_hp.log, "1   1   1   imag",  8, 0);   1.386347
+# this is some other offdiagonal
+match ; n1 x n8 k1 Exchange         ; GREP(sigma_hp.log, "1   8   1   real",  5, 0);   0.000026
+match ; n1 x n8 k1 Re Cor           ; GREP(sigma_hp.log, "1   8   1   real",  8, 0);  0.001612
+match ; n1 x n8 k1 Imag Cor         ; GREP(sigma_hp.log, "1   8   1   imag",  8, 0);  -0.000001
+# this one is zero by symmetry
+Precision : 1e-3
+match ; n2 x n1 k1 Re Cor           ; GREP(sigma_hp.log, "2   1   2   real",  8, 0);  0.0
+Precision : 1e-6
+match ; n2 x n1 k1 Imag Cor         ; GREP(sigma_hp.log, "2   1   2   imag",  8, 0);  0.0
+match ; n2 x n1 k1 Exchange         ; GREP(sigma_hp.log, "2   1   2   real",  5, 0);  0.0
+
+Command : mv sigma_hp.log sig_hp_cd_readsub_dosub.log
+
+# Run subspace and keep all eigenvectors, subspace I/O using h5
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_cd_subspace_io_h5.out
+Input  : eps_cd_subspace_io_h5.inp epsilon.inp
+
+Precision : 8e-12
+match ; Re eps q1          ; GREP(eps_cd_subspace_io_h5.out, "q-pt      1: Head of Epsilon",          7, 0); 1.126674527407858E+001
+Precision : 1e-13
+match ; Im eps q1          ; GREP(eps_cd_subspace_io_h5.out, "q-pt      1: Head of Epsilon",          8, 0); 0.0
+# here there is a missmatch in the definition of the coulomb operator in subspace, keep
+# a large value for epsilon and a small one for the inverse
+Precision : 1e-2
+match ; epsilon    Head imag freq, Re ; LINE(EpsDyn, 11, 2) ; 1.109906E+00
+match ; epsilon    Head imag freq, Im ; LINE(EpsDyn, 11, 3) ; 0.0
+Precision : 1e-5
+match ; epsilonInv Head imag freq, Re ; LINE(EpsInvDyn, 11, 2) ; 9.016851E-01
+match ; epsilonInv Head imag freq, Im ; LINE(EpsInvDyn, 11, 3) ; 0.0
+
+Command : mv epsilon.log eps_cd_subspace_io_h5.log
+
+# Run sigma, read subspace basis and use basis for the full calculation using h5
+Executable : sigma.cplx.x
+Processors : 4
+Output : sig_cd_readsub_dosub_h5.out
+Input  : sig_cd_readsub_dosub_h5.inp  sigma.inp
+
+Precision : 2e-5
+match ; n2, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 6);  10.035862
+match ; n2, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 6); -14.234668
+match ; n2, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 6);   2.089547
+match ; n2, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 7);   0.000000
+match ; n2, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 6);  -2.109259
+
+# supposed to be equal to above due to degeneracy and band-averaging
+match ; n3, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 8);  10.035862
+match ; n3, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 8); -14.234668
+match ; n3, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 8);   2.089547
+match ; n3, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 9);   0.0
+match ; n3, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 8);  -2.109259
+
+match ; n5, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 12);  13.331588
+match ; n5, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 12);  -4.938779
+match ; n5, k1 Re Cor               ; GREP(sigma_hp.log, "ik =   1",  8, 12);  -4.179383
+match ; n5, k1 Imag Cor             ; GREP(sigma_hp.log, "ik =   1",  4, 13);  -0.037363
+match ; n5, k1 Eqp0                 ; GREP(sigma_hp.log, "ik =   1", 10, 12);   4.213426
+
+# offdiagonals
+# this is a diagonal actually and must match exactly the unsymmetrized diagonal value
+match ; n1 x n8 k1 Exchange         ; GREP(sigma_hp.log, "1   1   1   real",  5, 0); -17.224976
+match ; n1 x n8 k1 Re Cor           ; GREP(sigma_hp.log, "1   1   1   real",  8, 0); -11.639131
+match ; n1 x n8 k1 Imag Cor         ; GREP(sigma_hp.log, "1   1   1   imag",  8, 0);   1.386347
+# this is some other offdiagonal
+match ; n1 x n8 k1 Exchange         ; GREP(sigma_hp.log, "1   8   1   real",  5, 0);   0.000026
+match ; n1 x n8 k1 Re Cor           ; GREP(sigma_hp.log, "1   8   1   real",  8, 0);  0.001612
+match ; n1 x n8 k1 Imag Cor         ; GREP(sigma_hp.log, "1   8   1   imag",  8, 0);  -0.000001
+# this one is zero by symmetry
+Precision : 1e-3
+match ; n2 x n1 k1 Re Cor           ; GREP(sigma_hp.log, "2   1   2   real",  8, 0);  0.0
+Precision : 1e-6
+match ; n2 x n1 k1 Imag Cor         ; GREP(sigma_hp.log, "2   1   2   imag",  8, 0);  0.0
+match ; n2 x n1 k1 Exchange         ; GREP(sigma_hp.log, "2   1   2   real",  5, 0);  0.0
+
+Command : mv sigma_hp.log sig_hp_cd_readsub_dosub_h5.log
+

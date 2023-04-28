@@ -1,0 +1,120 @@
+# parabands.inp
+
+######################
+# Required arguments #
+######################
+
+# Input file with DFT wavefunctions.
+# The input WFN file is assumed to be in binary Fortran format.
+# This file is controlled by the wfng_flag/wfng_file options in pw2bgw.inp
+input_wfn_file WFN_in
+
+# Output file to write DFT wavefunctions to.
+# The output WFN file will be written in HDF5 format.
+output_wfn_file WFN_out.h5
+
+# Input file with self-consistent potential.
+# This file is controlled by the vscg_flag/vscg_file options in pw2bgw.inp
+vsc_file VSC
+
+# Input file with Kleinman-Bylander projectors
+# This file is controlled by the vkbg_flag/vkbg_file options in pw2bgw.inp
+vkb_file VKB
+
+
+############################
+# Basic optional arguments #
+############################
+
+# Number of bands to generate. Default is -1, which generates bands up to
+# the energy cutoff.
+number_bands -1
+
+# Number of k-points pools. The total number of MPI tasks will distributed
+# into this number of groups, each group working on a separate k-point.
+#number_pools 1
+number_pools 4
+
+# Direct solvers (see the README for more information)
+#   -2 = dummy, i.e., don't diagonalize. Useful to benchmark I/O.
+#   -1 = default => 10 if compiled with ELPA, 0 otherwise
+#    0 = Bisection
+#    1 = Divide and Conquer
+#    2 = Relatively Robust Representations/MR3 (needs special flags; see README)
+#   10 = ELPA (typically best option, but need special linking; see README)
+#  1xx = PRIMME (needs special linking; see notes below and README)
+solver_algorithm  0
+
+# Verbosity level, options are:
+# 1 = default
+# 2 = medium - info about k-points, symmetries, and eqp corrections.
+# 3 = high   - full dump of the reduced and unfolded k-points.
+# 4 = log    - log of various function calls. Use to debug code.
+# 5 = debug  - extra debug statements. Use to debug code.
+# 6 = max    - only use if instructed to, severe performance downgrade.
+# Note that verbosity levels are cumulative. Most users will want to stick
+# with level 1 and, at most, level 3. Only use level 4+ if debugging the code.
+verbosity 4
+
+
+###############
+# I/O Options #
+###############
+
+# MPI-IO driver when writing output WFN file.
+# 0 = Collective MPI-IO (default)
+# 1 = Independent MPI-IO
+#wfn_io_mpiio_mode 0
+
+
+###############################
+# Advanced optional arguments #
+###############################
+
+# Block size for 2D block-cyclic-distributed matrices. You might want to
+# increase this number if you have more threads.
+block_size 128
+
+
+#######################################
+# Options for PRIMME iterative solver #
+#######################################
+
+# Tolerance for iterative solver
+#tolerance 1d-6
+
+# Maximum block size
+#max_block_size 8
+
+# Maximum basis size
+#max_basis_size 256
+
+# Size of the Hamiltonian to be explicitly diagonalized. We use these
+# eigenvectors, plus some ramdom perturbation, as the starting eigenvector
+# for the iterative procedure. Set this to 0 if you want to start from purely
+# random vectors.
+#exact_diag_size 1000
+
+# Shift to be applied to the Ritz values in the preconditioner M in Ry, i.e.,
+# M_i = (diag(H) - rho_i - ritz_shift), where rho_i is the Titz value
+# associated with the Ritz vector i. We apply this shift because the
+# Ritz value is always an upper bound to the true eigenvalue.
+#ritz_shift 0.1d0
+
+# PRIMME solver methods (see the README on how to enable PRIMME)
+# NOTE: Using PRIMME is in general not recommended!
+#  100 = PRIMMEF77_DYNAMIC
+#  101 = PRIMMEF77_DEFAULT_MIN_TIME
+#  102 = PRIMMEF77_DEFAULT_MIN_MATVECS
+#  103 = PRIMMEF77_Arnoldi
+#  104 = PRIMMEF77_GD
+#  105 = PRIMMEF77_GD_plusK
+#  106 = PRIMMEF77_GD_Olsen_plusK
+#  107 = PRIMMEF77_JD_Olsen_plusK
+#  108 = PRIMMEF77_RQI
+#  109 = PRIMMEF77_JDQR
+#  110 = PRIMMEF77_JDQMR
+#  111 = PRIMMEF77_JDQMR_ETol
+#  112 = PRIMMEF77_SUBSPACE_ITERATION
+#  113 = PRIMMEF77_LOBPCG_OrthoBasis
+#  114 = PRIMMEF77_LOBPCG_OrthoBasis_Window

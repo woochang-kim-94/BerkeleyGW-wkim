@@ -1,0 +1,12 @@
+#!/usr/bin/env ipython
+
+fnames = !find . -name '*.[fF]90*'
+for fname in fnames:
+    if '/EPM/' in fname:
+        continue
+    modules = !sed -n 's/^ *use \([^ !,]*\).*/\1/p' $fname
+    modules = sorted(modules.l)
+    if len(modules) != len(set(modules)):
+        print(fname)
+        print(modules)
+        print()

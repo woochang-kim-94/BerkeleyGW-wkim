@@ -1,0 +1,17 @@
+#!/bin/bash -l
+
+#PBS -N test_BGW
+#PBS -q workq
+#PBS -l nodes=1:ppn=8
+#PBS -l walltime=1:00:00
+#PBS -V
+
+export TEMPDIRPATH=/work/$USER/tmp
+
+export NPROCS=`wc -l $PBS_NODEFILE |gawk '//{print $1}'`
+export MPIEXEC="mpirun -machinefile $PBS_NODEFILE"
+
+cd $PBS_O_WORKDIR
+make check-parallel &> test.out
+
+echo "Exit status = $?"

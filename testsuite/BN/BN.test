@@ -1,0 +1,528 @@
+Test    : BN, subsampling (cplx)
+Enabled : Yes
+# FHJ: Note: does not work with binary format!
+TestGroups : hdf5 serial parallel
+
+Unpack  : QE_BN.tar.xz
+Banner  : Testing NNS subsampling for sigma and csi subsampling for Absorption
+
+###########
+# epsilon #
+###########
+
+Command : ln -sf WFN_5x5 WFN
+Command : ln -sf WFNq_0 WFNq
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : epsilon_co.out
+Input  : epsilon_co.inp epsilon.inp
+
+Precision : 1e-13
+match ; Re chi(nc=1,0,0)       ; LINE(chi_converge.dat,  3, 2) ; -0.34308689E-06
+match ; Re chi(nc=4,Gmax,Gmax) ; LINE(chi_converge.dat,  6, 4) ; -0.27730318E-02
+match ; epsilonInv Head        ; GREP(epsilon.log, "inverse epsilon", 7, 3); 0.64530225
+
+Command : mv epsilon.log epsilon_co.log
+Command : mv eps0mat.h5 eps0mat_0.h5
+Command : mv epsmat.h5 epsmat_co.h5
+Command : ln -sf WFNq_NNS WFNq
+
+#produce subsampled eps0mat file for NNS
+Executable : epsilon.cplx.x
+Processors : 4
+Output : epsilon_NNS.out
+Input  : epsilon_NNS.inp epsilon.inp
+
+Precision : 1e-13
+match ; Re chi(nc=1,0,0)       ; LINE(chi_converge.dat, 3, 2) ; -0.10673503E-04
+match ; Re chi(nc=4,Gmax,Gmax) ; LINE(chi_converge.dat, 6, 4) ; -0.27456401E-02
+match ; epsilonInv Head        ; GREP(epsilon.log, "inverse epsilon", 7, 3); 0.65570997
+
+Command : mv epsilon.log epsilon_NNS.log
+Command : mv eps0mat.h5 eps0mat_NNS.h5
+Command : ln -sf WFNq_csi WFNq
+
+#produce subsampled eps0mat file for CSI
+Executable : epsilon.cplx.x
+Processors : 4
+Output : epsilon_csi.out
+Input  : epsilon_csi.inp epsilon.inp
+
+Precision : 1e-13
+match ; Re chi(nc=1,0,0)       ; LINE(chi_converge.dat, 3, 2) ; -0.10591354E-03
+match ; Re chi(nc=4,Gmax,Gmax) ; LINE(chi_converge.dat, 6, 4) ; -0.26723501E-02
+match ; epsilonInv Head        ; GREP(epsilon.log, "inverse epsilon", 7, 3); 0.67223121
+
+Command : mv epsilon.log epsilon_csi.log
+Command : mv eps0mat.h5 epsmat_csi.h5
+
+#########
+# sigma #
+#########
+
+Command : ln -sf WFN_5x5 WFN_inner
+Command : ln -sf epsmat_co.h5 epsmat.h5
+Command : ln -sf eps0mat_NNS.h5 eps0mat.h5
+
+Executable : sigma.cplx.x
+Processors : 4
+Output : sigma_NNS.out
+Input  : sigma.inp
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n4, k1 initial eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 4);  -3.523095
+match ; n4, k1 exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 4); -21.368428
+match ; n4, k1 screened exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 4);  9.703759
+match ; n4, k1 Coulomb hole         ; GREP(sigma_hp.log, "ik =   1",  6, 4);  -6.011218
+match ; n4, k1 linear qp correction ; GREP(sigma_hp.log, "ik =   1", 10, 4);  -3.605849
+match ; n5, k1 initial eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 5);   1.518111
+match ; n5, k1 exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 5);  -1.143574
+match ; n5, k1 screened exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 5);  0.385942
+match ; n5, k1 Coulomb hole         ; GREP(sigma_hp.log, "ik =   1",  6, 5);  -1.694012
+match ; n5, k1 linear qp correction ; GREP(sigma_hp.log, "ik =   1", 10, 5);  2.407557
+
+Command : mv sigma_hp.log sigma_hp_NNS.log
+
+##########
+# kernel #
+##########
+
+Command : ln -sf epsmat_csi.h5 epsmat.h5
+Command : ln -sf eps0mat_0.h5 eps0mat.h5
+Command : ln -sf WFN_csi_1 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_1.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_1.out, " - Head :", 4); 9.666204123230E+0000
+match ; Norm of wing; GREP(kernel_csi_1.out, " - Wing :", 4); 5.618698402901E+0001
+match ; Norm of body; GREP(kernel_csi_1.out, " - Body :", 4); 2.053415300065E+0001
+match ; Norm of x   ; GREP(kernel_csi_1.out, " - X    :", 4); 1.446158123639E+0000
+
+Command : mv bsemat.h5 bsemat_csi_1.h5
+Command : ln -sf WFN_csi_2 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_2.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_2.out, " - Head :", 4); 7.871980029492E+0000
+match ; Norm of wing; GREP(kernel_csi_2.out, " - Wing :", 4); 4.340482563580E+0001
+match ; Norm of body; GREP(kernel_csi_2.out, " - Body :", 4); 3.635724548615E+0001
+match ; Norm of x   ; GREP(kernel_csi_2.out, " - X    :", 4); 1.087138022204E+0001
+
+Command : mv bsemat.h5 bsemat_csi_2.h5
+Command : ln -sf WFN_csi_3 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_3.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_3.out, " - Head :", 4); 9.685069159499E+0000
+match ; Norm of wing; GREP(kernel_csi_3.out, " - Wing :", 4); 5.625226109572E+0001
+match ; Norm of body; GREP(kernel_csi_3.out, " - Body :", 4); 2.068141125936E+0001
+match ; Norm of x   ; GREP(kernel_csi_3.out, " - X    :", 4); 1.474988196195E+0000
+
+Command : mv bsemat.h5 bsemat_csi_3.h5
+Command : ln -sf WFN_csi_4 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_4.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_4.out, " - Head :", 4); 7.871979746303E+0000
+match ; Norm of wing; GREP(kernel_csi_4.out, " - Wing :", 4); 4.340482257882E+0001
+match ; Norm of body; GREP(kernel_csi_4.out, " - Body :", 4); 3.635718940440E+0001
+match ; Norm of x   ; GREP(kernel_csi_4.out, " - X    :", 4); 1.087138254594E+0001
+
+Command : mv bsemat.h5 bsemat_csi_4.h5
+Command : ln -sf WFN_csi_5 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_5.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_5.out, " - Head :", 4); 9.480943124699E+0000
+match ; Norm of wing; GREP(kernel_csi_5.out, " - Wing :", 4); 1.161191897069E+0002
+match ; Norm of body; GREP(kernel_csi_5.out, " - Body :", 4); 1.595327397199E+0002
+match ; Norm of x   ; GREP(kernel_csi_5.out, " - X    :", 4); 1.026583208695E+0001
+
+Command : mv bsemat.h5 bsemat_csi_5.h5
+Command : ln -sf WFN_csi_6 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_6.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_6.out, " - Head :", 4); 7.031076966668E+0000
+match ; Norm of wing; GREP(kernel_csi_6.out, " - Wing :", 4); 6.083909351080E+0001
+match ; Norm of body; GREP(kernel_csi_6.out, " - Body :", 4); 8.608131668129E+0001
+match ; Norm of x   ; GREP(kernel_csi_6.out, " - X    :", 4); 1.043354538781E+0001
+
+Command : mv bsemat.h5 bsemat_csi_6.h5
+Command : ln -sf WFN_csi_7 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_7.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_7.out, " - Head :", 4); 9.480943545098E+0000
+match ; Norm of wing; GREP(kernel_csi_7.out, " - Wing :", 4); 1.161191895907E+0002
+match ; Norm of body; GREP(kernel_csi_7.out, " - Body :", 4); 1.595330591762E+0002
+match ; Norm of x   ; GREP(kernel_csi_7.out, " - X    :", 4); 1.026584020073E+0001
+
+Command : mv bsemat.h5 bsemat_csi_7.h5
+Command : ln -sf WFN_csi_8 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_8.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_8.out, " - Head :", 4); 9.409018139115E+0000
+match ; Norm of wing; GREP(kernel_csi_8.out, " - Wing :", 4); 1.132300611172E+0002
+match ; Norm of body; GREP(kernel_csi_8.out, " - Body :", 4); 1.587046119205E+0002
+match ; Norm of x   ; GREP(kernel_csi_8.out, " - X    :", 4); 1.471058802405E+0001
+
+Command : mv bsemat.h5 bsemat_csi_8.h5
+Command : ln -sf WFN_csi_9 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_9.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_9.out, " - Head :", 4); 8.989708290085E+0000
+match ; Norm of wing; GREP(kernel_csi_9.out, " - Wing :", 4); 1.115072085880E+0002
+match ; Norm of body; GREP(kernel_csi_9.out, " - Body :", 4); 1.545570314257E+0002
+match ; Norm of x   ; GREP(kernel_csi_9.out, " - X    :", 4); 8.835687213240E+0000
+
+Command : mv bsemat.h5 bsemat_csi_9.h5
+Command : ln -sf WFN_csi_10 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_10.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_10.out, " - Head :", 4); 9.409017453260E+0000
+match ; Norm of wing; GREP(kernel_csi_10.out, " - Wing :", 4); 1.132300475440E+0002
+match ; Norm of body; GREP(kernel_csi_10.out, " - Body :", 4); 1.587047846645E+0002
+match ; Norm of x   ; GREP(kernel_csi_10.out, " - X    :", 4); 1.471058544295E+0001
+
+Command : mv bsemat.h5 bsemat_csi_10.h5
+Command : ln -sf WFN_csi_11 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_11.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_11.out, " - Head :", 4); 9.667351691561E+0000
+match ; Norm of wing; GREP(kernel_csi_11.out, " - Wing :", 4); 5.533012624555E+0001
+match ; Norm of body; GREP(kernel_csi_11.out, " - Body :", 4); 2.270230404101E+0001
+match ; Norm of x   ; GREP(kernel_csi_11.out, " - X    :", 4); 1.531249806456E+0000
+
+Command : mv bsemat.h5 bsemat_csi_11.h5
+Command : ln -sf WFN_csi_12 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_12.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_12.out, " - Head :", 4); 7.030197541044E+0000
+match ; Norm of wing; GREP(kernel_csi_12.out, " - Wing :", 4); 4.911563268483E+0001
+match ; Norm of body; GREP(kernel_csi_12.out, " - Body :", 4); 6.295356140457E+0001
+match ; Norm of x   ; GREP(kernel_csi_12.out, " - X    :", 4); 9.511724147494E+0000
+
+Command : mv bsemat.h5 bsemat_csi_12.h5
+Command : ln -sf WFN_csi_13 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_13.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_13.out, " - Head :", 4); 9.667351702792E+0000
+match ; Norm of wing; GREP(kernel_csi_13.out, " - Wing :", 4); 5.533012632968E+0001
+match ; Norm of body; GREP(kernel_csi_13.out, " - Body :", 4); 2.270230437281E+0001
+match ; Norm of x   ; GREP(kernel_csi_13.out, " - X    :", 4); 1.531249812442E+0000
+
+Command : mv bsemat.h5 bsemat_csi_13.h5
+Command : ln -sf WFN_csi_14 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_14.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_14.out, " - Head :", 4); 9.240414386674E+0000
+match ; Norm of wing; GREP(kernel_csi_14.out, " - Wing :", 4); 1.140545828657E+0002
+match ; Norm of body; GREP(kernel_csi_14.out, " - Body :", 4); 1.602333413795E+0002
+match ; Norm of x   ; GREP(kernel_csi_14.out, " - X    :", 4); 1.462607005139E+0001
+
+Command : mv bsemat.h5 bsemat_csi_14.h5
+Command : ln -sf WFN_csi_15 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_15.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_15.out, " - Head :", 4); 8.435307231185E+0000
+match ; Norm of wing; GREP(kernel_csi_15.out, " - Wing :", 4); 4.621721418466E+0001
+match ; Norm of body; GREP(kernel_csi_15.out, " - Body :", 4); 3.767603267591E+0001
+match ; Norm of x   ; GREP(kernel_csi_15.out, " - X    :", 4); 1.290978769713E+0001
+
+Command : mv bsemat.h5 bsemat_csi_15.h5
+Command : ln -sf WFN_csi_16 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_16.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_16.out, " - Head :", 4); 9.362384274560E+0000
+match ; Norm of wing; GREP(kernel_csi_16.out, " - Wing :", 4); 1.125960714973E+0002
+match ; Norm of body; GREP(kernel_csi_16.out, " - Body :", 4); 1.581085094577E+0002
+match ; Norm of x   ; GREP(kernel_csi_16.out, " - X    :", 4); 1.496862365436E+0001
+
+Command : mv bsemat.h5 bsemat_csi_16.h5
+Command : ln -sf WFN_csi_17 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_17.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_17.out, " - Head :", 4); 8.435306583547E+0000
+match ; Norm of wing; GREP(kernel_csi_17.out, " - Wing :", 4); 4.621720908337E+0001
+match ; Norm of body; GREP(kernel_csi_17.out, " - Body :", 4); 3.767597166612E+0001
+match ; Norm of x   ; GREP(kernel_csi_17.out, " - X    :", 4); 1.290979022889E+0001
+
+Command : mv bsemat.h5 bsemat_csi_17.h5
+Command : ln -sf WFN_csi_18 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_18.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_18.out, " - Head :", 4); 9.240414608997E+0000
+match ; Norm of wing; GREP(kernel_csi_18.out, " - Wing :", 4); 1.140545831176E+0002
+match ; Norm of body; GREP(kernel_csi_18.out, " - Body :", 4); 1.602332450965E+0002
+match ; Norm of x   ; GREP(kernel_csi_18.out, " - X    :", 4); 1.462608817485E+0001
+
+Command : mv bsemat.h5 bsemat_csi_18.h5
+Command : ln -sf WFN_csi_19 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_19.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_19.out, " - Head :", 4); 9.362385062110E+0000
+match ; Norm of wing; GREP(kernel_csi_19.out, " - Wing :", 4); 1.125960858810E+0002
+match ; Norm of body; GREP(kernel_csi_19.out, " - Body :", 4); 1.581083553735E+0002
+match ; Norm of x   ; GREP(kernel_csi_19.out, " - X    :", 4); 1.496862615855E+0001
+
+Command : mv bsemat.h5 bsemat_csi_19.h5
+Command : ln -sf WFN_csi_20 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_20.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_20.out, " - Head :", 4); 8.724614567983E+0000
+match ; Norm of wing; GREP(kernel_csi_20.out, " - Wing :", 4); 1.100925313634E+0002
+match ; Norm of body; GREP(kernel_csi_20.out, " - Body :", 4); 1.555764174721E+0002
+match ; Norm of x   ; GREP(kernel_csi_20.out, " - X    :", 4); 1.652074521344E+0001
+
+Command : mv bsemat.h5 bsemat_csi_20.h5
+Command : ln -sf WFN_csi_21 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_21.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_21.out, " - Head :", 4); 9.203824382234E+0000
+match ; Norm of wing; GREP(kernel_csi_21.out, " - Wing :", 4); 1.139582937973E+0002
+match ; Norm of body; GREP(kernel_csi_21.out, " - Body :", 4); 1.601416860906E+0002
+match ; Norm of x   ; GREP(kernel_csi_21.out, " - X    :", 4); 1.431074816048E+0001
+
+Command : mv bsemat.h5 bsemat_csi_21.h5
+Command : ln -sf WFN_csi_22 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_22.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_22.out, " - Head :", 4); 9.458365476940E+0000
+match ; Norm of wing; GREP(kernel_csi_22.out, " - Wing :", 4); 1.160549805372E+0002
+match ; Norm of body; GREP(kernel_csi_22.out, " - Body :", 4); 1.593501386118E+0002
+match ; Norm of x   ; GREP(kernel_csi_22.out, " - X    :", 4); 1.016675365130E+0001
+
+Command : mv bsemat.h5 bsemat_csi_22.h5
+Command : ln -sf WFN_csi_23 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_23.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_23.out, " - Head :", 4); 9.203824738670E+0000
+match ; Norm of wing; GREP(kernel_csi_23.out, " - Wing :", 4); 1.139582959340E+0002
+match ; Norm of body; GREP(kernel_csi_23.out, " - Body :", 4); 1.601415979381E+0002
+match ; Norm of x   ; GREP(kernel_csi_23.out, " - X    :", 4); 1.431076592972E+0001
+
+Command : mv bsemat.h5 bsemat_csi_23.h5
+Command : ln -sf WFN_csi_24 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_24.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_24.out, " - Head :", 4); 8.724614536635E+0000
+match ; Norm of wing; GREP(kernel_csi_24.out, " - Wing :", 4); 1.100925309301E+0002
+match ; Norm of body; GREP(kernel_csi_24.out, " - Body :", 4); 1.555764340390E+0002
+match ; Norm of x   ; GREP(kernel_csi_24.out, " - X    :", 4); 1.652074636224E+0001
+
+Command : mv bsemat.h5 bsemat_csi_24.h5
+Command : ln -sf WFN_csi_25 WFN_co
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_csi_25.out
+Input  : kernel_csi.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_csi_25.out, " - Head :", 4); 9.458364991194E+0000
+match ; Norm of wing; GREP(kernel_csi_25.out, " - Wing :", 4); 1.160549798053E+0002
+match ; Norm of body; GREP(kernel_csi_25.out, " - Body :", 4); 1.593498204725E+0002
+match ; Norm of x   ; GREP(kernel_csi_25.out, " - X    :", 4); 1.016674378778E+0001
+
+Command : mv bsemat.h5 bsemat_csi_25.h5
+
+#coarse grid
+Command : ln -sf WFN_5x5 WFN_co
+Command : ln -sf epsmat_co.h5 epsmat.h5
+Command : ln -sf eps0mat_0.h5 eps0mat.h5
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_co.out
+Input  : kernel_co.inp kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_co.out, " - Head :", 4); 1.571920960540E+0001
+match ; Norm of wing; GREP(kernel_co.out, " - Wing :", 4); 6.281379987733E+0001
+match ; Norm of body; GREP(kernel_co.out, " - Body :", 4); 1.578320397159E+0002
+match ; Norm of x   ; GREP(kernel_co.out, " - X    :", 4); 2.656959924176E+0001
+
+########
+# diag #
+########
+
+Executable : absorption.cplx.x
+Processors : 4
+Output : absp.out
+Input  : absorption.inp
+
+Precision : 2e-5
+match ; Eigenvalue 1           ; LINE(eigenvalues_b1.dat,  5, 1);  0.16924438E+01
+match ; Eigenvalue 2           ; LINE(eigenvalues_b1.dat,  6, 1);  0.17238684E+01
+match ; Eigenvalue 3           ; LINE(eigenvalues_b1.dat,  7, 1);  0.25225366E+01
+match ; Eigenvalue 4           ; LINE(eigenvalues_b1.dat,  8, 1);  0.25724523E+01
+match ; Eigenvalue 5           ; LINE(eigenvalues_b1.dat,  9, 1);  0.26646078E+01
+match ; Eigenvalue 6           ; LINE(eigenvalues_b1.dat,  10, 1);  0.26906046E+01
+match ; Eigenvalue 7           ; LINE(eigenvalues_b1.dat,  11, 1);  0.31429214E+01
+match ; Eigenvalue 8           ; LINE(eigenvalues_b1.dat,  12, 1);  0.31549920E+01
+match ; Eigenvalue 1           ; LINE(eigenvalues_b2.dat,  5, 1);  0.16924438E+01
+match ; Eigenvalue 2           ; LINE(eigenvalues_b2.dat,  6, 1);  0.17238684E+01
+match ; Eigenvalue 3           ; LINE(eigenvalues_b2.dat,  7, 1);  0.25225366E+01
+match ; Eigenvalue 4           ; LINE(eigenvalues_b2.dat,  8, 1);  0.25724523E+01
+match ; Eigenvalue 5           ; LINE(eigenvalues_b2.dat,  9, 1);  0.26646078E+01
+match ; Eigenvalue 6           ; LINE(eigenvalues_b2.dat,  10, 1);  0.26906046E+01
+match ; Eigenvalue 7           ; LINE(eigenvalues_b2.dat,  11, 1);  0.31429214E+01
+match ; Eigenvalue 8           ; LINE(eigenvalues_b2.dat,  12, 1);  0.31549920E+01
+match ; Eigenvalue 73          ; LINE(eigenvalues_b2.dat, 77, 1);  0.47534983E+01
+match ; Transition mtxel 73    ; LINE(eigenvalues_b2.dat, 77, 2);  0.46536272E-02
+
+match ; Eigenvalue 73          ; LINE(eigenvalues_b1.dat, 77, 1);  0.47534983E+01
+match ; Transition mtxel 73    ; LINE(eigenvalues_b1.dat, 77, 2);  0.26639482E-02
+match ; Eigenvalue 73          ; LINE(eigenvalues_b2.dat, 77, 1);  0.47534983E+01
+match ; Transition mtxel 73    ; LINE(eigenvalues_b2.dat, 77, 2);  0.46536272E-02
+match ; Eigenvalue 73          ; LINE(eigenvalues_b3.dat, 77, 1);  0.47534983E+01
+match ; Transition mtxel 73    ; LINE(eigenvalues_b3.dat, 77, 2);  0.20606761E-04
+
+match ; absorp0 energy 767     ; LINE(absorption_b2_noeh.dat, 771, 1);  7.660000000
+match ; absorp0 eps2 767       ; LINE(absorption_b2_noeh.dat, 771, 2);  0.262615672
+match ; absorp0 eps1 767       ; LINE(absorption_b2_noeh.dat, 771, 3);  -0.179477316
+match ; absorp0 dos 767        ; LINE(absorption_b2_noeh.dat, 771, 4);  0.031128425
+match ; absorp energy 673      ; LINE(absorption_b2_eh.dat,  677, 1);  6.720000000
+match ; absorp eps2 673        ; LINE(absorption_b2_eh.dat,  677, 2);  0.039505188
+match ; absorp eps1 673        ; LINE(absorption_b2_eh.dat,  677, 3);  0.695339454
+match ; absorp dos 673         ; LINE(absorption_b2_eh.dat,  677, 4);  0.097810879
+match ; absorp0 energy 767     ; LINE(absorption_b1_noeh.dat, 771, 1);  7.660000000
+match ; absorp0 eps2 767       ; LINE(absorption_b1_noeh.dat, 771, 2);  0.262615672
+match ; absorp0 eps1 767       ; LINE(absorption_b1_noeh.dat, 771, 3);  -0.179477278
+match ; absorp0 dos 767        ; LINE(absorption_b1_noeh.dat, 771, 4);  0.031128425
+match ; absorp energy 673      ; LINE(absorption_b1_eh.dat,  677, 1);  6.720000000
+match ; absorp eps2 673        ; LINE(absorption_b1_eh.dat,  677, 2);  0.018061293
+match ; absorp eps1 673        ; LINE(absorption_b1_eh.dat,  677, 3);  0.695709985
+match ; absorp dos 673         ; LINE(absorption_b1_eh.dat,  677, 4);  0.097810879
+match ; absorp0 energy 767     ; LINE(absorption_b3_noeh.dat, 771, 1);  7.660000000
+match ; absorp0 eps2 767       ; LINE(absorption_b3_noeh.dat, 771, 2);  0.000000000
+match ; absorp0 eps1 767       ; LINE(absorption_b3_noeh.dat, 771, 3);  1.335554553
+match ; absorp0 dos 767        ; LINE(absorption_b3_noeh.dat, 771, 4);  0.031128425
+match ; absorp energy 673      ; LINE(absorption_b3_eh.dat,  677, 1);  6.720000000
+match ; absorp eps2 673        ; LINE(absorption_b3_eh.dat,  677, 2);  0.113337443
+match ; absorp eps1 673        ; LINE(absorption_b3_eh.dat,  677, 3);  1.387029123
+match ; absorp dos 673         ; LINE(absorption_b3_eh.dat,  677, 4);  0.097810879
+
+
+match ; Transition mtxel 1     ; LINE(eigenvalues_b3.dat,  5, 2);  0.30006652E-04
+match ; Transition mtxel 2     ; LINE(eigenvalues_b3.dat,  6, 2);  0.53748472E-04
+match ; Transition mtxel 3     ; LINE(eigenvalues_b3.dat,  7, 2);  0.74433826E-05
+match ; Transition mtxel 4     ; LINE(eigenvalues_b3.dat,  8, 2);  0.26151793E-05
+match ; Transition mtxel 73    ; LINE(eigenvalues_b3.dat, 77, 2);  0.20606761E-04
+

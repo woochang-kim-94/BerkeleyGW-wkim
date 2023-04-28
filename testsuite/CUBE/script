@@ -1,0 +1,8 @@
+#
+PW="$HOME/espresso-5.0/bin/pw.x"
+PP="$HOME/espresso-5.0/bin/pp.x"
+#
+$MPIRUN $PW -in ./in > ./out
+$MPIRUN $PP -in ./pp_in > ./pp_out
+rm ./*.wfc*
+#

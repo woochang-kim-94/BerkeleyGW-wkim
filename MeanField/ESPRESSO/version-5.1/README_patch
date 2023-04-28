@@ -1,0 +1,22 @@
+
+This directory contains a patch for espresso-5.1 that fixes bugs 
+listed below. All these bugs were fixed in espresso-5.1.1, 
+so no patch is necessary for espresso-5.1.1. Assuming BerkeleyGW 
+is installed in $BGWPATH/BerkeleyGW, to apply the patch execute 
+the following command in the directory containing the espresso-5.1 
+directory:
+
+% patch -p0 -i $BGWPATH/BerkeleyGW/MeanField/ESPRESSO/version-5.1/espresso-5.1-patch
+
+(1) <<< THIS IS FIXED IN ESPRESSO-5.1.1 AND LATER VERSIONS >>>
+Incorrect weights of k-points along the lines in Modules/read_cards.f90
+
+(2) <<< THIS IS DISABLED IN ESPRESSO-5.1.1 AND LATER VERSIONS >>>
+Incorrect off-diagonal matrix elements of Vxc with real wavefunctions in PP/src/pw2bgw.f90
+
+(3) <<< THIS IS FIXED IN ESPRESSO-5.1.1 AND LATER VERSIONS >>>
+Obsolete preprocessor flags and MPI initialization in PP/src/pw2bgw.f90 and PP/src/bgw2pw.f90
+
+(4) <<< THIS IS FIXED IN ESPRESSO-5.1.1 AND LATER VERSIONS >>>
+gk_sort vs iunigk bug in PP/src/pw2bgw.f90 and PP/src/bgw2pw.f90
+

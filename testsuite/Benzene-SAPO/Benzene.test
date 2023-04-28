@@ -1,0 +1,67 @@
+Test    : Benzene with SAPO (real)
+Enabled : Yes
+TestGroups : binary hdf5 serial parallel
+
+Copy : g_eps.in
+Executable : gsphere.py
+Arguments : g_eps.in g_eps.out
+
+match ; Number of G-vectors ; GREP(g_eps.out, "ng = ", 3); 2637
+match ; Kinetic energy      ; GREP(g_eps.out, " 33      -1    -1     1  ", 8); 0.295988137
+match ; FFT grid            ; GREP(g_eps.out, "minimal", 4); 21
+match ; Max G-vector index  ; GREP(g_eps.out, "max g-vector indices", 6); 10
+
+# There is no k-grid since Gamma-only for a molecule
+# but this is to test the symmetries.
+Copy : kgrid.in
+
+Executable : kgrid.x
+Processors : serial
+Arguments : kgrid.in kgrid.out kgrid.log
+
+match ; Space group (lattice)       ; GREP(kgrid.log, "symmetries of the Bravais lattice", 3, 2);  47
+match ; Space group (crystal)       ; GREP(kgrid.log, "symmetries of the crystal without FFT grid", 3, 2);  47
+
+Unpack  : DFT_inputs.tar.xz
+
+Executable : mf_convert_wrapper.sh
+Arguments : wfn.real.espresso_asc wfn.real.espresso > wfn.espresso.out
+
+Executable : mf_convert_wrapper.sh
+Arguments : RHO_asc RHO > rho.out
+
+Executable : siesta2bgw.real.x
+Processors : 4
+Output : siesta2bgw.out
+Input  : siesta2bgw.inp
+
+Precision : 1e-13
+match ; nsym       ; GREP(siesta2bgw.out, "nsym", 3, 0); 8
+
+Executable : sapo.real.x
+Output : sapo.out
+Input  : sapo.inp
+
+Precision : 2e-4
+match ; nsym           ; GREP(sapo.out, "nsym",  3, 0);    8
+match ; ng             ; GREP(sapo.out, "ng =", 15, 0);    29747
+match ; Overlap drop   ; GREP(sapo.out, "that have a large overlap", 2); 261
+match ; Energy drop    ; GREP(sapo.out, "states outside the energy", 2);  97
+match ; Eigenvalue 4   ; LINE(ener_k1_s1.dat,   5, 2);  -11.473587
+match ; Eigenvalue 132 ; LINE(ener_k1_s1.dat, 133, 2);   75.550226
+
+Command: ln -s WFN WFNq
+
+Command: ln -s WFN WFN_inner
+
+Command: ln -s WFN WFN_outer
+
+Executable : epsilon.real.x
+Processors : 4
+Output : eps.out
+Input  : epsilon.inp
+
+Precision : 1e-13
+match ; Re chi q=0 nb=5 g=gp=max ; LINE(chi_converge.dat, 7, 4) ; -0.32968860E-02
+match ; extrap q=0 nb=5 g=gp=max ; LINE(chi_converge.dat, 7, 5) ; -0.13128094E-01
+match ; epsinv q=0 g=gp=(0,0,-1) ; GREP(epsilon.log, "inverse epsilon", 7, 3); 0.62639112

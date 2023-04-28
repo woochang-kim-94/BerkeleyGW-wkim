@@ -1,0 +1,645 @@
+diff -ur siesta-3.0-rc2/Util/Denchar/Src/denchar.f siesta-3.0-rc2-patch/Util/Denchar/Src/denchar.f
+--- siesta-3.0-rc2/Util/Denchar/Src/denchar.f	2010-07-08 12:14:13.000000000 -0700
++++ siesta-3.0-rc2-patch/Util/Denchar/Src/denchar.f	2010-12-03 21:06:48.000000000 -0800
+@@ -46,7 +46,7 @@
+      .   CELL(3,3), VOLUME, VOLCEL, RMAXO
+ 
+       real(dp)
+-     .  XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX,
++     .  XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, avec(3,3),
+      .  COORPO(3,3), NORMAL(3), DIRVER1(3),
+      .  DIRVER2(3), ARMUNI, EMIN, DELTAE, ETA, XSTS(3)
+ 
+@@ -306,7 +306,7 @@
+ C Read option to generate the plane or 3D-grid -------------------------
+         CALL READPLA( NA_S, XA, VOLUME, IDIMEN,
+      .                IOPTION, IUNITCD, ISCALE, NPX, NPY, NPZ,
+-     .                XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX,
++     .                XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, avec,
+      .                COORPO, NORMAL, DIRVER1, DIRVER2, 
+      .                ARMUNI )
+       ENDIF
+@@ -318,7 +318,7 @@
+      .               ISA, IPHORB, INDXUO, LASTO,
+      .               XA, CELL, NUMD, LISTD, LISTDPTR, DSCF, DATM,
+      .               IDIMEN, IOPTION, XMIN, XMAX, YMIN, YMAX, 
+-     .               ZMIN, ZMAX, NPX, NPY, NPZ, COORPO, NORMAL, 
++     .               ZMIN, ZMAX, avec, NPX, NPY, NPZ, COORPO, NORMAL, 
+      .               DIRVER1, DIRVER2, 
+      .               ARMUNI, IUNITCD, ISCALE, RMAXO )
+       ENDIF
+@@ -328,7 +328,7 @@
+      .               ISA, IPHORB, INDXUO, LASTO, XA, CELL,
+      .               RPSI, IPSI, E, INDW, NWF, NUMWF, NK, K,
+      .               IDIMEN, IOPTION, XMIN, XMAX, YMIN, YMAX, 
+-     .               ZMIN, ZMAX, NPX, NPY, NPZ, COORPO, NORMAL, 
++     .               ZMIN, ZMAX, avec, NPX, NPY, NPZ, COORPO, NORMAL, 
+      .               DIRVER1, DIRVER2, 
+      .               ARMUNI, IUNITCD, ISCALE, RMAXO )
+       ENDIF
+diff -ur siesta-3.0-rc2/Util/Denchar/Src/planed.f siesta-3.0-rc2-patch/Util/Denchar/Src/planed.f
+--- siesta-3.0-rc2/Util/Denchar/Src/planed.f	2010-07-08 12:14:13.000000000 -0700
++++ siesta-3.0-rc2-patch/Util/Denchar/Src/planed.f	2010-12-03 21:06:49.000000000 -0800
+@@ -6,7 +6,7 @@
+       CONTAINS
+ 
+       SUBROUTINE PLANE( NA, NPLAMAX, IDIMEN, OPTION, 
+-     .                  XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, 
++     .                  XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, avec,
+      .                  NPX, NPY, NPZ, COORPO, NORMALP, 
+      .                  DIRVER1, DIRVER2,
+      .                  XA, NAPLA, INDICES, ISCALE,
+@@ -26,7 +26,7 @@
+      .   IDIMEN
+ 
+       real(dp), INTENT(IN) ::
+-     .   XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX,
++     .   XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, avec(3,3),
+      .   NORMALP(3), COORPO(3,3), XA(3,NA)
+ 
+       real(dp), INTENT(IN) ::  DIRVER1(3), DIRVER2(3)
+@@ -173,7 +173,7 @@
+       enddo
+ 
+       call popla(nplamax,npx,npy,npz,xmin,xmax,ymin,ymax,zmin,zmax,
+-     .          idimen,plapoint)
++     .          avec,idimen,plapoint)
+         
+       call rotation(nplamax,npx,npy,npz,mrot,inmrot,origin,
+      .              plapoint,latpoint)
+@@ -187,7 +187,7 @@
+ *=======================================================================
+ *=======================================================================
+       subroutine popla(nplamax,npx,npy,npz,xmin,xmax,ymin,ymax,
+-     .           zmin,zmax,idimen,plapoint)
++     .           zmin,zmax,avec,idimen,plapoint)
+ *
+ *     This subroutine generates the coordinates of the points of the plane in
+ *    a reference frame fixed in the plane and where the z-axis is the normal
+@@ -198,10 +198,11 @@
+ *
+         implicit none
+     
+-        integer nplamax
++        integer nplamax,jj
+         integer npx,npy,npz,i,k,l,m,idimen
+         real(dp) xmin,xmax,ymin,ymax,zmin,zmax,deltax,deltay,deltaz
+-        real(dp) plapoint(nplamax,3)
++        real(dp) avec(3,3),plapoint(nplamax,3)
++
+ *-----------------------------------------------------------------------
+ *     INICIALIZATION
+ *
+@@ -236,9 +237,22 @@
+           do m = 1,npz
+              do l = 1,npy
+                do k = 1,npx
+-                  plapoint(i,1) = xmin + (k-1)*deltax
+-                  plapoint(i,2) = ymin + (l-1)*deltay
+-                  plapoint(i,3) = zmin + (m-1)*deltaz
++!                  plapoint(i,1) = xmin + (k-1)*deltax
++!                  plapoint(i,2) = ymin + (l-1)*deltay
++!                  plapoint(i,3) = zmin + (m-1)*deltaz
++
++                  plapoint(i,1) = 0.0d0
++                  plapoint(i,2) = 0.0d0
++                  plapoint(i,3) = 0.0d0
++                  do jj=1,3
++                    plapoint(i,jj) = plapoint(i,jj) + 
++     .               avec(jj,1)*float(k-1)/float(npx)
++                    plapoint(i,jj) = plapoint(i,jj) + 
++     .               avec(jj,2)*float(l-1)/float(npy)
++                    plapoint(i,jj) = plapoint(i,jj) + 
++     .               avec(jj,3)*float(m-1)/float(npz)
++                  enddo
++
+                   i = i+1
+                 enddo
+             enddo
+diff -ur siesta-3.0-rc2/Util/Denchar/Src/readpla.f siesta-3.0-rc2-patch/Util/Denchar/Src/readpla.f
+--- siesta-3.0-rc2/Util/Denchar/Src/readpla.f	2010-07-08 12:14:13.000000000 -0700
++++ siesta-3.0-rc2-patch/Util/Denchar/Src/readpla.f	2010-12-03 21:06:49.000000000 -0800
+@@ -1,7 +1,7 @@
+ 
+       SUBROUTINE READPLA(MAXA, XA, VOLUME, IDIMEN,
+      .                  IOPTION, IUNITCD, ISCALE, NPX, NPY, NPZ,
+-     .                  XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX,
++     .                  XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, avec,
+      .                  COORPO, NORMAL, DIRVER1, DIRVER2, 
+      .                  ARMUNI ) 
+ 
+@@ -29,7 +29,7 @@
+      .  IOPTION, NPX, NPY, NPZ, ISCALE, IUNITCD
+      
+       real(dp), INTENT(OUT) ::
+-     .  XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX,
++     .  XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, avec(3,3),
+      .  COORPO(3,3), NORMAL(3), DIRVER1(3), DIRVER2(3), 
+      .  ARMUNI
+ 
+@@ -79,10 +79,10 @@
+ 
+       INTEGER
+      .  IUNIT, IX, JX, NPX_DEFECT, NPY_DEFECT, NPZ_DEFECT,
+-     .  IND1, IND2, IND3
++     .  IND1, IND2, IND3, ii, jj
+ 
+       real(dp)
+-     .  ORIGIN(3), XDIR(3)
++     .  ORIGIN(3), XDIR(3), alat
+ 
+       LOGICAL 
+      .  LEQI, COLIN
+@@ -149,8 +149,25 @@
+         ZMIN = 0.D0
+         ZMAX = 0.D0
+       ELSE IF (IDIMEN .EQ. 3) THEN
+-        ZMIN = FDF_PHYSICAL('Denchar.MinZ',-3.D0,'Bohr')
+-        ZMAX = FDF_PHYSICAL('Denchar.MaxZ', 3.D0,'Bohr')
++!        ZMIN = FDF_PHYSICAL('Denchar.MinZ',-3.D0,'Bohr')
++!        ZMAX = FDF_PHYSICAL('Denchar.MaxZ', 3.D0,'Bohr')
++
++        XMIN=0.0d0
++        XMAX=0.0d0
++        YMIN=0.0d0
++        YMAX=0.0d0
++        ZMIN=0.0d0
++        ZMAX=0.0d0
++        alat = fdf_physical('LatticeConstant',0.d0,'Bohr')
++        if ( fdf_block('LatticeVectors',iunit) ) then
++          do ii = 1,3
++            read(iunit,*) (avec(jj,ii), jj=1,3)
++          enddo
++        else
++          avec(1:3,1:3) = 0.0d0
++        endif
++        avec(1:3,1:3) = avec(1:3,1:3)*alat
++
+       ENDIF
+ 
+       OGP_DEFECT = 'NormalVector'
+diff -ur siesta-3.0-rc2/Util/Denchar/Src/rhoofr.f siesta-3.0-rc2-patch/Util/Denchar/Src/rhoofr.f
+--- siesta-3.0-rc2/Util/Denchar/Src/rhoofr.f	2010-07-08 12:14:13.000000000 -0700
++++ siesta-3.0-rc2-patch/Util/Denchar/Src/rhoofr.f	2010-12-03 21:06:50.000000000 -0800
+@@ -3,8 +3,8 @@
+      .                   ISA, IPHORB, INDXUO, LASTO, 
+      .                   XA, CELL, NUMD, LISTD, LISTDPTR, DSCF, DATM, 
+      .                   IDIMEN, IOPTION, XMIN, XMAX, YMIN, YMAX, 
+-     .                   ZMIN, ZMAX, NPX, NPY, NPZ, COORPO, NORMAL, 
+-     .                   DIRVER1, DIRVER2, 
++     .                   ZMIN, ZMAX, avec, NPX, NPY, NPZ, COORPO, 
++     .                   NORMAL, DIRVER1, DIRVER2, 
+      .                   ARMUNI, IUNITCD, ISCALE, RMAXO )
+ C **********************************************************************
+ C Compute the density of charge at the points of a plane or a 3D grid
+@@ -29,7 +29,7 @@
+      .  NUMD(NUO), LISTDPTR(NUO), LISTD(MAXND)
+ 
+       real(dp), INTENT(IN) ::
+-     .  XA(3,NA), XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX,
++     .  XA(3,NA), XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, avec(3,3),
+      .  COORPO(3,3), NORMAL(3), DIRVER1(3), DIRVER2(3), ARMUNI,
+      .  RMAXO
+ 
+@@ -130,6 +130,9 @@
+      .  SNAME*30, FNAMESCF*38, FNAMEDEL*38, FNAMEUP*38, FNAMEDOWN*38,
+      .  PASTE*38
+ 
++      integer ii
++      real(dp) xx, eps, norm(3,3)
++
+       EXTERNAL
+      .  IO_ASSIGN, IO_CLOSE, PASTE
+      .  NEIGHB, WROUT
+@@ -197,7 +200,7 @@
+ 
+ C Build the plane ------------------------------------------------------
+           CALL PLANE( NA, NPLAMAX, IDIMEN, IOPTION, 
+-     .                XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, 
++     .                XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, avec,
+      .                NPX, NPY, NPZ, COORPO, NORMAL, 
+      .                DIRVER1, DIRVER2, 
+      .                XA, NAPLA, INDICES, ISCALE,
+@@ -321,23 +324,59 @@
+           ENDDO
+         ENDDO
+       ELSE IF (IDIMEN .EQ.3) THEN
++!        DO IX = 1,3
++!          DO IY = 1,3
++!            OCELL(IX,IY)=0.D0
++!          ENDDO
++!        ENDDO
++C   Determine cell size
++!        OCELL(1,1) = DABS(XMAX-XMIN)
++!        OCELL(2,2) = DABS(YMAX-YMIN)
++!        OCELL(3,3) = DABS(ZMAX-ZMIN)
++
++        eps=1.0d-6
+         DO IX = 1,3
+           DO IY = 1,3
+-            OCELL(IX,IY)=0.D0
++            OCELL(IX,IY)=avec(iy,ix)
+           ENDDO
+         ENDDO
+-C   Determine cell size
+-        OCELL(1,1) = DABS(XMAX-XMIN)
+-        OCELL(2,2) = DABS(YMAX-YMIN)
+-        OCELL(3,3) = DABS(ZMAX-ZMIN)
++        OCELL(1,1:3) = OCELL(1,1:3)*float(NPX-1)/float(NPX)
++        OCELL(2,1:3) = OCELL(2,1:3)*float(NPY-1)/float(NPY)
++        OCELL(3,1:3) = OCELL(3,1:3)*float(NPZ-1)/float(NPZ)
++        norm(1,1) = avec(2,2)*avec(3,3) - avec(3,2)*avec(2,3)
++        norm(2,1) = avec(3,2)*avec(1,3) - avec(1,2)*avec(3,3)
++        norm(3,1) = avec(1,2)*avec(2,3) - avec(2,2)*avec(1,3)
++        norm(1,2) = avec(2,3)*avec(3,1) - avec(3,3)*avec(2,1)
++        norm(2,2) = avec(3,3)*avec(1,1) - avec(1,3)*avec(3,1)
++        norm(3,2) = avec(1,3)*avec(2,1) - avec(2,3)*avec(1,1)
++        norm(1,3) = avec(2,1)*avec(3,2) - avec(3,1)*avec(2,2)
++        norm(2,3) = avec(3,1)*avec(1,2) - avec(1,1)*avec(3,2)
++        norm(3,3) = avec(1,1)*avec(2,2) - avec(2,1)*avec(1,2)
++        do ii = 1,3
++          xx = sqrt(norm(1,ii)**2 + norm(2,ii)**2 + norm(3,ii)**2)
++          if (xx .gt. eps) norm(1:3,ii) = norm(1:3,ii)/xx
++        enddo
++        do ii = 1,3
++          xx = avec(1,ii)*norm(1,ii) + avec(2,ii)*norm(2,ii) +
++     .     avec(3,ii)*norm(3,ii)
++          if (xx .gt. eps) norm(1:3,ii) = norm(1:3,ii)/xx
++        enddo
++
+ C   Determine atoms which are within the plotting box
+ C   so that only they will be printed
+         NAINCELL=0
+         DO IA=1,NA
+-          IF ( (XAPLA(1,IA).LT.XMIN*1.1) .OR. (XAPLA(1,IA).GT.XMAX*1.1)
+-     .    .OR. (XAPLA(2,IA).LT.YMIN*1.1) .OR. (XAPLA(2,IA).GT.YMAX*1.1)
+-     .    .OR. (XAPLA(3,IA).LT.ZMIN*1.1) .OR. (XAPLA(3,IA).GT.ZMAX*1.1))
+-     .    GOTO 90
++!          IF ( (XAPLA(1,IA).LT.XMIN*1.1) .OR. (XAPLA(1,IA).GT.XMAX*1.1)
++!     .    .OR. (XAPLA(2,IA).LT.YMIN*1.1) .OR. (XAPLA(2,IA).GT.YMAX*1.1)
++!     .    .OR. (XAPLA(3,IA).LT.ZMIN*1.1) .OR. (XAPLA(3,IA).GT.ZMAX*1.1))
++!     .    GOTO 90
++
++          do ii=1,3
++            xx=xapla(1,ia)*norm(1,ii)+xapla(2,ia)*norm(2,ii)+
++     .       xapla(3,ia)*norm(3,ii)
++            if (xx.lt.-eps.or.xx.ge.1.0d0-eps) goto 90
++          enddo
++
+           NAINCELL=NAINCELL+1
+           IZA(NAINCELL) = ATOMIC_NUMBER(ISA(IA))
+           DO IX=1,3
+diff -ur siesta-3.0-rc2/Util/Denchar/Src/wavofr.f siesta-3.0-rc2-patch/Util/Denchar/Src/wavofr.f
+--- siesta-3.0-rc2/Util/Denchar/Src/wavofr.f	2010-07-08 12:14:13.000000000 -0700
++++ siesta-3.0-rc2-patch/Util/Denchar/Src/wavofr.f	2010-12-03 21:06:50.000000000 -0800
+@@ -3,8 +3,8 @@
+      .                   ISA, IPHORB, INDXUO, LASTO, XA, CELL,
+      .                   RPSI, IPSI, E, INDW, NWF, NUMWF, NK, K,
+      .                   IDIMEN, IOPTION, XMIN, XMAX, YMIN, YMAX, 
+-     .                   ZMIN, ZMAX, NPX, NPY, NPZ, COORPO, NORMAL, 
+-     .                   DIRVER1, DIRVER2, 
++     .                   ZMIN, ZMAX, avec, NPX, NPY, NPZ, COORPO, 
++     .                   NORMAL, DIRVER1, DIRVER2, 
+      .                   ARMUNI, IUNITCD, ISCALE, RMAXO )
+ C **********************************************************************
+ C Compute the wave functions at the points of a plane or a 3D grid
+@@ -27,7 +27,7 @@
+      .  ISA(NA), IPHORB(NO), INDXUO(NO), LASTO(0:NA),
+      .  INDW(NK,NUMWF)
+       real(dp), INTENT(IN) ::
+-     .  XA(3,NA), XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX,
++     .  XA(3,NA), XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, avec(3,3),
+      .  COORPO(3,3), NORMAL(3), DIRVER1(3), DIRVER2(3), ARMUNI,
+      .  RMAXO
+ 
+@@ -129,6 +129,9 @@
+      .  PASTE*60, CHAR1*10, CHAR2*10, ITOCHAR*10, 
+      .  EXT*20, EXT2*25
+ 
++      integer ii
++      real(dp) xx, eps, norm(3,3)
++
+       EXTERNAL
+      .  IO_ASSIGN, IO_CLOSE, PASTE,
+      .  NEIGHB, WROUT, ITOCHAR
+@@ -186,7 +189,7 @@
+ 
+ C Build the plane ------------------------------------------------------
+           CALL PLANE( NA, NPLAMAX, IDIMEN, IOPTION, 
+-     .                XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, 
++     .                XMIN, XMAX, YMIN, YMAX, ZMIN, ZMAX, avec,
+      .                NPX, NPY, NPZ, COORPO, NORMAL, 
+      .                DIRVER1, DIRVER2, 
+      .                XA, NAPLA, INDICES, ISCALE,
+@@ -367,22 +370,58 @@
+             ENDDO
+           ENDDO
+         ELSE IF (IDIMEN .EQ.3) THEN
++!          DO IX = 1,3
++!            DO IY = 1,3
++!              OCELL(IX,IY)=0.D0
++!            ENDDO
++!          ENDDO
++C   Determine cell size
++!          OCELL(1,1) = DABS(XMAX-XMIN)
++!          OCELL(2,2) = DABS(YMAX-YMIN)
++!          OCELL(3,3) = DABS(ZMAX-ZMIN)
++
++          eps=1.0d-6
+           DO IX = 1,3
+             DO IY = 1,3
+-              OCELL(IX,IY)=0.D0
++              OCELL(IX,IY)=avec(iy,ix)
+             ENDDO
+           ENDDO
+-C   Determine cell size
+-          OCELL(1,1) = DABS(XMAX-XMIN)
+-          OCELL(2,2) = DABS(YMAX-YMIN)
+-          OCELL(3,3) = DABS(ZMAX-ZMIN)
++          OCELL(1,1:3) = OCELL(1,1:3)*float(NPX-1)/float(NPX)
++          OCELL(2,1:3) = OCELL(2,1:3)*float(NPY-1)/float(NPY)
++          OCELL(3,1:3) = OCELL(3,1:3)*float(NPZ-1)/float(NPZ)
++          norm(1,1) = avec(2,2)*avec(3,3) - avec(3,2)*avec(2,3)
++          norm(2,1) = avec(3,2)*avec(1,3) - avec(1,2)*avec(3,3)
++          norm(3,1) = avec(1,2)*avec(2,3) - avec(2,2)*avec(1,3)
++          norm(1,2) = avec(2,3)*avec(3,1) - avec(3,3)*avec(2,1)
++          norm(2,2) = avec(3,3)*avec(1,1) - avec(1,3)*avec(3,1)
++          norm(3,2) = avec(1,3)*avec(2,1) - avec(2,3)*avec(1,1)
++          norm(1,3) = avec(2,1)*avec(3,2) - avec(3,1)*avec(2,2)
++          norm(2,3) = avec(3,1)*avec(1,2) - avec(1,1)*avec(3,2)
++          norm(3,3) = avec(1,1)*avec(2,2) - avec(2,1)*avec(1,2)
++          do ii = 1,3
++            xx = sqrt(norm(1,ii)**2 + norm(2,ii)**2 + norm(3,ii)**2)
++            if (xx .gt. eps) norm(1:3,ii) = norm(1:3,ii)/xx
++          enddo
++          do ii = 1,3
++            xx = avec(1,ii)*norm(1,ii) + avec(2,ii)*norm(2,ii) +
++     .       avec(3,ii)*norm(3,ii)
++            if (xx .gt. eps) norm(1:3,ii) = norm(1:3,ii)/xx
++          enddo
++
+ C   Determine atoms which are within the plotting box
+           NAINCELL=0
+           DO IA=1,NA
+-            IF ((XAPLA(1,IA).LT.XMIN*1.1).OR.(XAPLA(1,IA).GT.XMAX*1.1)
+-     .     .OR. (XAPLA(2,IA).LT.YMIN*1.1).OR.(XAPLA(2,IA).GT.YMAX*1.1)
+-     .     .OR. (XAPLA(3,IA).LT.ZMIN*1.1).OR.(XAPLA(3,IA).GT.ZMAX*1.1))
+-     .      GOTO 90
++!            IF ((XAPLA(1,IA).LT.XMIN*1.1).OR.(XAPLA(1,IA).GT.XMAX*1.1)
++!     .     .OR. (XAPLA(2,IA).LT.YMIN*1.1).OR.(XAPLA(2,IA).GT.YMAX*1.1)
++!     .     .OR. (XAPLA(3,IA).LT.ZMIN*1.1).OR.(XAPLA(3,IA).GT.ZMAX*1.1))
++!     .      GOTO 90
++
++            do ii=1,3
++              xx=xapla(1,ia)*norm(1,ii)+xapla(2,ia)*norm(2,ii)+
++     .         xapla(3,ia)*norm(3,ii)
++              if (xx.lt.-eps.or.xx.ge.1.0d0-eps) goto 90
++            enddo
++
+             NAINCELL=NAINCELL+1
+             IZA(NAINCELL) = ATOMIC_NUMBER(ISA(IA))
+             DO IX=1,3
+diff -ur siesta-3.0-rc2/Util/Grid/grid2cube.f siesta-3.0-rc2-patch/Util/Grid/grid2cube.f
+--- siesta-3.0-rc2/Util/Grid/grid2cube.f	2010-07-08 12:14:13.000000000 -0700
++++ siesta-3.0-rc2-patch/Util/Grid/grid2cube.f	2010-12-03 21:07:21.000000000 -0800
+@@ -112,7 +112,8 @@
+       character         sysname*70, fnamein*75, fnameout(2)*75, 
+      .                  fnamexv*75, paste*74, task*5, fform*12
+ 
+-      real              rho(maxp,2), rhot(maxp,2)
++!      real              rho(maxp,2), rhot(maxp,2)
++      real              rho(maxp,2)
+ 
+       double precision  cell(3,3), xat(natmax,3), cm(3), rt(3),
+      .                  delta(3), dr(3), residual
+@@ -121,13 +122,15 @@
+ 
+ c ---------------------------------------------------------------------------
+ 
+-
+       read(5,*) sysname
+       read(5,*) task
+       read(5,*) rt(1),rt(2),rt(3)
+       read(5,*) nskip
+       read(5,*) fform
+ 
++      rt(1:3) = 0.0d0
++      nskip = 1
++
+       fnamexv = paste(sysname,'.XV')
+       if (task .eq. 'rho') then
+         fnamein = paste(sysname,'.RHO')
+@@ -164,7 +167,6 @@
+       else
+         stop 'ERROR: last input line must be formatted or unformatted'
+       endif
+-  
+ 
+       write(6,*) 
+       write(6,*) 'Cell vectors'
+@@ -174,18 +176,18 @@
+       write(6,*) cell(1,3),cell(2,3),cell(3,3)
+ 
+       residual = 0.0d0
+-      do ix=1,3
+-      do iy=ix+1,3
+-        residual = residual + cell(ix,iy)**2
+-      enddo
+-      enddo
+-
+-      if (residual .gt. 1.0d-6) then
+-        write(6,*) 
+-        write(6,*) 'ERROR: this progam can only handle orthogonal cells'
+-        write(6,*) ' with vectors pointing in the X, Y and Z directions'
+-        stop
+-      endif
++!      do ix=1,3
++!      do iy=ix+1,3
++!        residual = residual + cell(ix,iy)**2
++!      enddo
++!      enddo
++
++!      if (residual .gt. 1.0d-6) then
++!        write(6,*) 
++!        write(6,*) 'ERROR: this progam can only handle orthogonal cells'
++!        write(6,*) ' with vectors pointing in the X, Y and Z directions'
++!        stop
++!      endif
+ 
+       if (fform .eq. 'unformatted') then
+         read(1) mesh, nspin
+@@ -199,9 +201,9 @@
+       write(6,*) 'nspin = ',nspin
+       write(6,*) 
+ 
+-      do ix=1,3
+-        dr(ix)=cell(ix,ix)/mesh(ix)
+-      enddo
++!      do ix=1,3
++!        dr(ix)=cell(ix,ix)/mesh(ix)
++!      enddo
+ 
+       np = mesh(1) * mesh(2) * mesh(3)
+       if (np .gt. maxp) stop 'grid2d: Parameter MAXP too small'
+@@ -226,39 +228,39 @@
+       enddo
+ 
+ C translate cell
+-      do ix=1,3
+-        delta(ix) = rt(ix)/dr(ix)
+-        id(ix) = delta(ix)
+-        delta(ix) = rt(ix) - id(ix) * dr(ix)
+-      enddo
+-
+-      do iz=1,mesh(3)
+-      do iy=1,mesh(2)
+-      do ix=1,mesh(1)
+-        iix=ix+id(1)
+-        iiy=iy+id(2)
+-        iiz=iz+id(3)
+-        if (iix .lt. 1) iix=iix+mesh(1)
+-        if (iiy .lt. 1) iiy=iiy+mesh(2)
+-        if (iiz .lt. 1) iiz=iiz+mesh(3)
+-        if (iix .gt. mesh(1)) iix=iix-mesh(1)
+-        if (iiy .gt. mesh(2)) iiy=iiy-mesh(2)
+-        if (iiz .gt. mesh(3)) iiz=iiz-mesh(3)
+-
+-        if (iix .lt. 1) stop 'ix < 0'
+-        if (iiy .lt. 1) stop 'iy < 0'
+-        if (iiz .lt. 1) stop 'iz < 0'
+-        if (iix .gt. mesh(1)) stop 'ix > cell'
+-        if (iiy .gt. mesh(2)) stop 'iy > cell'
+-        if (iiz .gt. mesh(3)) stop 'iz > cell'
+-        i=ix+(iy-1)*mesh(1)+(iz-1)*mesh(1)*mesh(2)
+-        ii=iix+(iiy-1)*mesh(1)+(iiz-1)*mesh(1)*mesh(2)
+-        do isp=1,nspin
+-          rhot(ii,isp)=rho(i,isp)
+-        enddo
+-      enddo
+-      enddo
+-      enddo
++!      do ix=1,3
++!        delta(ix) = rt(ix)/dr(ix)
++!        id(ix) = delta(ix)
++!        delta(ix) = rt(ix) - id(ix) * dr(ix)
++!      enddo
++
++!      do iz=1,mesh(3)
++!      do iy=1,mesh(2)
++!      do ix=1,mesh(1)
++!        iix=ix+id(1)
++!        iiy=iy+id(2)
++!        iiz=iz+id(3)
++!        if (iix .lt. 1) iix=iix+mesh(1)
++!        if (iiy .lt. 1) iiy=iiy+mesh(2)
++!        if (iiz .lt. 1) iiz=iiz+mesh(3)
++!        if (iix .gt. mesh(1)) iix=iix-mesh(1)
++!        if (iiy .gt. mesh(2)) iiy=iiy-mesh(2)
++!        if (iiz .gt. mesh(3)) iiz=iiz-mesh(3)
++
++!        if (iix .lt. 1) stop 'ix < 0'
++!        if (iiy .lt. 1) stop 'iy < 0'
++!        if (iiz .lt. 1) stop 'iz < 0'
++!        if (iix .gt. mesh(1)) stop 'ix > cell'
++!        if (iiy .gt. mesh(2)) stop 'iy > cell'
++!        if (iiz .gt. mesh(3)) stop 'iz > cell'
++!        i=ix+(iy-1)*mesh(1)+(iz-1)*mesh(1)*mesh(2)
++!        ii=iix+(iiy-1)*mesh(1)+(iiz-1)*mesh(1)*mesh(2)
++!        do isp=1,nspin
++!          rhot(ii,isp)=rho(i,isp)
++!        enddo
++!      enddo
++!      enddo
++!      enddo
+ 
+       close(1)
+ 
+@@ -271,18 +273,16 @@
+         read(3,*) is(i),izat(i),(xat(i,ix),ix=1,3)
+       enddo
+ 
+-      do i=1,natoms
+-        do ix=1,3
+-          xat(i,ix)=xat(i,ix)+rt(ix)-delta(ix)
+-          if (xat(i,ix) .lt. 0.0) xat(i,ix)=xat(i,ix)+cell(ix,ix)
+-          if (xat(i,ix) .gt. cell(ix,ix)) 
+-     .        xat(i,ix)=xat(i,ix)-cell(ix,ix)
+-        enddo
+-      enddo
++!      do i=1,natoms
++!        do ix=1,3
++!          xat(i,ix)=xat(i,ix)+rt(ix)-delta(ix)
++!          if (xat(i,ix) .lt. 0.0) xat(i,ix)=xat(i,ix)+cell(ix,ix)
++!          if (xat(i,ix) .gt. cell(ix,ix)) 
++!     .        xat(i,ix)=xat(i,ix)-cell(ix,ix)
++!        enddo
++!      enddo
+       close(3)
+ 
+-
+-
+       if (nspin .eq. 1) then
+         fnameout(1) = paste(fnamein,'.cube')
+       else if (nspin .eq. 2) then
+@@ -306,26 +306,33 @@
+       write(2,'(i5,4f12.6)') natoms, 0.0,0.0,0.0
+ 
+       do ix=1,3
+-        ii = mesh(ix)/nskip
+-        if (ii*nskip .ne. mesh(ix)) ii = ii+1
+-        write(2,'(i5,4f12.6)') 
+-     .    ii,(cell(ix,iy)/ii,iy=1,3)
++!        ii = mesh(ix)/nskip
++!        if (ii*nskip .ne. mesh(ix)) ii = ii+1
++!        write(2,'(i5,4f12.6)') 
++!     .    ii,(cell(ix,iy)/ii,iy=1,3)
++        write(2,'(i5,4f12.6)') mesh(ix),(cell(iy,ix)/mesh(ix),iy=1,3)
+       enddo
+ 
+       do i=1,natoms
+         write(2,'(i5,4f12.6)') izat(i),0.0,(xat(i,ix),ix=1,3)
+       enddo
+ 
++!      do ix=1,mesh(1),nskip
++!      do iy=1,mesh(2),nskip
++!
++!        write(2,'(6e13.5)') 
++!     .  (rhot(ix+(iy-1)*mesh(1)+(iz-1)*mesh(1)*mesh(2),isp), 
++!     .   iz=1,mesh(3),nskip)
++!
++!      enddo
++!      enddo
+ 
+-
+-      do ix=1,mesh(1),nskip
+-      do iy=1,mesh(2),nskip
+-
+-        write(2,'(6e13.5)') 
+-     .  (rhot(ix+(iy-1)*mesh(1)+(iz-1)*mesh(1)*mesh(2),isp), 
++      do ix=1,mesh(1)
++        do iy=1,mesh(2)
++        write(2,'(6e13.5)')
++     .  (rho(ix+(iy-1)*mesh(1)+(iz-1)*mesh(1)*mesh(2),isp),
+      .   iz=1,mesh(3),nskip)
+-
+-      enddo
++        enddo
+       enddo
+ 
+       close(2)
+@@ -336,7 +343,6 @@
+ 
+       end
+ 
+-
+       CHARACTER*(*) FUNCTION PASTE( STR1, STR2 )
+ 
+ C CONCATENATES THE STRINGS STR1 AND STR2 REMOVING BLANKS IN BETWEEN
+@@ -349,7 +355,6 @@
+    20 PASTE = STR1(1:L)//STR2
+       END
+ 
+-
+       INTEGER FUNCTION LB ( STR1 )
+ 
+ C RETURNS THE SIZE IF STRING STR1 WITH BLANKS REMOVED

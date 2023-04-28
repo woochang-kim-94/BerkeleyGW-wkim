@@ -1,0 +1,9 @@
+WFN.OUT     ! name of output WFN file
+4 4 4       ! final k-grid
+0.0 0.0 0.0 ! final k-shift
+2           ! total number of input WFN files
+8           ! total number of k-points in all input WFN files
+wfn_0/WFN   ! name of 1st input WFN file
+wfn_1/WFN   ! name of 2nd input WFN file
+1.0         ! relative weight of 1st input WFN file
+1.0         ! relative weight of 2nd input WFN file

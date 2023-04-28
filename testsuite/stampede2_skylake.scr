@@ -1,0 +1,31 @@
+#!/bin/bash -l
+# run via: sbatch stampede2_skylake.scr
+#SBATCH -J test_BGW
+#SBATCH -N 1
+#SBATCH -n 4
+#SBATCH -p skx-dev
+#SBATCH -t 02:00:00
+
+# required to have access to Time::HiRes Perl module
+#module load perl
+#export FORT_BUFFERED=FALSE
+export TEMPDIRPATH=$SCRATCH/tmp
+#export SAVETESTDIRS=yes
+
+#export BGW_CHECK_FLAGS=" -d Si-Wire-EPM/ "
+#export BGW_CHECK_FLAGS=" -d AlAs-DFT/"
+#export BGW_CHECK_FLAGS=" -d GaAs-EPM/"
+#export BGW_CHECK_FLAGS=" -d Si-EPM/"
+
+export MPIEXEC="`which ibrun`"
+export BGW_TEST_MPI_NPROCS=4
+
+# To run with X threads and Y=64/X MPI tasks,
+# above set #SBATCH -N 1
+# above set #SBATCH -n Y
+# export BGW_TEST_MPI_NPROCS=Y
+export OMP_NUM_THREADS=1
+
+make check-parallel &> test.out
+
+echo "Exit status = $?"

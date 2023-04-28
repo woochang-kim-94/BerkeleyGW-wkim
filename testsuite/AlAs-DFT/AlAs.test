@@ -1,0 +1,97 @@
+Test    : AlAs with Abinit - converter and PPMs (cplx)
+Enabled : Yes
+TestGroups : binary hdf5 serial parallel
+
+Unpack  : ABINIT_dft.tgz
+
+
+############################################
+Banner : ABINIT converter
+############################################
+Executable : abi2bgw.x
+Processors : serial
+Output : abi2bgw_gridk.out
+Input  : abi2bgw_gridk.inp abi2bgw.inp
+
+Precision : 1e-13
+match ; Norm of rho ; GREP(abi2bgw_gridk.out, "Norm of rho", 9, 0); 8.000000
+
+
+Executable : abi2bgw.x
+Processors : serial
+Output : abi2bgw_gridkq.out
+Input  : abi2bgw_gridkq.inp abi2bgw.inp
+
+
+
+############################################
+Banner : HL GPP
+############################################
+
+Command : ln -s WFN  WFN_inner
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : epsilon_hl.out
+Input  : epsilon_hl.inp epsilon.inp
+
+Precision : 1e-13
+match ; epsilonInv Head qpt 1 ; GREP(epsilon_hl.out, "q-pt      1: Head of Epsilon Inverse = ", 8, 0); 2.227688634688367E-002
+match ; epsilonInv Head qpt 2 ; GREP(epsilon_hl.out, "q-pt      2: Head of Epsilon Inverse = ", 8, 0); 3.966739163581162E-001
+match ; epsilonInv Head qpt 3 ; GREP(epsilon_hl.out, "q-pt      3: Head of Epsilon Inverse = ", 8, 0); 3.959647959732844E-001
+
+Executable : sigma.cplx.x
+Processors : 4
+Output : sigma_hl.out
+Input  : sigma_hl.inp sigma.inp
+
+match ; VB max at Gamma ; GREP(sigma_hp.log, "Eqp1", 10, 3); 4.315563378
+match ; CB min at Gamma ; GREP(sigma_hp.log, "Eqp1", 10, 4); 7.036301900
+
+
+
+############################################
+Banner : GN GPP
+############################################
+
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : epsilon_gn.out
+Input  : epsilon_gn.inp epsilon.inp
+
+Precision : 1e-13
+match ; epsilonInv Head qpt 1 ; GREP(epsilon_gn.out, "q-pt      1: Head of Epsilon Inverse = ", 8, 0); 2.227688634688367E-002
+match ; epsilonInv Head qpt 2 ; GREP(epsilon_gn.out, "q-pt      2: Head of Epsilon Inverse = ", 8, 0); 3.966739163581162E-001
+match ; epsilonInv Head qpt 3 ; GREP(epsilon_gn.out, "q-pt      3: Head of Epsilon Inverse = ", 8, 0); 3.959647959732844E-001
+
+Executable : sigma.cplx.x
+Processors : 4
+Output : sigma_gn.out
+Input  : sigma_gn.inp sigma.inp
+
+match ; VB max at Gamma ; GREP(sigma_hp.log, "Eqp1", 10, 3); 4.372921573
+match ; CB min at Gamma ; GREP(sigma_hp.log, "Eqp1", 10, 4); 7.076897506
+
+
+
+############################################
+Banner : FF/RA
+############################################
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : epsilon_ra.out
+Input  : epsilon_ra.inp epsilon.inp
+
+Precision : 1e-13
+
+Executable : sigma.cplx.x
+Processors : 4
+Output : sigma_ra.out
+Input  : sigma_ra.inp sigma.inp
+
+match ; Re VB max at Gamma ; GREP(sigma_hp.log, "Eqp0", 10, 6); 5.377109
+match ; Im VB max at Gamma ; GREP(sigma_hp.log, "Eqp0",  5, 7); -0.989777
+match ; Re CB min at Gamma ; GREP(sigma_hp.log, "Eqp0", 10, 8); 8.808939
+match ; Im CB min at Gamma ; GREP(sigma_hp.log, "Eqp0",  5, 9); -0.782313

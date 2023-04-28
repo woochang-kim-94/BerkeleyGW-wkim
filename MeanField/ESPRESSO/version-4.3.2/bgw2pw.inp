@@ -1,0 +1,18 @@
+&input_bgw2pw
+   prefix = 'silicon'       ! same as in espresso
+   real_or_complex = 1      ! 1 for real or 2 for complex
+   wfng_flag = .true.       ! read wavefunction in G-space
+   wfng_file = 'WFN'        ! wavefunction file name
+   wfng_nband = 0           ! number of bands to write (0 = all)
+   rhog_flag = .true.       ! read charge density in G-space
+   rhog_file = 'RHO'        ! charge density file name
+/
+
+# above are typical values for Si. below are the defaults.
+  prefix = 'prefix'
+  real_or_complex = 2
+  wfng_flag = .false.
+  wfng_file = 'WFN'
+  wfng_nband = 0
+  rhog_flag = .false.
+  rhog_file = 'RHO'

@@ -1,0 +1,20 @@
+#!/bin/bash -l
+
+#PBS -N test_BGW
+#PBS -q debug-nano
+#PBS -l nodes=1:ppn=4:debug-nano
+#PBS -l walltime=1:00:00
+#PBS -V
+
+### To use dual-core nodes instead:
+###PBS -l nodes=2:ppn=2:debug-nano
+### To run on 16 cores:
+###PBS -l nodes=n0000.nano:ppn=2+n0001.nano:ppn=2+n0002.nano:ppn=2+n0003.nano:ppn=2+n0148.nano:ppn=4+n0149.nano:ppn=4
+
+export TEMPDIRPATH=$SCRATCH/tmp
+
+cd $PBS_O_WORKDIR
+export MPIEXEC="`which mpiexec` --mca btl openib,self"
+make check-parallel &> test.out
+
+echo "Exit status = $?"

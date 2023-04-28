@@ -1,0 +1,7 @@
+      25.917768986   0.000000000   0.000000000   # a1x a1y a1z [= lattice vectors (bohr)]
+       0.000000000  14.496126116   0.000000000   # a2x a2y a2z
+       0.000000000   0.000000000  28.284379996   # a3x a3y a3z
+240.0                                            # energy cutoff (Ry)
+0 0 0                                            # FFT_grid_x FFT_grid_y FFT_grid_z (set to zero to determine automatically)
+false                                            # whether to sort G-vectors by kinetic energy (true) or leave unsorted (false)
+0.0 0.0 0.0                                      # kx ky kz (k-point at which to generate G-vectors, crystal coordinates)

@@ -1,0 +1,719 @@
+
+ paratecSGL  trunk  revision 384
+
+ Run on  03-Apr-2012  at  13:24:28 -0700
+
+ Running MPI version on 4 processors
+
+ Lattice information
+ -------------------
+
+ atomic positions relative to lattice vectors:
+
+ Si #   1:    0.000000000000    0.000000000000    0.000000000000     0.20
+ H  #   1:    0.202402500000    0.202402500000    0.202402500000     0.20
+ H  #   2:   -0.202402500000   -0.202402500000    0.202402500000     0.20
+ H  #   3:   -0.202402500000    0.202402500000   -0.202402500000     0.20
+ H  #   4:    0.202402500000   -0.202402500000   -0.202402500000     0.20
+
+ atomic positions in cartesian coordinates:
+
+ Si #   1:    0.000000000000    0.000000000000    0.000000000000     0.20
+ H  #   1:    1.619220000000    1.619220000000    1.619220000000     0.20
+ H  #   2:   -1.619220000000   -1.619220000000    1.619220000000     0.20
+ H  #   3:   -1.619220000000    1.619220000000   -1.619220000000     0.20
+ H  #   4:    1.619220000000   -1.619220000000   -1.619220000000     0.20
+
+ Cell volume =      512.0000 au.
+
+ lattice vectors (a.u.)
+
+     8.000000000000    0.000000000000    0.000000000000
+     0.000000000000    8.000000000000    0.000000000000
+     0.000000000000    0.000000000000    8.000000000000
+
+ reciprocal basis (a.u.)
+
+     0.785398163397    0.000000000000    0.000000000000
+     0.000000000000    0.785398163397    0.000000000000
+     0.000000000000    0.000000000000    0.785398163397
+
+ The crystal system is cubic        with operations: 
+       1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+      25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48
+
+
+ the space group of the crystal is symmorphic
+
+ Operation number    1  2  3  4  5  6  7  8  9 10 11 12 37 38 39 40 41 42 43 44 45 46 47 48
+
+
+
+    Rotation matrices (r-lattice) and fractional translations (r-lattice)
+
+
+    1     1  0  0     0  1  0     0  0  1     -0.00000 -0.00000 -0.00000 E    
+    2     1  0  0     0 -1  0     0  0 -1     -0.00000 -0.00000 -0.00000 C2   
+    3    -1  0  0     0  1  0     0  0 -1     -0.00000 -0.00000 -0.00000 C2   
+    4    -1  0  0     0 -1  0     0  0  1     -0.00000 -0.00000 -0.00000 C2   
+    5     0  0  1     1  0  0     0  1  0     -0.00000 -0.00000 -0.00000 C3   
+    6     0  0 -1     1  0  0     0 -1  0     -0.00000 -0.00000 -0.00000 C3   
+    7     0  0 -1    -1  0  0     0  1  0     -0.00000 -0.00000 -0.00000 C3   
+    8     0  0  1    -1  0  0     0 -1  0     -0.00000 -0.00000 -0.00000 C3   
+    9     0  1  0     0  0  1     1  0  0     -0.00000 -0.00000 -0.00000 C3   
+   10     0 -1  0     0  0 -1     1  0  0     -0.00000 -0.00000 -0.00000 C3   
+   11     0  1  0     0  0 -1    -1  0  0     -0.00000 -0.00000 -0.00000 C3   
+   12     0 -1  0     0  0  1    -1  0  0     -0.00000 -0.00000 -0.00000 C3   
+   13     0  1  0     1  0  0     0  0  1     -0.00000 -0.00000 -0.00000 IC2  
+   14     0 -1  0     1  0  0     0  0 -1     -0.00000 -0.00000 -0.00000 IC4  
+   15     0  1  0    -1  0  0     0  0 -1     -0.00000 -0.00000 -0.00000 IC4  
+   16     0 -1  0    -1  0  0     0  0  1     -0.00000 -0.00000 -0.00000 IC2  
+   17     1  0  0     0  0  1     0  1  0     -0.00000 -0.00000 -0.00000 IC2  
+   18     1  0  0     0  0 -1     0 -1  0     -0.00000 -0.00000 -0.00000 IC2  
+   19    -1  0  0     0  0 -1     0  1  0     -0.00000 -0.00000 -0.00000 IC4  
+   20    -1  0  0     0  0  1     0 -1  0     -0.00000 -0.00000 -0.00000 IC4  
+   21     0  0  1     0  1  0     1  0  0     -0.00000 -0.00000 -0.00000 IC2  
+   22     0  0 -1     0 -1  0     1  0  0     -0.00000 -0.00000 -0.00000 IC4  
+   23     0  0 -1     0  1  0    -1  0  0     -0.00000 -0.00000 -0.00000 IC2  
+   24     0  0  1     0 -1  0    -1  0  0     -0.00000 -0.00000 -0.00000 IC4  
+  skipping symmetry check!
+
+ EXCHANGE-CORRELATION: CEPERLEY-ALDER
+
+ ENERGY CUTOFF EMAX               =    12.000000
+ BROYDEN MIXING CUTOFF            =     5.000000
+ ENERGY SUBMATRIX CUTOFF EMAX     =     5.000000
+ POTENTIAL CONVERGENCE CRITERION  = 0.100000E-05
+ SAFETY FOR DIAGONALIZATION       =     1.000000
+ DIAGONALIZATION ACCURACY         = 0.100000E-13
+ DIAGONALIZATION METHOD           = Grassmann_me
+ POTENTIAL MIXING  METHOD         = pulay_kerker
+         MIXING PARAMETER         = 0.770000    
+ GAUSSIAN BROADENING
+ SMEARING PARAMETER [eV]          =     0.050000
+ OPTIMIZING STARTING GUESS IN NMR CALCULATION
+ OPTIMIZING CGSOLVEGUESS IN NMR CALCULATION
+ ADDITIONAL OUTPUT: GWC
+
+
+ ================ JOB: NON-SELF-CONSISTENT =====================
+
+
+ SIZE OF POTENTIAL GSPACE =     2897 WITH FFT GRID     18    18    18
+
+  fftw_hitlist_plan: create new plan
+    size =         18
+    dirn =         -1  where FWD=        -1 BWD=         1
+    plan = 
+
+  fftw_hitlist_plan: create new plan
+    size =         18
+    dirn =          1  where FWD=        -1 BWD=         1
+    plan = 
+
+
+ POTENTIALS :
+ ------------
+  USING an FHI pseudopotential
+
+  2.00  2.00  0.00  atomic occupations
+ Radial grid parameters r(i) = b*exp(a*i)
+ a =   2.43998868235351211E-002  b =   4.35667582149477917E-004
+ local channel, iloc =           3
+ vql0=  -2.1831232299165442     
+  USING an FHI pseudopotential
+
+  1.00  0.00  0.00  atomic occupations
+ Radial grid parameters r(i) = b*exp(a*i)
+ a =   2.43998868235351211E-002  b =   6.09934615009271111E-003
+ local channel, iloc =           3
+ vql0=   1.2981364697074635     
+
+ Nonlocal potential: 
+ ------------------
+ Number of projectors:    20
+
+ NORMALIZED EWALD ENERGY =    -54.95969588
+
+ EWALD ANALYSIS
+ **************
+                                                  1/3
+ ENERGY :            ENERGY (RY)                *V    (RY*A.U.)
+                   -6.8699619855                 -54.959695884
+
+ FORCES(CARTESIAN) :   N           COORD                   FORCE (RY/A.U.)
+                   A1    A2    A3           -X-       -Y-       -Z-
+            1    0.000 0.000 0.000      -0.000000 -0.000000 -0.000000
+            2    0.202 0.202 0.202       0.561978  0.561978  0.561978
+            3   -0.202-0.202 0.202      -0.561978 -0.561978  0.561978
+            4   -0.202 0.202-0.202      -0.561978  0.561978 -0.561978
+            5    0.202-0.202-0.202       0.561978 -0.561978 -0.561978
+
+ STRESS(CARTESIAN) :                         SIGMA * V (RY)
+              -XX-      -YY-      -ZZ-      -XY-      -YZ-      -ZX-
+          -2.289987 -2.289987 -2.289987  0.000000  0.000000  0.000000
+
+
+ K POINT GENERATION:
+ ------------------
+     1 K POINTS GENERATED BY PROGRAM FROM PARAMETERS :
+    N =    1    1    1      S =  0.00  0.00  0.00      NB =   20
+
+    I       W                 RK                      RKCAR            EKIN
+
+    1     1.0000000     0.0000  0.0000  0.0010     0.000  0.000  0.001     0.000
+
+ HAMILTONIAN MATRIX DIMENSIONS:
+ ---------------------------
+            WEIGHT    K-POINT                              DIMENSION
+   1        1.0000    0.0000    0.0000    0.0010               365
+
+
+ SCREENING :
+ -----------
+
+  MAX AND MIN OF CHARGE DENSITY    74.1593    0.4251
+  MAX AND MIN COMPLEX COMPONENT     0.13E-13 -0.23E-13
+
+-------------------- BEGIN OF SELF-CONSISTENT LOOP --------------------
+   3.5000000000000000       SCFLOOP TIME  BEFORE ITERATION           1
+
+  MAX AND MIN OF POTENTIAL     0.6327   -9.0229
+  MAX AND MIN COMPLEX COMPONENT     0.13E-14 -0.98E-15
+
+
+ MEMORY USAGE:
+ ---------------------------
+                    STRUCTURE               Mb/proc
+                                  =
+            est. executable size  =     12.000000
+            FFT structure         =      0.133484
+            pot decl read_pseudo  =      0.111847
+            pot_gspace            =      0.148483
+            vout                  =      0.011185
+            k_gspace              =      0.009842
+            wavefunction- all k   =      0.034714
+            mixing in scfloop     =      0.469757
+            k-space NON-local     =      0.035400
+ +  start guess memory
+            glist-to map vloc     =      0.062500
+            dense ham             =      0.062500
+            vnlsub map Vnon-loc   =      0.039063
+ or +  diagonalization memory
+            wf copy in CG         =      0.173569
+            occupied space in CG  =      0.019073
+
+ Estimated total memory usage:     13.147 MBytes / proc
+
+ START GUESS SIZE    93
+ PROCESSOR GRID   2 x   2 BLOCKSIZE  32
+ diagonalizing kpoint           1 Grassmann_metal     
+iter    1 m=   24 rho= 1.5616703     shift    0.00000000
+iter    2 m=   24 rho=0.13153271     shift    0.00000000
+iter    3 m=   24 rho=0.29554090E-01 shift    0.00000000
+iter    4 m=   24 rho=0.74511352E-02 shift    0.00000000
+iter    5 m=   24 rho=0.16420435E-02 shift    0.00000000
+iter    6 m=   24 rho=0.25997697E-03 shift    0.00000000
+iter    7 m=   24 rho=0.74247000E-04 shift    0.00000000
+iter    8 m=   24 rho=0.53773849E-04 shift    0.00000000
+iter    9 m=   24 rho=0.35111841E-04 shift    0.00000000
+iter   10 m=   24 rho=0.17185787E-04 shift    0.00000000
+ after  10 iter., residual error = 0.171858E-04
+  abs max error =     0.1118597316E-04
+  band convergence:
+   eigenspace fraction =     0.1000000000E+01
+  band          1  err =     0.1118597316E-04 x wt =     0.1118597316E-04
+  band          2  err =     0.5178449069E-07 x wt =     0.5178449069E-07
+  band          3  err =     0.5403820810E-07 x wt =     0.5403820810E-07
+  band          4  err =     0.5403820810E-07 x wt =     0.5403820810E-07
+  band          5  err =     0.2354576537E-07 x wt =     0.2354576537E-07
+  band          6  err =     0.1725012274E-07 x wt =     0.1725012274E-07
+  band          7  err =     0.1725098461E-07 x wt =     0.1725098461E-07
+  band          8  err =     0.2248339338E-07 x wt =     0.2248339338E-07
+  band          9  err =     0.2654397827E-07 x wt =     0.2654397827E-07
+  band         10  err =     0.2654397827E-07 x wt =     0.2654397827E-07
+  band         11  err =     0.4564109231E-07 x wt =     0.4564109231E-07
+  band         12  err =     0.4781592318E-07 x wt =     0.4781592318E-07
+  band         13  err =     0.4781592318E-07 x wt =     0.4781592318E-07
+  band         14  err =     0.7046805795E-07 x wt =     0.7046805795E-07
+  band         15  err =     0.4341028605E-08 x wt =     0.4341028605E-08
+  band         16  err =     0.4328935586E-08 x wt =     0.4328935586E-08
+  band         17  err =     0.4328935586E-08 x wt =     0.4328935586E-08
+  band         18  err =     0.2354191104E-07 x wt =     0.2354191104E-07
+  band         19  err =     0.2140419865E-06 x wt =     0.2140419865E-06
+  band         20  err =     0.2140190838E-06 x wt =     0.2140190838E-06
+  band         21  err =     0.9427471469E-07 x wt =     0.9427471469E-07
+  band         22  err =     0.2363240540E-05 x wt =     0.2363240540E-05
+  band         23  err =     0.2363240540E-05 x wt =     0.2363240540E-05
+  band         24  err =     0.2092362090E-06 x wt =     0.2092362090E-06
+
+ The Fermi level (includes vxc(0)) is    1.22621237 eV
+
+ The Fermi level (includes vxc(0)) is    0.09012495 Ry
+
+ vxc0=       -0.51365632315326914537 Ry
+ k-point:           1
+   -11.757    -5.726    -5.726    -5.726     1.526     3.624     3.624
+    (1.000)   (1.000)   (1.000)   (1.000)   (0.000)   (0.000)   (0.000)  
+     5.282     5.282     5.282     9.659     9.659     9.659    10.568
+    (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)  
+    12.518    12.519    12.519    12.865    13.241    13.242    18.437
+    (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)  
+    18.437    18.437    20.732
+    (0.000)   (0.000)   (0.000)   (
+
+  MAX AND MIN OF CHARGE DENSITY    74.1593    0.4251
+  MAX AND MIN COMPLEX COMPONENT     0.13E-13 -0.23E-13
+
+ NUMBER OF UNCONVERGED POTENTIAL COMPONENTS:         0
+ LARGEST POTENTIAL DIFFERENCE:  0.00000    
+ WITH KINETIC ENERGY:   47.497471
+
+
+
+           ITERATION NUMBER  1 :
+           ---------------------
+
+           BAND ENERGY          =       0.0000000000    0.00000000
+           HXC  CORRECTION      =       3.2995157143    0.00000000
+           -------------------------------------------------------
+           KINETIC  ENERGY      =       0.0000000000    0.00000000
+           IONIC    ENERGY      =     -10.5176480909    0.00000000
+           NONLOCAL ENERGY      =       7.2181323766    0.00000000
+           HARTREE  ENERGY      =       2.5366858610    0.00000000
+           EXCHANGE CORRELATION =      -4.5124008662    0.00000000
+           -------------------------------------------------------
+           ALPHA TERM           =       0.0470222289    0.00000000
+           EWALD TERM           =      -6.8699619855    0.00000000
+           SMEARING CORRECTION  =      -0.0000000000    0.00000000
+           MAGNETIC CORRECTION  =      -0.0000000000   -0.00000000
+           -------------------------------------------------------
+           LSDA+U CORRECTION    =       0.0000000000    0.00000000
+           LSDA+U BAND CORRECT. =       0.0000000000    0.00000000
+           -------------------------------------------------------
+           TOTAL ENERGY(LSDA)   =     -12.1451927049    0.00000000
+           NON-VARIATIONAL ETOT =     -12.1451927049    0.00000000
+           TOTAL ENERGY(LSDA+U) =     -12.1451927049    0.00000000
+  hijacked scf for nscf purposes:
+   scf convergence =  T
+  nscf convergence =  F
+ Is this nscf?  T
+          11  SCFLOOP # H*Psi  AFTER ITERATION           1
+   3.6250000000000000       SCFLOOP TIME  BEFORE ITERATION           2
+
+  MAX AND MIN OF POTENTIAL     0.6327   -9.0229
+  MAX AND MIN COMPLEX COMPONENT     0.13E-14 -0.98E-15
+
+ diagonalizing kpoint           1 Grassmann_metal     
+iter    1 m=   24 rho=0.33518212E-04 shift    0.00000000
+iter    2 m=   24 rho=0.15073157E-04 shift    0.00000000
+iter    3 m=   24 rho=0.65135857E-05 shift    0.00000000
+iter    4 m=   24 rho=0.28264862E-05 shift    0.00000000
+iter    5 m=   24 rho=0.15606535E-05 shift    0.00000000
+iter    6 m=   24 rho=0.95371009E-06 shift    0.00000000
+iter    7 m=   24 rho=0.48854071E-06 shift    0.00000000
+iter    8 m=   24 rho=0.12708452E-06 shift    0.00000000
+iter    9 m=   24 rho=0.92926794E-07 shift    0.00000000
+iter   10 m=   24 rho=0.60732859E-07 shift    0.00000000
+ after  10 iter., residual error = 0.607329E-07
+  abs max error =     0.4092969201E-07
+  band convergence:
+   eigenspace fraction =     0.1000000000E+01
+  band          1  err =     0.4092969201E-07 x wt =     0.4092969201E-07
+  band          2  err =     0.6936621793E-10 x wt =     0.6936621793E-10
+  band          3  err =     0.6897943817E-10 x wt =     0.6897943817E-10
+  band          4  err =     0.6897943817E-10 x wt =     0.6897943817E-10
+  band          5  err =     0.1216338397E-10 x wt =     0.1216338397E-10
+  band          6  err =     0.1131139357E-10 x wt =     0.1131139357E-10
+  band          7  err =     0.1131718977E-10 x wt =     0.1131718977E-10
+  band          8  err =     0.4805690309E-09 x wt =     0.4805690309E-09
+  band          9  err =     0.4805690309E-09 x wt =     0.4805690309E-09
+  band         10  err =     0.5395064095E-09 x wt =     0.5395064095E-09
+  band         11  err =     0.1565851215E-09 x wt =     0.1565851215E-09
+  band         12  err =     0.1520615847E-09 x wt =     0.1520615847E-09
+  band         13  err =     0.1520615847E-09 x wt =     0.1520615847E-09
+  band         14  err =     0.2317248066E-08 x wt =     0.2317248066E-08
+  band         15  err =     0.4056008894E-12 x wt =     0.4056008894E-12
+  band         16  err =     0.3804939936E-12 x wt =     0.3804939936E-12
+  band         17  err =     0.3804939937E-12 x wt =     0.3804939937E-12
+  band         18  err =     0.1143090337E-09 x wt =     0.1143090337E-09
+  band         19  err =     0.5723129565E-10 x wt =     0.5723129565E-10
+  band         20  err =     0.5717281646E-10 x wt =     0.5717281646E-10
+  band         21  err =     0.4560155374E-09 x wt =     0.4560155374E-09
+  band         22  err =     0.7188464585E-08 x wt =     0.7188464585E-08
+  band         23  err =     0.7188464585E-08 x wt =     0.7188464585E-08
+  band         24  err =     0.2196251473E-09 x wt =     0.2196251473E-09
+
+ The Fermi level (includes vxc(0)) is    1.22621166 eV
+
+ The Fermi level (includes vxc(0)) is    0.09012490 Ry
+
+ vxc0=       -0.51365632315326914537 Ry
+ k-point:           1
+   -11.757    -5.726    -5.726    -5.726     1.526     3.624     3.624
+    (1.000)   (1.000)   (1.000)   (1.000)   (0.000)   (0.000)   (0.000)  
+     5.282     5.282     5.282     9.659     9.659     9.659    10.568
+    (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)  
+    12.518    12.519    12.519    12.865    13.241    13.242    18.437
+    (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)  
+    18.437    18.437    20.732
+    (0.000)   (0.000)   (0.000)   (
+
+  MAX AND MIN OF CHARGE DENSITY    74.1593    0.4251
+  MAX AND MIN COMPLEX COMPONENT     0.13E-13 -0.23E-13
+
+ NUMBER OF UNCONVERGED POTENTIAL COMPONENTS:         0
+ LARGEST POTENTIAL DIFFERENCE:  0.00000    
+ WITH KINETIC ENERGY:   47.497471
+
+
+
+           ITERATION NUMBER  2 :
+           ---------------------
+
+           BAND ENERGY          =       0.0000000000    0.00000000
+           HXC  CORRECTION      =       3.2995157143    0.00000000
+           -------------------------------------------------------
+           KINETIC  ENERGY      =       0.0000000000    0.00000000
+           IONIC    ENERGY      =     -10.5176480909    0.00000000
+           NONLOCAL ENERGY      =       7.2181323766    0.00000000
+           HARTREE  ENERGY      =       2.5366858610    0.00000000
+           EXCHANGE CORRELATION =      -4.5124008662    0.00000000
+           -------------------------------------------------------
+           ALPHA TERM           =       0.0470222289    0.00000000
+           EWALD TERM           =      -6.8699619855    0.00000000
+           SMEARING CORRECTION  =      -0.0000000000    0.00000000
+           MAGNETIC CORRECTION  =      -0.0000000000   -0.00000000
+           -------------------------------------------------------
+           LSDA+U CORRECTION    =       0.0000000000    0.00000000
+           LSDA+U BAND CORRECT. =       0.0000000000    0.00000000
+           -------------------------------------------------------
+           TOTAL ENERGY(LSDA)   =     -12.1451927049    0.00000000
+           NON-VARIATIONAL ETOT =     -12.1451927049    0.00000000
+           TOTAL ENERGY(LSDA+U) =     -12.1451927049    0.00000000
+  hijacked scf for nscf purposes:
+   scf convergence =  T
+  nscf convergence =  F
+ Is this nscf?  T
+          22  SCFLOOP # H*Psi  AFTER ITERATION           2
+   3.7500000000000000       SCFLOOP TIME  BEFORE ITERATION           3
+
+  MAX AND MIN OF POTENTIAL     0.6327   -9.0229
+  MAX AND MIN COMPLEX COMPONENT     0.13E-14 -0.98E-15
+
+ diagonalizing kpoint           1 Grassmann_metal     
+iter    1 m=   24 rho=0.28565904E-07 shift    0.00000000
+iter    2 m=   24 rho=0.11859818E-07 shift    0.00000000
+iter    3 m=   24 rho=0.66657858E-08 shift    0.00000000
+iter    4 m=   24 rho=0.80903712E-08 shift    0.00000000
+iter    5 m=   24 rho=0.27933598E-08 shift    0.00000000
+iter    6 m=   24 rho=0.25700296E-08 shift    0.00000000
+iter    7 m=   24 rho=0.17372692E-08 shift    0.00000000
+iter    8 m=   24 rho=0.17233889E-08 shift    0.00000000
+iter    9 m=   24 rho=0.44231385E-09 shift    0.00000000
+iter   10 m=   24 rho=0.16239016E-09 shift    0.00000000
+ after  10 iter., residual error = 0.162390E-09
+  abs max error =     0.8042082685E-10
+  band convergence:
+   eigenspace fraction =     0.1000000000E+01
+  band          1  err =     0.8042082685E-10 x wt =     0.8042082685E-10
+  band          2  err =     0.7904664593E-13 x wt =     0.7904664593E-13
+  band          3  err =     0.7805881169E-13 x wt =     0.7805881169E-13
+  band          4  err =     0.7805881172E-13 x wt =     0.7805881172E-13
+  band          5  err =     0.8270252470E-14 x wt =     0.8270252470E-14
+  band          6  err =     0.6730526411E-14 x wt =     0.6730526411E-14
+  band          7  err =     0.6735401584E-14 x wt =     0.6735401584E-14
+  band          8  err =     0.7314265691E-12 x wt =     0.7314265691E-12
+  band          9  err =     0.7314265688E-12 x wt =     0.7314265688E-12
+  band         10  err =     0.8945252027E-12 x wt =     0.8945252027E-12
+  band         11  err =     0.4468371262E-13 x wt =     0.4468371262E-13
+  band         12  err =     0.4440550208E-13 x wt =     0.4440550208E-13
+  band         13  err =     0.4440550212E-13 x wt =     0.4440550212E-13
+  band         14  err =     0.3020391355E-11 x wt =     0.3020391355E-11
+  band         15  err =     0.7938812357E-15 x wt =     0.7938812357E-15
+  band         16  err =     0.6882097486E-15 x wt =     0.6882097486E-15
+  band         17  err =     0.6882097478E-15 x wt =     0.6882097478E-15
+  band         18  err =     0.2571699543E-12 x wt =     0.2571699543E-12
+  band         19  err =     0.1901676985E-12 x wt =     0.1901676985E-12
+  band         20  err =     0.1900489200E-12 x wt =     0.1900489200E-12
+  band         21  err =     0.3499780879E-10 x wt =     0.3499780879E-10
+  band         22  err =     0.3499780879E-10 x wt =     0.3499780879E-10
+  band         23  err =     0.1485595088E-11 x wt =     0.1485595088E-11
+  band         24  err =     0.4080396753E-11 x wt =     0.4080396753E-11
+
+ The Fermi level (includes vxc(0)) is    1.22621166 eV
+
+ The Fermi level (includes vxc(0)) is    0.09012490 Ry
+
+ vxc0=       -0.51365632315326914537 Ry
+ k-point:           1
+   -11.757    -5.726    -5.726    -5.726     1.526     3.624     3.624
+    (1.000)   (1.000)   (1.000)   (1.000)   (0.000)   (0.000)   (0.000)  
+     5.282     5.282     5.282     9.659     9.659     9.659    10.568
+    (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)  
+    12.518    12.519    12.519    12.865    13.241    13.242    18.437
+    (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)  
+    18.437    18.437    20.732
+    (0.000)   (0.000)   (0.000)   (
+
+  MAX AND MIN OF CHARGE DENSITY    74.1593    0.4251
+  MAX AND MIN COMPLEX COMPONENT     0.13E-13 -0.23E-13
+
+ NUMBER OF UNCONVERGED POTENTIAL COMPONENTS:         0
+ LARGEST POTENTIAL DIFFERENCE:  0.00000    
+ WITH KINETIC ENERGY:   47.497471
+
+
+
+           ITERATION NUMBER  3 :
+           ---------------------
+
+           BAND ENERGY          =       0.0000000000    0.00000000
+           HXC  CORRECTION      =       3.2995157143    0.00000000
+           -------------------------------------------------------
+           KINETIC  ENERGY      =       0.0000000000    0.00000000
+           IONIC    ENERGY      =     -10.5176480909    0.00000000
+           NONLOCAL ENERGY      =       7.2181323766    0.00000000
+           HARTREE  ENERGY      =       2.5366858610    0.00000000
+           EXCHANGE CORRELATION =      -4.5124008662    0.00000000
+           -------------------------------------------------------
+           ALPHA TERM           =       0.0470222289    0.00000000
+           EWALD TERM           =      -6.8699619855    0.00000000
+           SMEARING CORRECTION  =      -0.0000000000    0.00000000
+           MAGNETIC CORRECTION  =      -0.0000000000   -0.00000000
+           -------------------------------------------------------
+           LSDA+U CORRECTION    =       0.0000000000    0.00000000
+           LSDA+U BAND CORRECT. =       0.0000000000    0.00000000
+           -------------------------------------------------------
+           TOTAL ENERGY(LSDA)   =     -12.1451927049    0.00000000
+           NON-VARIATIONAL ETOT =     -12.1451927049    0.00000000
+           TOTAL ENERGY(LSDA+U) =     -12.1451927049    0.00000000
+  hijacked scf for nscf purposes:
+   scf convergence =  T
+  nscf convergence =  F
+ Is this nscf?  T
+          33  SCFLOOP # H*Psi  AFTER ITERATION           3
+   3.7500000000000000       SCFLOOP TIME  BEFORE ITERATION           4
+
+  MAX AND MIN OF POTENTIAL     0.6327   -9.0229
+  MAX AND MIN COMPLEX COMPONENT     0.13E-14 -0.98E-15
+
+ diagonalizing kpoint           1 Grassmann_metal     
+iter    1 m=   24 rho=0.13314509E-09 shift    0.00000000
+iter    2 m=   24 rho=0.73756057E-10 shift    0.00000000
+iter    3 m=   24 rho=0.52162955E-10 shift    0.00000000
+iter    4 m=   24 rho=0.15558006E-10 shift    0.00000000
+iter    5 m=   24 rho=0.17566720E-10 shift    0.00000000
+iter    6 m=   24 rho=0.14185254E-10 shift    0.00000000
+iter    7 m=   24 rho=0.57343618E-11 shift    0.00000000
+iter    8 m=   24 rho=0.11078134E-11 shift    0.00000000
+iter    9 m=   24 rho=0.80254646E-12 shift    0.00000000
+iter   10 m=   24 rho=0.36711986E-12 shift    0.00000000
+ after  10 iter., residual error = 0.367120E-12
+  abs max error =     0.9771230686E-13
+  band convergence:
+   eigenspace fraction =     0.1000000000E+01
+  band          1  err =     0.9771230686E-13 x wt =     0.9771230686E-13
+  band          2  err =     0.1048259566E-14 x wt =     0.1048259566E-14
+  band          3  err =     0.1013856142E-14 x wt =     0.1013856142E-14
+  band          4  err =     0.1013856139E-14 x wt =     0.1013856139E-14
+  band          5  err =     0.7598107127E-15 x wt =     0.7598107127E-15
+  band          6  err =     0.5805234879E-15 x wt =     0.5805234879E-15
+  band          7  err =     0.5806475882E-15 x wt =     0.5806475882E-15
+  band          8  err =     0.8484158814E-14 x wt =     0.8484158814E-14
+  band          9  err =     0.8484158811E-14 x wt =     0.8484158811E-14
+  band         10  err =     0.8550763408E-14 x wt =     0.8550763408E-14
+  band         11  err =     0.9524282477E-15 x wt =     0.9524282477E-15
+  band         12  err =     0.9099428193E-15 x wt =     0.9099428193E-15
+  band         13  err =     0.9099428187E-15 x wt =     0.9099428187E-15
+  band         14  err =     0.2558290954E-13 x wt =     0.2558290954E-13
+  band         15  err =     0.1282337750E-16 x wt =     0.1282337750E-16
+  band         16  err =     0.1263227326E-16 x wt =     0.1263227326E-16
+  band         17  err =     0.1263227268E-16 x wt =     0.1263227268E-16
+  band         18  err =     0.2320723362E-14 x wt =     0.2320723362E-14
+  band         19  err =     0.7508905792E-15 x wt =     0.7508905792E-15
+  band         20  err =     0.7505862378E-15 x wt =     0.7505862378E-15
+  band         21  err =     0.6427178527E-13 x wt =     0.6427178527E-13
+  band         22  err =     0.6427178532E-13 x wt =     0.6427178532E-13
+  band         23  err =     0.4110515981E-14 x wt =     0.4110515981E-14
+  band         24  err =     0.7402191625E-13 x wt =     0.7402191625E-13
+
+ The Fermi level (includes vxc(0)) is    1.22621166 eV
+
+ The Fermi level (includes vxc(0)) is    0.09012490 Ry
+
+ vxc0=       -0.51365632315326914537 Ry
+ k-point:           1
+   -11.757    -5.726    -5.726    -5.726     1.526     3.624     3.624
+    (1.000)   (1.000)   (1.000)   (1.000)   (0.000)   (0.000)   (0.000)  
+     5.282     5.282     5.282     9.659     9.659     9.659    10.568
+    (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)  
+    12.518    12.519    12.519    12.865    13.241    13.242    18.437
+    (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)  
+    18.437    18.437    20.732
+    (0.000)   (0.000)   (0.000)   (
+
+  MAX AND MIN OF CHARGE DENSITY    74.1593    0.4251
+  MAX AND MIN COMPLEX COMPONENT     0.13E-13 -0.23E-13
+
+ NUMBER OF UNCONVERGED POTENTIAL COMPONENTS:         0
+ LARGEST POTENTIAL DIFFERENCE:  0.00000    
+ WITH KINETIC ENERGY:   47.497471
+
+
+
+           ITERATION NUMBER  4 :
+           ---------------------
+
+           BAND ENERGY          =       0.0000000000    0.00000000
+           HXC  CORRECTION      =       3.2995157143    0.00000000
+           -------------------------------------------------------
+           KINETIC  ENERGY      =       0.0000000000    0.00000000
+           IONIC    ENERGY      =     -10.5176480909    0.00000000
+           NONLOCAL ENERGY      =       7.2181323766    0.00000000
+           HARTREE  ENERGY      =       2.5366858610    0.00000000
+           EXCHANGE CORRELATION =      -4.5124008662    0.00000000
+           -------------------------------------------------------
+           ALPHA TERM           =       0.0470222289    0.00000000
+           EWALD TERM           =      -6.8699619855    0.00000000
+           SMEARING CORRECTION  =      -0.0000000000    0.00000000
+           MAGNETIC CORRECTION  =      -0.0000000000   -0.00000000
+           -------------------------------------------------------
+           LSDA+U CORRECTION    =       0.0000000000    0.00000000
+           LSDA+U BAND CORRECT. =       0.0000000000    0.00000000
+           -------------------------------------------------------
+           TOTAL ENERGY(LSDA)   =     -12.1451927049    0.00000000
+           NON-VARIATIONAL ETOT =     -12.1451927049    0.00000000
+           TOTAL ENERGY(LSDA+U) =     -12.1451927049    0.00000000
+  hijacked scf for nscf purposes:
+   scf convergence =  T
+  nscf convergence =  F
+ Is this nscf?  T
+          44  SCFLOOP # H*Psi  AFTER ITERATION           4
+   3.8750000000000000       SCFLOOP TIME  BEFORE ITERATION           5
+
+  MAX AND MIN OF POTENTIAL     0.6327   -9.0229
+  MAX AND MIN COMPLEX COMPONENT     0.13E-14 -0.98E-15
+
+ diagonalizing kpoint           1 Grassmann_metal     
+iter    1 m=   24 rho=0.35899089E-12 shift    0.00000000
+iter    2 m=   24 rho=0.13752818E-12 shift    0.00000000
+iter    3 m=   24 rho=0.13411530E-12 shift    0.00000000
+iter    4 m=   24 rho=0.12664963E-12 shift    0.00000000
+iter    5 m=   24 rho=0.45526521E-13 shift    0.00000000
+iter    6 m=   24 rho=0.25350052E-13 shift    0.00000000
+iter    7 m=   24 rho=0.30469362E-13 shift    0.00000000
+iter    8 m=   24 rho=0.16889060E-13 shift    0.00000000
+  abs max error =     0.2050659475E-14
+  band convergence:
+   eigenspace fraction =     0.1000000000E+01
+  band          1  err =     0.1427660045E-14 x wt =     0.1427660045E-14
+  band          2  err =     0.2816313659E-17 x wt =     0.2816313659E-17
+  band          3  err =     0.2798120680E-17 x wt =     0.2798120680E-17
+  band          4  err =     0.2798120674E-17 x wt =     0.2798120674E-17
+  band          5  err =     0.3911604083E-19 x wt =     0.3911604083E-19
+  band          6  err =     0.8588744611E-19 x wt =     0.8588744611E-19
+  band          7  err =     0.8588967108E-19 x wt =     0.8588967108E-19
+  band          8  err =     0.3681526899E-18 x wt =     0.3681526899E-18
+  band          9  err =     0.3681527075E-18 x wt =     0.3681527075E-18
+  band         10  err =     0.3805565508E-18 x wt =     0.3805565508E-18
+  band         11  err =     0.2989728078E-18 x wt =     0.2989728078E-18
+  band         12  err =     0.3076490923E-18 x wt =     0.3076490923E-18
+  band         13  err =     0.3076491306E-18 x wt =     0.3076491306E-18
+  band         14  err =     0.4968007797E-17 x wt =     0.4968007797E-17
+  band         15  err =     0.5041152380E-20 x wt =     0.5041152380E-20
+  band         16  err =     0.5013875337E-20 x wt =     0.5013875337E-20
+  band         17  err =     0.5013873730E-20 x wt =     0.5013873730E-20
+  band         18  err =     0.4117274115E-18 x wt =     0.4117274115E-18
+  band         19  err =     0.1047109570E-18 x wt =     0.1047109570E-18
+  band         20  err =     0.1044685995E-18 x wt =     0.1044685995E-18
+  band         21  err =     0.1617264850E-15 x wt =     0.1617264850E-15
+  band         22  err =     0.1617264838E-15 x wt =     0.1617264838E-15
+  band         23  err =     0.1050829224E-17 x wt =     0.1050829224E-17
+  band         24  err =     0.2050659475E-14 x wt =     0.2050659475E-14
+
+ The Fermi level (includes vxc(0)) is    1.22621166 eV
+
+ The Fermi level (includes vxc(0)) is    0.09012490 Ry
+
+ vxc0=       -0.51365632315326914537 Ry
+ k-point:           1
+   -11.757    -5.726    -5.726    -5.726     1.526     3.624     3.624
+    (1.000)   (1.000)   (1.000)   (1.000)   (0.000)   (0.000)   (0.000)  
+     5.282     5.282     5.282     9.659     9.659     9.659    10.568
+    (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)  
+    12.518    12.519    12.519    12.865    13.241    13.242    18.437
+    (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)   (0.000)  
+    18.437    18.437    20.732
+    (0.000)   (0.000)   (0.000)   (
+
+  MAX AND MIN OF CHARGE DENSITY    74.1593    0.4251
+  MAX AND MIN COMPLEX COMPONENT     0.13E-13 -0.23E-13
+
+ NUMBER OF UNCONVERGED POTENTIAL COMPONENTS:         0
+ LARGEST POTENTIAL DIFFERENCE:  0.00000    
+ WITH KINETIC ENERGY:   47.497471
+
+
+
+           ITERATION NUMBER  5 :
+           ---------------------
+
+           BAND ENERGY          =       0.0000000000    0.00000000
+           HXC  CORRECTION      =       3.2995157143    0.00000000
+           -------------------------------------------------------
+           KINETIC  ENERGY      =       0.0000000000    0.00000000
+           IONIC    ENERGY      =     -10.5176480909    0.00000000
+           NONLOCAL ENERGY      =       7.2181323766    0.00000000
+           HARTREE  ENERGY      =       2.5366858610    0.00000000
+           EXCHANGE CORRELATION =      -4.5124008662    0.00000000
+           -------------------------------------------------------
+           ALPHA TERM           =       0.0470222289    0.00000000
+           EWALD TERM           =      -6.8699619855    0.00000000
+           SMEARING CORRECTION  =      -0.0000000000    0.00000000
+           MAGNETIC CORRECTION  =      -0.0000000000   -0.00000000
+           -------------------------------------------------------
+           LSDA+U CORRECTION    =       0.0000000000    0.00000000
+           LSDA+U BAND CORRECT. =       0.0000000000    0.00000000
+           -------------------------------------------------------
+           TOTAL ENERGY(LSDA)   =     -12.1451927049    0.00000000
+           NON-VARIATIONAL ETOT =     -12.1451927049    0.00000000
+           TOTAL ENERGY(LSDA+U) =     -12.1451927049    0.00000000
+  hijacked scf for nscf purposes:
+   scf convergence =  T
+  nscf convergence =  T
+ Is this nscf?  T
+          53  SCFLOOP # H*Psi  AFTER ITERATION           5
+   4.1250000000000000       SCFLOOP TIME  AFTER ITERATION           5
+  bands output for GW =           20
+
+
+ FORCE/STRESS ANALYSIS
+ *********************
+
+
+ FORCES :         COORD                         FORCE (Ry/a.u.)
+            A1    A2    A3           -X-            -Y-            -Z-
+  1      0.000   0.000   0.000   -0.0000000000 -0.0000000000 -0.0000000000
+  2      1.619   1.619   1.619    0.1176423865  0.1176423865  0.1176423865
+  3     -1.619  -1.619   1.619   -0.1176423865 -0.1176423865  0.1176423865
+  4     -1.619   1.619  -1.619   -0.1176423865  0.1176423865 -0.1176423865
+  5      1.619  -1.619  -1.619    0.1176423865 -0.1176423865 -0.1176423865
+
+
+ STRESS :                         SIGMA * V (Ry)
+(cartes)  -XX-        -YY-        -ZZ-        -XY-        -YZ-        -ZX-
+       0.64310292  0.64310292  0.64310292  0.00000000  0.00000000  0.00000000
+
+                                    SIGMA (GPa)
+         -XX-        -YY-        -ZZ-        -XY-        -YZ-        -ZX-
+         18.47765    18.47765    18.47765     0.00000     0.00000     0.00000
+
+                       CPU (s)        WALL (s)           #
+
+ FFT:                    0.010           0.001          17
+ FOCK:                   0.000           0.000           0
+ EPSREAD:                0.000           0.000           0
+
+ TOTAL:                  3.790           4.520
+

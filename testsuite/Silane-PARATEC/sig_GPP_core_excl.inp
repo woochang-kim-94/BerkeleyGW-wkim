@@ -1,0 +1,29 @@
+number_bands 18
+# DVF : the minimum band index must be larger
+# than the number of core states excluded.
+# This makes sense because you shouldn't
+# calculate bands that aren't included in the
+# sum because that'll be one of the biggest
+# contributions.  
+
+band_index_min 2
+band_index_max 10
+
+screening_semiconductor
+
+begin kpoints
+  0.000000000  0.000000000  0.000000000   1.0
+end
+
+dont_use_vxcdat
+#exact_static_ch 1
+
+number_offdiag 1
+begin offdiag
+  4 8 6
+end
+
+cell_box_truncation
+
+
+number_core_excluded 1

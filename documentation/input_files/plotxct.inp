@@ -1,0 +1,133 @@
+#
+# Index of state to be plotted, as it appears in eigenvectors
+#
+plot_state 20
+
+#
+# Index of spin component of the exciton to plot. Default is 1.
+#
+plot_spin 1
+
+#
+# Size of supercell
+#
+supercell_size 1 1 60
+
+#
+# coordinates of the hole in crystal coordinates, in units of supercell lattice vectors
+# (usually, the hole is near the center of the supercell)
+# (e.g. center of 1 1 60 supercell should be written as 0.5 0.5 30.0)
+#
+hole_position    0.8025    0.3487    30.00
+
+# input option 'restrict_kpoints' reduces the sum over k-points
+# above to a sum over the specified number that give most of the contribution
+# to the norm of eigenvectors. This is handy if there are many k-points
+# but only a few of them give sizable contribution.
+#restrict_kpoints 5
+
+#  q-shift used in the calculation of valence bands (WFNq_fi file)
+# Only needed if restrict_kpoints is used, otherwise determined automatically.
+q_shift   0.00000  0.00000  0.00000
+
+# Verbosity level, options are:
+#
+# - 1 = default
+#
+# - 2 = medium - info about k-points, symmetries, and eqp corrections.
+#
+# - 3 = high   - full dump of the reduced and unfolded k-points.
+#
+# - 4 = log    - log of various function calls. Use to debug code.
+#
+# - 5 = debug  - extra debug statements. Use to debug code.
+#
+# - 6 = max    - only use if instructed to, severe performance downgrade.
+#
+# Note that verbosity levels are cumulative. Most users will want to stick
+# with level 1 and, at most, level 3. Only use level 4+ if debugging the code.
+#verbosity 1
+
+# To read wavefunctions in HDF5 format (WFN_fi.h5 and WFNq_fi.h5)
+# Default is to read binary
+#use_wfn_hdf5
+
+
+# ### K-point unfolding and symmetries
+#
+# These flags define whether to use symmetries to unfold
+# the Brillouin zone or not in files. These flags should match the ones
+# you used in [`absorption.inp`](absorption-keywords.md).
+#
+#
+# See [`absorption.inp`](absorption-keywords.md#no_symmetries_fine_grid).
+#no_symmetries_fine_grid
+#
+# See [`absorption.inp`](absorption-keywords.md#use_symmetries_fine_grid).
+#use_symmetries_fine_grid
+#
+# See [`absorption.inp`](absorption-keywords.md#no_symmetries_shifted_grid).
+#no_symmetries_shifted_grid
+#
+# See [`absorption.inp`](absorption-keywords.md#use_symmetries_shifted_grid).
+#use_symmetries_shifted_grid
+
+# Instead of calculating the exciton wavefunction on every real-space grid point, we can
+# downsample the grid by the following factor (each number controls the 
+# downsampling for the corresponding particular axis [x,y,z]). Note that the
+# real-space grid is rounded up, so that there will be at least one point no
+# matter now much you downsample it!
+#downsample 2 2 2
+
+# Only output the exciton wavefunction modulus squared. This makes the output file
+# 2/3 smaller. *This option is mandatory if you want to integrate the result
+# on a particular axis!*
+#only_psi2
+
+# Umcomment if you want to integrate the wavefunction modulus squared along
+# one or two directions. No normalization is performed. You'll also have to
+# enable the only_psi2 flag to use the following options.
+#integrate_x
+#integrate_y
+#integrate_z
+
+# Uncomment this option to bypass the extra checks that are performed when
+# unfolding the BZ. This is usually safe to do if you are not unfolding the BZ.
+#no_bz_check
+
+# For spinor wavefunctions, you need to specify the desired spin polarization for
+# the constituent hole and electron states.
+# 1 is up, 2 is down.
+# Use keyword spinor to activate spinor functionality
+#spinor
+#hole_spin 1
+#electron_spin 1
+
+# ### Experimental features for testing purposes only
+#
+#
+# 'unfolded BZ' is from the kpoints in the WFN file
+# 'full BZ' is generated from the kgrid parameters in the WFN file
+# See comments in Common/checkbz.f90 for more details
+# Replace unfolded BZ with full BZ
+#fullbz_replace
+#
+# Write unfolded BZ and full BZ to files
+#fullbz_write
+
+#BEGIN_INTERNAL_ONLY
+
+# NOT WORKING
+#plot_hole
+
+# NOT WORKING
+#plot_electron
+
+# NOT WORKING
+# Alternate plotting approach: specify the index of a Wannier function
+# to project the valence bands onto. Its coefficients from a Wannier90 run
+# will be read from binary file 'seedname.chk'.
+#wannier_index 1
+#wannier_seedname silicon
+
+#END_INTERNAL_ONLY

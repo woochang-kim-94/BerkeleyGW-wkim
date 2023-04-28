@@ -1,0 +1,39 @@
+
+This directory contains a patch for espresso-4.3.2 that fixes bugs 
+listed below. Assuming BerkeleyGW is installed in $BGWPATH/BerkeleyGW,
+to apply the patch execute the following command 
+in the directory containing the espresso-4.3.2 directory:
+
+% patch -p0 -i $BGWPATH/BerkeleyGW/MeanField/ESPRESSO/version-4.3.2/espresso-4.3.2-patch
+
+espresso-4.3.2 buglist:
+
+(1) <<< THIS IS FIXED IN QUANTUM ESPRESSO 5.0 >>>
+If you run espresso nscf calculation with startingwfc set to file 
+you may get error message saying "cannot read wfc : file not found". 
+This happens because subroutine verify_tmpdir in PW/input.f90 renames 
+data-file.xml to data-file.xml.bck and subroutines read_planewaves and 
+read_wavefunctions in PW/pw_restart.f90 try to read from data-file.xml 
+which doesn't exist. To get around this problem read from .xml.bck in 
+read_planewaves and read_wavefunctions if opening .xml returns error.
+
+(2) <<< THIS IS FIXED IN QUANTUM ESPRESSO 5.0 >>>
+Missing "CALL stop_pp ( )" at the end of PP/plan_avg.f90 causes it 
+to crash sometimes.
+
+(3) <<< THIS IS FIXED IN QUANTUM ESPRESSO 5.0 >>>
+Sometimes pw.x generates additional k-points in a "nscf" run with an explicit 
+list of k-points. If this is the case for your calculation, there are several 
+ways to go around this problem: 
+* Apply the patch provided with BerkeleyGW. It will prevent pw.x from 
+  generating additional k-points if they are provided explicitly, and 
+  take care of the normalization of the weights of k-points in a "bands" 
+  calculation. 
+* Do not specify the atomic positions in the input file of kgrid.x (set 
+  number of atoms = 0). Then pw.x will generate additional k-points which 
+  are the correct ones. Also set noinv = .true. in the input file of pw.x 
+  if time-reversal symmetry was not used in kgrid.x. 
+* Run a pw.x "bands" calculation instead of "nscf". In this case you have 
+  to explicitly specify the occupations in the input file of pw2bgw.x (note 
+  that this only works for insulators) and to normalize the weights of 
+  k-points to one in the input file of pw.x.

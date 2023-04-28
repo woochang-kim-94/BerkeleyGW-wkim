@@ -1,0 +1,27 @@
+ &input_siesta2bgw
+    systemlabel      = 'prefix'  ! SystemLabel used in SIESTA calculation
+    wfng_output_file = 'wfng.lo' ! file to write generated wavefunctions to
+    rhog_output_file = 'rhog.lo' ! file to write rho(G) (blank = not written)
+    vxcg_output_file = 'vxcg.lo' ! file to write Vxc(G) (blank = not written)
+    ecutwfn          = 0.0       ! kinetic energy cutoff (Ry) for wavefunctions
+    ecutrho          = 0.0       ! kinetic energy cutoff (Ry) for rho and V
+    wfng_nk1         = 0         ! number of k-points along b1
+    wfng_nk2         = 0         ! number of k-points along b2
+    wfng_nk3         = 0         ! number of k-points along b3
+    wfng_dk1         = 0.0       ! k-grid offset along b1 in units of b1/nk1
+    wfng_dk2         = 0.0       ! k-grid offset along b2 in units of b2/nk2
+    wfng_dk3         = 0.0       ! k-grid offset along b3 in units of b3/nk3
+    wfng_ref_flag    = .false.   ! shift eigenvalues to match reference state
+    wfng_ref_kpoint  = 0         ! reference state k-point index
+    wfng_ref_spin    = 0         ! reference state spin index
+    wfng_ref_band    = 0         ! reference state band index
+    wfng_ref_energy  = 0.0       ! reference state eigenvalue (in eV)
+    wfng_band_flag   = .false.   ! choose a range of bands (0 = all)
+    wfng_band_min    = 0         ! minimum band number
+    wfng_band_max    = 0         ! maximum band number
+    wfng_energy_flag = .false.   ! choose an energy window
+    wfng_energy_min  = 0.0       ! minimum energy (in eV)
+    wfng_energy_max  = 0.0       ! maximum energy (in eV)
+    wfng_gamma_real  = .false.   ! only real wavefunctions at the Gamma point
+ /
+

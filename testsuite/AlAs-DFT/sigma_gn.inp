@@ -1,0 +1,14 @@
+frequency_dependence  3
+
+degeneracy_check_override
+
+number_bands      14
+
+band_index_min 2
+band_index_max 5
+
+screening_semiconductor
+
+begin kpoints
+  0.000000000  0.000000000  0.000000000  1.0
+end

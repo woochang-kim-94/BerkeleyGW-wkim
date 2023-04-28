@@ -1,0 +1,37 @@
+#!/bin/bash -l
+#SBATCH -J test_BGW
+#SBATCH -N 2
+#SBATCH -n 32
+#SBATCH -C knl,quad,cache
+#SBATCH -p debug
+#SBATCH -t 00:30:00
+#SBATCH -S 4
+
+# run via: sbatch cori2.scr
+
+# FHJ: Set default ELPA kernels. AVX512 not supported on KNL.
+export ELPA_DEFAULT_real_kernel=ELPA_2STAGE_REAL_AVX2_BLOCK2
+export ELPA_DEFAULT_complex_kernel=ELPA_2STAGE_COMPLEX_AVX2_BLOCK2
+
+export TEMPDIRPATH=$SCRATCH/tmp
+
+# Modify the below to change the number of threads per 
+# MPI task if using OMP or threaded libraries
+export OMP_NUM_THREADS=4
+#export OMP_NUM_THREADS=1
+export ELPA_DEFAULT_omp_threads=$OMP_NUM_THREADS
+export OMP_PLACES=threads
+export OMP_PROC_BIND=spread
+
+# Uncomment below to set number of
+# procs in testsuite
+#export BGW_TEST_MPI_NPROCS=8
+export BGW_TEST_MPI_NPROCS=32
+
+
+export MPIEXEC="`which srun` --cpu_bind=cores -c 16"
+#export MPIEXEC="`which srun` -c $OMP_NUM_THREADS"
+
+make check-parallel &> test.out
+
+echo "Exit status = $?"

@@ -1,0 +1,12 @@
+eps0mat(.h5) ! epsmat file, full-frequency or static
+RHO          ! RHO file for Plasmon-Pole
+0.0 0.0 0.0  ! q-vector in crystal coordinates
+1 0 0        ! G-vector in crystal coordinates
+1 0 0        ! G`-vector in crystal coordinates
+201          ! nFreq, for static epsmat. For full-freq., overwritten from file
+0.5          ! dDeltaFreq in eV, in case of static epsmat. See Above.
+2.0          ! dBrdning in eV, in case of static epsmat. See Above.
+0.1          ! Exciton binding energy to use to calculate the effective eps^-1 head for BSE.
+epsInvPP.dat ! Plasmon-Pole epsilon inverse, Re and Im parts
+epsInvR.dat  ! Retarded epsilon inverse, Re and Im parts
+epsInvA.dat  ! Advanced epsilon inverse, Re and Im parts

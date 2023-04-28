@@ -1,0 +1,10 @@
+number_val_bands 4
+number_cond_bands 6
+
+no_symmetries_coarse_grid
+
+screening_semiconductor
+
+cell_box_truncation
+#spherical_truncation
+#coulomb_truncation_radius   7.00

@@ -1,0 +1,20 @@
+#!/usr/bin/env ipython
+
+fnames = !find . -name make_deps.mk
+for fname in fnames:
+    print(fname)
+    f = open(fname, 'r')
+    f.readline()
+    f.readline()
+    for line in f.readlines():
+        t1, t2 = line.split(':')
+        mod_name = t1.split()[0][:-2]
+        #print(mod_name)
+        #print(line)
+        if t2.find(mod_name+'_m.mod')>-1:
+            print('--')
+            print(mod_name)
+            #print(t2)
+            print(line[:-1])
+            print('--')
+

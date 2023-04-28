@@ -1,0 +1,150 @@
+!=============================================================================
+!
+! Modules:
+!
+! references_m            Originally By FHJ
+!
+! Reference manager for BerkeleyGW. File references.f90p automatically parses
+! references.txt for references and generates references.f90 (via
+! mako_preprocess.py).
+!
+!=============================================================================
+
+<%
+# Parses file references.txt, store into dictionary `refs`
+import os
+from collections import OrderedDict
+import textwrap
+
+fname_refs = os.path.join(os.path.dirname(source_fname), 'references.txt')
+if not os.path.exists(fname_refs):
+    raise RuntimeError('File references.txt ({}) not found.'.format(fname_refs))
+
+labels = []
+refs = []
+with open(fname_refs,'r') as f:
+    label = None
+    for line in f:
+        line = line.strip()
+        if line.startswith('#'):
+            continue # Skip comments
+        if len(line)==0:
+            continue # Skip empty lines
+        if label is None:
+            if not line.endswith(':'):
+                raise RuntimeError('{} is not a valid label identifier: it does not end with a colon'.format(line))
+            if not line[0].isalpha():
+                raise RuntimeError('{} is not a valid label identifier: it does not start with an alphabetic character'.format(line))
+            if not line[:-1].isalnum():
+                raise RuntimeError('{} is not a valid label identifier: it is not alphanumeric'.format(line))
+            label = line[:-1]
+        else:
+            label = label.replace('"', "'")
+            labels.append(label)
+            refs.append(line)
+            label = None
+
+nrefs = len(refs)
+
+def box_str(s):
+  return '*' + s.center(78) + '*'
+%>
+
+#include "f_defs.h"
+
+module references_m
+
+  use, intrinsic :: iso_c_binding
+  use message_m
+  use nrtype_m
+  use os_m
+  use peinfo_m
+  use push_pop_m
+
+  implicit none
+
+  private
+
+  public :: require_reference, show_references
+
+
+%if nrefs>0:
+  integer, parameter, public :: &
+  %for iref, label in enumerate(labels):
+    REF_${label.upper()} = ${iref+1}${", &" if iref+1<len(refs) else ''}
+%endfor
+%endif
+
+  integer, private :: i_
+  logical, private :: need_reference(${nrefs}) = [(.false., i_=1,${nrefs})]
+
+contains
+
+
+subroutine require_reference(reference)
+  integer, intent(in) :: reference
+
+  PUSH_SUB(require_reference)
+
+  if (reference<1 .or. reference>${nrefs}) then
+    write(6,'(/1x,a,i0,a/)') &
+      'WARNING: Internal reference error, reference ', reference, ' not found.'
+  else
+    need_reference(reference) = .true.
+  endif
+
+  POP_SUB(require_reference)
+
+end subroutine require_reference
+
+
+subroutine show_references(iunit)
+  integer, intent(in), optional :: iunit
+
+  integer :: iunit_
+  integer :: iref
+
+  iunit_ = 6
+  if (present(iunit)) iunit_ = iunit
+
+  PUSH_SUB(show_references)
+
+  if (peinf%inode/=0) then
+    POP_SUB(show_references)
+    return
+  endif
+
+  if (any(need_reference)) then
+    write(iunit_,'(/a)') "${'*'*80}"
+    write(iunit_,'(a)') "${box_str(' ')}"
+<%
+s = '''Your calculation employed methods and algorithms published in peer-reviewed
+papers. Please, cite the following references to give proper credit to their authors
+and help support future development of BerkeleyGW.'''
+%>\
+%for line in textwrap.wrap(s, width=78, break_long_words=False):
+    write(iunit_,'(a)') "${box_str(line)}"
+%endfor
+    write(iunit_,'(a)') "${box_str(' ')}"
+    write(iunit_,'(a/)') "${'*'*80}"
+  endif
+
+%for iref in range(nrefs):
+  if (need_reference(${iref+1})) then
+%for line in textwrap.wrap(refs[iref], width=78, break_long_words=False):
+    write(iunit_,'(1x,a)') "${line}"
+%endfor
+    write(iunit_,'()')
+  endif
+%endfor
+
+  if (any(need_reference)) then
+    write(iunit_,'(a/)') "${'*'*80}"
+  endif
+
+  POP_SUB(show_references)
+
+end subroutine show_references
+
+
+end module references_m

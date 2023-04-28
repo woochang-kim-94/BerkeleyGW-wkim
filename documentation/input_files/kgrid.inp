@@ -1,0 +1,34 @@
+5 5 5                  ! numbers of k-points along b1,b2,b3
+0.5 0.5 0.5            ! k-grid offset (0.0 unshifted, 0.5 shifted by half a grid step)
+                       ! These first two lines are the usual Monkhorst-Pack parameters.
+0.0 0.0 0.001          ! a small q-shift (0.0 unshifted, 0.001 shifted by one 1000th of b3)
+                       ! This is for WFNq in Epsilon.
+
+0.0 0.5 0.5            ! lattice vectors in Cartesian coordinates (x,y,z)
+0.5 0.0 0.5            ! in units of the lattice parameter
+0.5 0.5 0.0            !
+2                      ! number of atoms in the unit cell
+1 -0.125 -0.125 -0.125 ! atomic species and positions in Cartesian coordinates (x,y,z)
+1  0.125  0.125  0.125 ! in units of the lattice parameter
+0 0 0                  ! size of FFT grid
+.false.                ! use time-reversal symmetry. Set to false for BerkeleyGW
+.false.                ! OPTIONAL: k-points in the log file are in Cartesian coordinates
+.false.                ! OPTIONAL: output is in Octopus format
+
+# Above: typical values for Si. Below: general description.
+
+#  nk1 nk2 nk3   !   numbers of k-points in crystal coordinates (b1,b2,b3)
+#  dk1 dk2 dk3   !   k-grid offset (0.0 unshifted, 1.0 shifted by bj/nkj)
+#  dq1 dq2 dq3   !   a small q-shift (0.0 unshifted, 1.0 shifted by bj)
+
+#  a1x a1y a1z   !   lattice vectors in Cartesian coordinates (x,y,z)
+#  a2x a2y a2z   !   in arbitrary units (bohr, angstrom, lattice parameter)
+#  a3x a3y a3z   !
+#  n             !   number of atoms in the unit cell
+#  s1 x1 y1 z1   !   atomic species and positions in Cartesian coordinates (x,y,z)
+#  ...........   !   in the same units as the lattice vectors
+#  sn xn yn zn   !
+#  nr1 nr2 nr3   !   size of FFT grid
+#  trs           !   if set to .true., use time-reversal symmetry (do not use this for BerkeleyGW)
+#  Cartesian     !   OPTIONAL: set to .true. for k-points in Cartesian coordinates (only in the log file)
+#  octopus       !   OPTIONAL: set to .true. to write output file in format suitable for Octopus

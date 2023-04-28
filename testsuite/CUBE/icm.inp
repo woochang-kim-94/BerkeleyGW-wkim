@@ -1,0 +1,27 @@
+inputfilename homo.cube
+inputfileformat cube
+threshold 0.1
+threshold_power 1
+coulomb_power 1
+mirrorplaneorigin
+0.0 0.0 -2.0
+mirrorplanenormal
+0.0 0.0 1.0
+mirrorplaneunit angstrom
+uc F
+uco
+0.0 0.0 0.0
+ucv
+1.0 0.0 0.0
+0.0 1.0 0.0
+0.0 0.0 1.0
+ucu latvec
+sc T
+sco
+-0.5 -0.5 -0.5
+scv
+1.0 0.0 0.0
+0.0 1.0 0.0
+0.0 0.0 1.0
+scu latvec
+renormalize F

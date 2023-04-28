@@ -1,0 +1,15 @@
+This is an up-to-date pw2bgw for QE6.4. 
+It supports both full-spinor and non-spinor calculations.
+
+Usage: Copy pw2bgw_qe6.4_with_spinor.f90 to QE6.4/PP/src/pw2bgw.f90 and then make
+This version supports conversion for both non-spinor and spinor cases
+For full-spinor, VXC, vxc.dat, kih.dat are supported.
+
+This pw2bgw.x also calculates kih.dat, i.e. (diag/off-diag) matrix elements of
+Kinetic energy + Ionic potential + Hatree, therefore it supports all functionals
+(including standard LDA, GGA, and now meta-GGA, hybrid, etc.) as starting point
+for Sigma. We recommend you use the flag 'kih_flag = .true.', instead of using 
+vxc.dat or VXC, although for some cases vxc.dat can still be written.
+
+Matrix elements of the Hubbard potential can be calculated with the flag
+vhub_flag = '.true.'.

@@ -1,0 +1,18 @@
+Test : Unit tests (HDF5 only)
+Enabled : Yes
+TestGroups : hdf5 parallel
+
+Command: cp $TESTDIR/* $WORKDIR/
+
+#BEGIN_INTERNAL_ONLY
+
+# Test program
+Executable : test_gkq.cplx.x
+Processors : 4
+Output : test_gkq.out
+Input : NONE
+
+Precision : 1e-15
+match ; Number of errors  ; GREP(test_gkq.out,   "Number of errors", 5,  0); 0
+
+#END_INTERNAL_ONLY

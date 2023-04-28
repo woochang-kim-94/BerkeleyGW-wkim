@@ -1,0 +1,17 @@
+# ### Screening type
+# How does the screening of the system behaves? (default=[[screening_semiconductor]])
+# BerkeleyGW uses this information to apply a different numerical
+# procedure to computing the diverging $q\rightarrow 0$ contribution
+# to the screened Coulomb potential $W_{GG'}(q)$.
+# These models are not used in Hartree-Fock calculations.
+#
+#
+# Use this flag on gapped system (**default**).
+#screening_semiconductor
+#
+# Use this flag on metallic system, i.e., constant DOS at the Fermi energy.
+#screening_metal
+#
+# Use this flag on systems with vanishing linear DOS at the Fermi level, such
+# as graphene.
+#screening_graphene

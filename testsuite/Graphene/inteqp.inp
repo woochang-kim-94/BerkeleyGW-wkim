@@ -1,0 +1,10 @@
+number_val_bands_coarse 4
+number_val_bands_fine 2
+number_cond_bands_coarse 6
+number_cond_bands_fine 4
+
+use_symmetries_coarse_grid
+use_symmetries_fine_grid
+use_symmetries_shifted_grid
+
+unrestricted_transformation

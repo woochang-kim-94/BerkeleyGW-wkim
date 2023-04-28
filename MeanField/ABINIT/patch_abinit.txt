@@ -1,0 +1,7 @@
+In 72_response/dfpt_scfcv.F90: line 497
+Change:   ABI_ALLOCATE(vxc1,(cplex*nfftf,nspden*(1-usexcnhat)*psps%usepaw))
+To:       ABI_ALLOCATE(vxc1,(cplex*nfftf,nspden))
+
+
+In 32_util/littlegroup_q.F90: line 164
+Add: timrev=0 ! ZL: force the code NEVER use time-reversal in q-grid

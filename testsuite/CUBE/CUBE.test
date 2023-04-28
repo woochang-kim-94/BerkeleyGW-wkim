@@ -1,0 +1,70 @@
+Test    : CUBE
+Enabled : Yes
+TestGroups : binary hdf5 serial parallel
+
+Unpack : homo.cube.tgz
+
+Executable : surface.x
+Processors : serial
+Output : surface.out
+Input : surface.inp CMDLINE
+
+Precision : 1e-4
+match ; 1st Triangle ; GREP(homo.pov, "mesh", 4, 1); -1.071232039
+match ; 3rd Triangle ; GREP(homo.pov, "mesh", 11, 3); -0.587975149
+match ; 5th Triangle ; GREP(homo.pov, "mesh", 19, 5); 0.228448233
+
+Executable : icm.x
+Processors : 4
+Output : icm.out
+Input : icm.inp
+
+Precision : 1e-8
+match ; v2[2,2]           ; GREP(icm.out, "v2\[2\] = ",       5); -0.277778
+match ; Wavefunction Norm ; GREP(icm.out, "wfn norm",         4);  0.243472100623229
+match ; Coulomb Integral  ; GREP(icm.out, "coulomb integral", 4);  0.099330416522308
+
+# Change mirrorplaneorigin to cause overlap and trigger Monte Carlo averaging.
+Copy : icm.inp icm_orig.inp
+Command : sed 's/0.0 0.0 -2.0/0.0 0.0 0.0/' icm_orig.inp > icm.inp
+
+Input : NONE
+match ; Wavefunction Isovalue ; GREP(icm.out, "wfn isovalue",     4);  0.024136326559763
+Precision : 1e-4
+match ; Coulomb Integral      ; GREP(icm.out, "coulomb integral", 4);  0.414031320594183
+
+# ATTN: Below we are running average.py on wavefunctions.
+# This is only done for testing convenience. In production
+# environment average.py is supposed to be run on potentials,
+# not on wavefunctions.
+
+Executable : average.py
+Arguments : homo.cube cube volume > average1.out
+
+Precision : 1e-8
+match ; Average wavefunction over the volume ; GREP(average1.out, "Average", 4); 0.000000
+match ; Minimum wavefunction over the volume ; GREP(average1.out, "Minimum", 4); -0.492866
+match ; Maximum wavefunction over the volume ; GREP(average1.out, "Maximum", 4); 0.492866
+
+Executable : average.py
+Arguments : homo.cube cube faces 0.1 1.0 1.0 > average2.out
+
+Precision : 1e-8
+match ; Average wavefunction on the faces ; GREP(average2.out, "Average", 4); 0.000000
+match ; Minimum wavefunction on the faces ; GREP(average2.out, "Minimum", 4); -0.266100
+match ; Maximum wavefunction on the faces ; GREP(average2.out, "Maximum", 4); 0.266100
+
+Command : cat homo.cube | sed 's/   10.000000/   5.000000/' | sed 's/2.620724   5.000000/2.620724   3.000000/' | sed 's/16.741754   5.000000/16.741754   7.000000/' > swap.cube
+
+Executable : average.py
+Arguments : swap.cube cube planes 0.0 1 planes.dat > average3.out
+
+Precision : 1e-8
+match ; z-coordinate wavefunction plane averaging ; LINE(planes.dat, 37, 1);  5.291776
+
+Executable : average.py
+Arguments : swap.cube cube slab 0.0 1 slab.dat > average4.out
+
+Precision : 1e-8
+match ; z-coordinate wavefunction slab left boundary ; LINE(slab.dat, 1, 1);  2.116709
+match ; z-coordinate wavefunction slab right boundary ; LINE(slab.dat, 4, 1);  3.175063

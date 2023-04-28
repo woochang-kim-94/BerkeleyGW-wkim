@@ -1,0 +1,43 @@
+real_or_complex 2
+wfng_flag T
+wfng_file WFN_time
+rhog_flag T
+rhog_file RHO
+vxcg_flag T
+vxc_flag T
+vxc_file vxc.dat
+vxc_diag_nmin 1
+vxc_diag_nmax 10
+vxc_offdiag_nmin 0
+vxc_offdiag_nmax 0
+
+DiagonalizationSwitch 0
+
+EnergyCutoff 3
+
+NumberOfDimensions 3
+LatticeConstant 1.0
+LatticeVectors
+20.0 0.0 0.0
+0.0 20.0 0.0
+0.0 0.0 8.9
+
+NumberOfAtoms 2
+NumberOfSpecies 1
+ChemicalSpeciesLabel
+1 14 Si
+AtomicCoordinatesFormat ScaledByLatticeVectors
+AtomicCoordinatesAndAtomicSpecies
+0.0 0.0 0.0 1
+0.0 0.0 0.45 1
+
+NumberOfBands 19
+NumberOfOccupiedBands 4
+
+KPointNumbers 1 1 4
+KPointOffsets 0.0 0.0 0.0
+KPointsScale ReciprocalLatticeVectors
+KPointsList 3
+  0.00000000  0.00000000  0.00000000   1.0
+  0.00000000  0.00000000  0.25000000   2.0
+  0.00000000  0.00000000  0.50000000   1.0

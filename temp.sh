@@ -1,0 +1,1 @@
+module load cpu && module unload darshan && module swap gcc/11.2.0 gcc/10.3.0 && module load cray-fftw && module load cray-hdf5-parallel && module load cray-libsci && module load python && export CRAYPE_LINK_TYPE=static

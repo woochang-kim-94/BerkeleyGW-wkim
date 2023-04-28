@@ -1,0 +1,19 @@
+number_bands 8
+
+band_index_min 2
+band_index_max 5
+
+screening_semiconductor
+
+cell_wire_truncation
+
+begin kpoints
+  0.000000000  0.000000000  0.000000000   1.0
+  0.000000000  0.000000000  0.250000000   1.0
+  0.000000000  0.000000000  0.500000000   1.0
+  0.000000000  0.000000000  0.750000000   1.0
+end
+
+#exact_static_ch 1
+
+avgpot -200.0

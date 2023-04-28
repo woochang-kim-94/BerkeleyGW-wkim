@@ -1,0 +1,649 @@
+
+ BerkeleyGW trunk revision 7237
+ Epsilon code, Complex version, run on 13-Mar-2018 at 11:05:12 -0700
+
+                                                                 ..o.          
+                                                                .oxxo.         
+                                                               .oxxxxo...      
+                                                               oxxxxxxo.       
+                                                              .oxxxxxxx.       
+                                                              .ooooooxxo..     
+                                                              .oooooooxo..     
+                                                              .oooooxxo...     
+                                                       .........oxooo......    
+                                                 ............................  
+                                             ................................. 
+                                          .................................... 
+           .          ..oo. ....  .................................oooxxxxxxxo.
+     .............oxxxx@ox@@@x@x.....................o...........ooooooooooxx. 
+    .o.........oox@x.oo........xxx@@............ooxxxxo..........ooooxxxxxoxo  
+    .x........x@xxo...............o@xxo........oxxx@@@xoooooooooooooooxxxo...  
+    .o......ox@@o..................oox@o.....ooxxx@xoooxxxxxxxoooooooooooo.... 
+    o..ooooo@@xoooo....ooo...........x@o.....ooxxxxo   .oxxxxxxxxxxooooooo.... 
+    . .oooo@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@....ooooox.     .oxx@@@@@xxoo........ 
+      .ooooxxxxxxxooooooxooooooooooooooxo...oooooxx.        ..ox@xxxoo.........
+      .ooooooxxxx@xoooooooooooooxxoooooooooooxxxxx.            .oxxooooooooxxo.
+     .oooooxxxxx@@@xxxxxxxxxxxxxxxxxxxxxxxxoxxxxo.                .oxxxxxxxxo. 
+   ....oooxxxxx@@@xo..oxxx@@@@@@xxxxoxxoooooooxx.                  .oxxxoo..   
+  .....ooxxxx@@xo.       ........    .ooooooooxxo                              
+  ..oooxxxx@@@o                       .oooooooxoo.                             
+  ....oxooxxxxx.                       .ooo..oooo.                             
+  .....o.ooxxxxxo.                     .oooooooxo.                             
+ ......ooooxxxxxxo.                     .ooooooxoo..                           
+........ooxxxxxxxo..                     .o....oxoo...                         
+.......ooooxxxxxxxo.                     ........oooo.                         
+.ooooooo..ooxxxxoooo.                    .........ooo...                       
+..oxo...ooooxxxoooo..                    .ooo......oooo...                     
+  .ooooo....o.                            .oxxxoo....ooo....                   
+    .oooooo...                              ...ooooo...ooo..                   
+       ...                                     .oo.......                      
+                                               ....ooo...                      
+                      __              __                                       
+ ______              [  |            [  |                 ._____  _          _ 
+|_   _ \              | |  _          | |                /  ___ \| |        | |
+  | |_) | .---.  _. _.| | / |  .---.  | | .---.  _    _ / /    \_|\ \  /\  / / 
+  |  __'./ /__\\[ /`\_| '' <  / /__\\ | |/ /__\\| \  | | |   _____ \ \/  \/ /  
+ _| |__| | \__. | |   | |`\ \ | \___. | || \___. \ \/ / \ \.___| |  \  /\  /   
+|_______/ \.__./[_]  [__|  \_] \.__./[___]\.__./  \  /   \.____./    \/  \/    
+                                                  / /                          
+                                                 /_/                           
+--------------------------------------------------------------------------------
+ Please cite the following papers when using results from BerkeleyGW:
+
+ F. H. da Jornada, J. Deslippe, D. Vigil-Fowler, J. I. Mustafa, T. Rangel,
+ F. Bruneval, F. Liu, D. Y. Qiu, D. A. Strubbe, G. Samsonidze, J. Lischner,
+ C. Yang, J. B. Neaton, and S. G. Louie, In preparation. (2016)
+
+ Jack Deslippe, Georgy Samsonidze, David A. Strubbe, Manish Jain, Marvin L.
+ Cohen, and Steven G. Louie, "BerkeleyGW: A Massively Parallel Computer Package
+ for the Calculation of the Quasiparticle and Optical Properties of Materials
+ and Nanostructures," Comput. Phys. Commun. 183, 1269 (2012)
+
+ Mark S. Hybertsen and Steven G. Louie, "Electron correlation in semiconductors
+ and insulators: Band gaps and quasiparticle energies," Phys. Rev. B 34, 5390
+ (1986)
+
+ Michael Rohlfing and Steven G. Louie, "Electron-hole excitations and optical
+ spectra from first principles," Phys. Rev. B 62, 4927 (2000)
+--------------------------------------------------------------------------------
+
+ Running MPI version (parallel)
+ Running with 24 MPI task(s)
+ Using OpenMP. Number of threads per MPI task: 4
+ Number of threads used for sorting routines: 1
+
+ Compilation flags:
+ - Compiler: INTEL
+ - Para. flags: MPI, OMP
+ - Math  flags: USESCALAPACK, UNPACKED, USEFFTW3, HDF5
+ - Debug flags: 
+
+ Running with verbosity level 1 (default).
+
+ We will start a new calculation from scratch.
+
+ Experimental Features:
+  - FFTs Optimization Level: 0
+  - Use HDF5 Parallel IO: F
+
+ 
+ We`ll perform a uniform sampling of the full BZ.
+ 
+ Computing the static inverse dielectric matrix
+
+ We are using matrix communication scheme
+
+ We are communicating via MPI
+
+ We are using a truncated Coulomb interaction: Cell Slab
+
+ Reading header of WFN
+ Highest occupied band (unshifted grid) = 4
+ Valence max    (unshifted grid) = -2.573330 eV
+ Conduction min (unshifted grid) = 1.518111 eV
+ Middle energy  (unshifted grid) = -.527610 eV
+ Fermi  energy  (unshifted grid) = -.527610 eV
+
+ Reading header of WFNq
+ Highest occupied band (shifted grid) = 4
+
+ Calculation parameters:
+ - Cutoff of the dielectric matrix (Ry): 3.00
+ - Total number of bands in the calculation: 14
+ - Number of fully occupied valence bands: 4
+ - Number of partially occ. conduction bands: 0
+ - Monkhorst-Pack q-grid for epsilon(q): 5 5 1
+ 
+ Running with 2 valence pools
+ Number of conduction bands per processor: 1
+ Number of valence bands per processor: 2
+
+ Memory available: 3839.5 MB per PE
+ Memory required for execution: 1.1 MB per PE
+ Memory required for vcoul: .0 MB per PE
+
+ Number of electrons per unit cell (from ifmax) = 8.000000
+ Number of electrons per unit cell (from occupations) = 8.000000
+ Plasma Frequency = 1.046689 Ry
+
+ 
+ Started reading wavefunctions (WFN) with 98 state(s) at 11:05:13.
+ [ 11:05:13 |   0% ] state  1 / 98.
+ [ 11:05:13 |   2% ] state  3 / 98, remaining: 0 s.
+ [ 11:05:13 |   9% ] state 10 / 98, remaining: 0 s.
+ [ 11:05:13 |  19% ] state 20 / 98, remaining: 0 s.
+ [ 11:05:13 |  30% ] state 30 / 98, remaining: 0 s.
+ [ 11:05:13 |  40% ] state 40 / 98, remaining: 0 s.
+ [ 11:05:13 |  50% ] state 50 / 98, remaining: 0 s.
+ [ 11:05:13 |  59% ] state 59 / 98, remaining: 0 s.
+ [ 11:05:13 |  69% ] state 69 / 98, remaining: 0 s.
+ [ 11:05:13 |  80% ] state 79 / 98, remaining: 0 s.
+ [ 11:05:13 |  90% ] state 89 / 98, remaining: 0 s.
+ Finished reading wavefunctions (WFN) at 11:05:13.
+ Elapsed time: 0 s.
+ 
+ Initializing eps0mat.h5
+ Initializing epsmat.h5
+ - Screened Coulomb cutoff: 3.000 Ry
+ - Total number of bands: 14
+ - Number of q-points: 7
+
+ Scissors parameters:
+ - Valence:    es =   0.0000 eV, e0 =   0.0000 eV, edel =   0.0000
+ - Conduction: es =   0.0000 eV, e0 =   0.0000 eV, edel =   0.0000
+
+ Q0 and |Q0| =  0.001000  0.001000  0.000000  0.002656
+ Q  and |Q|  =  0.000000  0.200000  0.000000  0.306644
+ Q  and |Q|  =  0.000000  0.400000  0.000000  0.613288
+ Q  and |Q|  =  0.000000  0.600000  0.000000  0.919932
+ Q  and |Q|  =  0.000000  0.800000  0.000000  1.226576
+ Q  and |Q|  =  0.200000  0.200000  0.000000  0.531123
+ Q  and |Q|  =  0.200000  0.400000  0.000000  0.811304
+
+ You have a slightly shifted q0 vector and a semiconductor.
+ So, reading from WFNq.
+ Reading header of WFNq
+ Highest occupied band (shifted grid) = 4
+ 
+ Started reading wavefunctions (WFNq) with 100 state(s) at 11:05:13.
+ [ 11:05:13 |   0% ] state   1 / 100.
+ [ 11:05:13 |   2% ] state   3 / 100, remaining: 0 s.
+ [ 11:05:13 |   9% ] state  10 / 100, remaining: 0 s.
+ [ 11:05:13 |  19% ] state  20 / 100, remaining: 0 s.
+ [ 11:05:13 |  29% ] state  30 / 100, remaining: 0 s.
+ [ 11:05:13 |  39% ] state  40 / 100, remaining: 0 s.
+ [ 11:05:13 |  49% ] state  50 / 100, remaining: 0 s.
+ [ 11:05:13 |  59% ] state  60 / 100, remaining: 0 s.
+ [ 11:05:13 |  69% ] state  70 / 100, remaining: 0 s.
+ [ 11:05:13 |  79% ] state  80 / 100, remaining: 0 s.
+ [ 11:05:13 |  89% ] state  90 / 100, remaining: 0 s.
+ [ 11:05:13 |  99% ] state 100 / 100, remaining: 0 s.
+ Finished reading wavefunctions (WFNq) at 11:05:13.
+ Elapsed time: 0 s.
+ 
+ Summary of the WFN files:
+ - Number of k-points in WFN: 7
+ - Number of k-points in WFNq: 25
+ - Number of k-points in the full BZ of WFN: 25
+
+================================================================================
+ 11:05:13   Dealing with q =  0.001000  0.001000  0.000000                 1 / 7
+================================================================================
+
+ This is the special q->0 point.
+ Rank of the polarizability matrix (nmtx): 41
+ 
+ BLACS processor grid:   4 x   6; BLOCKSIZE =    6
+ 
+ Number of k-points in the irreducible BZ(q) (nrk): 25
+ 
+ Started calculation of matrix elements with 50 transition(s) at 11:05:13.
+ [ 11:05:13 |   0% ] transition  1 / 50.
+ [ 11:05:14 |   4% ] transition  3 / 50, remaining: 0 s.
+ [ 11:05:14 |   8% ] transition  5 / 50, remaining: 0 s.
+ [ 11:05:14 |  18% ] transition 10 / 50, remaining: 0 s.
+ [ 11:05:14 |  28% ] transition 15 / 50, remaining: 0 s.
+ [ 11:05:14 |  38% ] transition 20 / 50, remaining: 0 s.
+ [ 11:05:14 |  48% ] transition 25 / 50, remaining: 0 s.
+ [ 11:05:14 |  58% ] transition 30 / 50, remaining: 0 s.
+ [ 11:05:14 |  68% ] transition 35 / 50, remaining: 0 s.
+ [ 11:05:14 |  78% ] transition 40 / 50, remaining: 0 s.
+ [ 11:05:14 |  88% ] transition 45 / 50, remaining: 0 s.
+ [ 11:05:14 |  98% ] transition 50 / 50, remaining: 0 s.
+ Finished calculation of matrix elements at 11:05:14.
+ Elapsed time: 0 s.
+ 
+ Preparing simple convergence tests with 10 unoccupied bands.
+ 
+ Started building polarizability matrix with 24 processor(s) at 11:05:14.
+ [ 11:05:14 |   0% ] processor  1 / 24.
+ [ 11:05:14 |   8% ] processor  3 / 24, remaining: 0 s.
+ [ 11:05:14 |  17% ] processor  5 / 24, remaining: 0 s.
+ [ 11:05:14 |  29% ] processor  8 / 24, remaining: 0 s.
+ [ 11:05:14 |  38% ] processor 10 / 24, remaining: 0 s.
+ [ 11:05:14 |  46% ] processor 12 / 24, remaining: 0 s.
+ [ 11:05:14 |  58% ] processor 15 / 24, remaining: 0 s.
+ [ 11:05:14 |  67% ] processor 17 / 24, remaining: 0 s.
+ [ 11:05:14 |  79% ] processor 20 / 24, remaining: 0 s.
+ [ 11:05:14 |  88% ] processor 22 / 24, remaining: 0 s.
+ [ 11:05:14 |  96% ] processor 24 / 24, remaining: 0 s.
+ Finished building polarizability matrix at 11:05:14.
+ Elapsed time: 0 s.
+ 
+ q-pt      1: Head of Epsilon         =    1.045225770333904E+000   1.831013240586735E-019
+ q-pt      1: Epsilon(2,2)            =    1.965355839048528E+000  -5.288256511398615E-018
+ q-pt      1: Head of Epsilon Inverse =    9.590840049102450E-001  -2.221397735685131E-019
+ q-pt      1: Epsilon Inverse(2,2)    =    6.453022473565257E-001  -1.131086873550638E-018
+ 
+ For q0 points, you should check the symmetry (eps(G,G') = eps*(-G,-G')) by
+ using the eps0sym code. Wavefunction convergence, as well as a finite q-shift
+ may cause this property of eps(G,G') to be broken.
+
+ Writing dielectric matrix to file
+ Ok
+
+================================================================================
+ 11:05:15   Dealing with q =  0.000000  0.200000  0.000000                 2 / 7
+================================================================================
+
+ This is a regular non-zero q-point.
+ Rank of the polarizability matrix (nmtx): 34
+ 
+ BLACS processor grid:   4 x   6; BLOCKSIZE =    5
+ 
+ Number of k-points in the irreducible BZ(q) (nrk): 15
+ 
+ Started calculation of matrix elements with 30 transition(s) at 11:05:15.
+ [ 11:05:15 |   0% ] transition  1 / 30.
+ [ 11:05:15 |   7% ] transition  3 / 30, remaining: 0 s.
+ [ 11:05:15 |  17% ] transition  6 / 30, remaining: 0 s.
+ [ 11:05:15 |  27% ] transition  9 / 30, remaining: 0 s.
+ [ 11:05:15 |  37% ] transition 12 / 30, remaining: 0 s.
+ [ 11:05:15 |  47% ] transition 15 / 30, remaining: 0 s.
+ [ 11:05:15 |  57% ] transition 18 / 30, remaining: 0 s.
+ [ 11:05:15 |  67% ] transition 21 / 30, remaining: 0 s.
+ [ 11:05:15 |  77% ] transition 24 / 30, remaining: 0 s.
+ [ 11:05:15 |  87% ] transition 27 / 30, remaining: 0 s.
+ [ 11:05:15 |  97% ] transition 30 / 30, remaining: 0 s.
+ Finished calculation of matrix elements at 11:05:15.
+ Elapsed time: 0 s.
+ 
+ Preparing simple convergence tests with 10 unoccupied bands.
+ 
+ Started building polarizability matrix with 24 processor(s) at 11:05:15.
+ [ 11:05:15 |   0% ] processor  1 / 24.
+ [ 11:05:15 |   8% ] processor  3 / 24, remaining: 0 s.
+ [ 11:05:15 |  17% ] processor  5 / 24, remaining: 0 s.
+ [ 11:05:15 |  29% ] processor  8 / 24, remaining: 0 s.
+ [ 11:05:15 |  38% ] processor 10 / 24, remaining: 0 s.
+ [ 11:05:15 |  46% ] processor 12 / 24, remaining: 0 s.
+ [ 11:05:15 |  58% ] processor 15 / 24, remaining: 0 s.
+ [ 11:05:15 |  67% ] processor 17 / 24, remaining: 0 s.
+ [ 11:05:15 |  79% ] processor 20 / 24, remaining: 0 s.
+ [ 11:05:15 |  88% ] processor 22 / 24, remaining: 0 s.
+ [ 11:05:15 |  96% ] processor 24 / 24, remaining: 0 s.
+ Finished building polarizability matrix at 11:05:15.
+ Elapsed time: 0 s.
+ 
+ q-pt      2: Head of Epsilon         =    2.013901793962451E+000  -1.236991093332245E-018
+ q-pt      2: Epsilon(2,2)            =    1.696950969852093E+000   1.209606202033475E-018
+ q-pt      2: Head of Epsilon Inverse =    6.636544059202696E-001  -1.989634275358998E-018
+ q-pt      2: Epsilon Inverse(2,2)    =    7.324761217571683E-001  -1.300960437405762E-018
+
+ Writing dielectric matrix to file
+ Ok
+
+================================================================================
+ 11:05:15   Dealing with q =  0.000000  0.400000  0.000000                 3 / 7
+================================================================================
+
+ This is a regular non-zero q-point.
+ Rank of the polarizability matrix (nmtx): 32
+ 
+ BLACS processor grid:   4 x   6; BLOCKSIZE =    5
+ 
+ Number of k-points in the irreducible BZ(q) (nrk): 15
+ 
+ Started calculation of matrix elements with 30 transition(s) at 11:05:15.
+ [ 11:05:15 |   0% ] transition  1 / 30.
+ [ 11:05:15 |   7% ] transition  3 / 30, remaining: 0 s.
+ [ 11:05:15 |  17% ] transition  6 / 30, remaining: 0 s.
+ [ 11:05:15 |  27% ] transition  9 / 30, remaining: 0 s.
+ [ 11:05:15 |  37% ] transition 12 / 30, remaining: 0 s.
+ [ 11:05:15 |  47% ] transition 15 / 30, remaining: 0 s.
+ [ 11:05:15 |  57% ] transition 18 / 30, remaining: 0 s.
+ [ 11:05:15 |  67% ] transition 21 / 30, remaining: 0 s.
+ [ 11:05:15 |  77% ] transition 24 / 30, remaining: 0 s.
+ [ 11:05:15 |  87% ] transition 27 / 30, remaining: 0 s.
+ [ 11:05:15 |  97% ] transition 30 / 30, remaining: 0 s.
+ Finished calculation of matrix elements at 11:05:15.
+ Elapsed time: 0 s.
+ 
+ Preparing simple convergence tests with 10 unoccupied bands.
+ 
+ Started building polarizability matrix with 24 processor(s) at 11:05:15.
+ [ 11:05:15 |   0% ] processor  1 / 24.
+ [ 11:05:15 |   8% ] processor  3 / 24, remaining: 0 s.
+ [ 11:05:15 |  17% ] processor  5 / 24, remaining: 0 s.
+ [ 11:05:15 |  29% ] processor  8 / 24, remaining: 0 s.
+ [ 11:05:15 |  38% ] processor 10 / 24, remaining: 0 s.
+ [ 11:05:15 |  46% ] processor 12 / 24, remaining: 0 s.
+ [ 11:05:15 |  58% ] processor 15 / 24, remaining: 0 s.
+ [ 11:05:15 |  67% ] processor 17 / 24, remaining: 0 s.
+ [ 11:05:15 |  79% ] processor 20 / 24, remaining: 0 s.
+ [ 11:05:15 |  88% ] processor 22 / 24, remaining: 0 s.
+ [ 11:05:15 |  96% ] processor 24 / 24, remaining: 0 s.
+ Finished building polarizability matrix at 11:05:15.
+ Elapsed time: 0 s.
+ 
+ q-pt      3: Head of Epsilon         =    1.536012508308744E+000   3.075362461807986E-018
+ q-pt      3: Epsilon(2,2)            =    1.434416695331382E+000  -8.781335517385776E-019
+ q-pt      3: Head of Epsilon Inverse =    7.886746775866866E-001   1.089271214255573E-018
+ q-pt      3: Epsilon Inverse(2,2)    =    8.125067009483652E-001   6.421791571566486E-019
+
+ Writing dielectric matrix to file
+ Ok
+
+================================================================================
+ 11:05:16   Dealing with q =  0.000000  0.600000  0.000000                 4 / 7
+================================================================================
+
+ This is a regular non-zero q-point.
+ Rank of the polarizability matrix (nmtx): 32
+ 
+ BLACS processor grid:   4 x   6; BLOCKSIZE =    5
+ 
+ Number of k-points in the irreducible BZ(q) (nrk): 15
+ 
+ Started calculation of matrix elements with 30 transition(s) at 11:05:16.
+ [ 11:05:16 |   0% ] transition  1 / 30.
+ [ 11:05:16 |   7% ] transition  3 / 30, remaining: 0 s.
+ [ 11:05:16 |  17% ] transition  6 / 30, remaining: 0 s.
+ [ 11:05:16 |  27% ] transition  9 / 30, remaining: 0 s.
+ [ 11:05:16 |  37% ] transition 12 / 30, remaining: 0 s.
+ [ 11:05:16 |  47% ] transition 15 / 30, remaining: 0 s.
+ [ 11:05:16 |  57% ] transition 18 / 30, remaining: 0 s.
+ [ 11:05:16 |  67% ] transition 21 / 30, remaining: 0 s.
+ [ 11:05:16 |  77% ] transition 24 / 30, remaining: 0 s.
+ [ 11:05:16 |  87% ] transition 27 / 30, remaining: 0 s.
+ [ 11:05:16 |  97% ] transition 30 / 30, remaining: 0 s.
+ Finished calculation of matrix elements at 11:05:16.
+ Elapsed time: 0 s.
+ 
+ Preparing simple convergence tests with 10 unoccupied bands.
+ 
+ Started building polarizability matrix with 24 processor(s) at 11:05:16.
+ [ 11:05:16 |   0% ] processor  1 / 24.
+ [ 11:05:16 |   8% ] processor  3 / 24, remaining: 0 s.
+ [ 11:05:16 |  17% ] processor  5 / 24, remaining: 0 s.
+ [ 11:05:16 |  29% ] processor  8 / 24, remaining: 0 s.
+ [ 11:05:16 |  38% ] processor 10 / 24, remaining: 0 s.
+ [ 11:05:16 |  46% ] processor 12 / 24, remaining: 0 s.
+ [ 11:05:16 |  58% ] processor 15 / 24, remaining: 0 s.
+ [ 11:05:16 |  67% ] processor 17 / 24, remaining: 0 s.
+ [ 11:05:16 |  79% ] processor 20 / 24, remaining: 0 s.
+ [ 11:05:16 |  88% ] processor 22 / 24, remaining: 0 s.
+ [ 11:05:16 |  96% ] processor 24 / 24, remaining: 0 s.
+ Finished building polarizability matrix at 11:05:16.
+ Elapsed time: 0 s.
+ 
+ q-pt      4: Head of Epsilon         =    1.536012500045103E+000   1.572949149043993E-018
+ q-pt      4: Epsilon(2,2)            =    1.434416690783158E+000   1.557314970661384E-018
+ q-pt      4: Head of Epsilon Inverse =    7.886746797871441E-001  -6.780685071789728E-019
+ q-pt      4: Epsilon Inverse(2,2)    =    8.125067019273948E-001  -5.892534463975379E-020
+
+ Writing dielectric matrix to file
+ Ok
+
+================================================================================
+ 11:05:16   Dealing with q =  0.000000  0.800000  0.000000                 5 / 7
+================================================================================
+
+ This is a regular non-zero q-point.
+ Rank of the polarizability matrix (nmtx): 34
+ 
+ BLACS processor grid:   4 x   6; BLOCKSIZE =    5
+ 
+ Number of k-points in the irreducible BZ(q) (nrk): 15
+ 
+ Started calculation of matrix elements with 30 transition(s) at 11:05:16.
+ [ 11:05:16 |   0% ] transition  1 / 30.
+ [ 11:05:16 |   7% ] transition  3 / 30, remaining: 0 s.
+ [ 11:05:16 |  17% ] transition  6 / 30, remaining: 0 s.
+ [ 11:05:16 |  27% ] transition  9 / 30, remaining: 0 s.
+ [ 11:05:16 |  37% ] transition 12 / 30, remaining: 0 s.
+ [ 11:05:16 |  47% ] transition 15 / 30, remaining: 0 s.
+ [ 11:05:16 |  57% ] transition 18 / 30, remaining: 0 s.
+ [ 11:05:16 |  67% ] transition 21 / 30, remaining: 0 s.
+ [ 11:05:16 |  77% ] transition 24 / 30, remaining: 0 s.
+ [ 11:05:16 |  87% ] transition 27 / 30, remaining: 0 s.
+ [ 11:05:16 |  97% ] transition 30 / 30, remaining: 0 s.
+ Finished calculation of matrix elements at 11:05:16.
+ Elapsed time: 0 s.
+ 
+ Preparing simple convergence tests with 10 unoccupied bands.
+ 
+ Started building polarizability matrix with 24 processor(s) at 11:05:16.
+ [ 11:05:16 |   0% ] processor  1 / 24.
+ [ 11:05:16 |   8% ] processor  3 / 24, remaining: 0 s.
+ [ 11:05:16 |  17% ] processor  5 / 24, remaining: 0 s.
+ [ 11:05:16 |  29% ] processor  8 / 24, remaining: 0 s.
+ [ 11:05:16 |  38% ] processor 10 / 24, remaining: 0 s.
+ [ 11:05:16 |  46% ] processor 12 / 24, remaining: 0 s.
+ [ 11:05:16 |  58% ] processor 15 / 24, remaining: 0 s.
+ [ 11:05:16 |  67% ] processor 17 / 24, remaining: 0 s.
+ [ 11:05:16 |  79% ] processor 20 / 24, remaining: 0 s.
+ [ 11:05:16 |  88% ] processor 22 / 24, remaining: 0 s.
+ [ 11:05:16 |  96% ] processor 24 / 24, remaining: 0 s.
+ Finished building polarizability matrix at 11:05:16.
+ Elapsed time: 0 s.
+ 
+ q-pt      5: Head of Epsilon         =    2.013901824235070E+000   2.781558350411969E-018
+ q-pt      5: Epsilon(2,2)            =    1.696950982882631E+000   1.529189658820729E-018
+ q-pt      5: Head of Epsilon Inverse =    6.636544021958516E-001  -1.389880801599267E-018
+ q-pt      5: Epsilon Inverse(2,2)    =    7.324761203644270E-001  -1.813447738987652E-019
+
+ Writing dielectric matrix to file
+ Ok
+
+================================================================================
+ 11:05:16   Dealing with q =  0.200000  0.200000  0.000000                 6 / 7
+================================================================================
+
+ This is a regular non-zero q-point.
+ Rank of the polarizability matrix (nmtx): 33
+ 
+ BLACS processor grid:   4 x   6; BLOCKSIZE =    5
+ 
+ Number of k-points in the irreducible BZ(q) (nrk): 25
+ 
+ Started calculation of matrix elements with 50 transition(s) at 11:05:16.
+ [ 11:05:16 |   0% ] transition  1 / 50.
+ [ 11:05:16 |   4% ] transition  3 / 50, remaining: 0 s.
+ [ 11:05:16 |   8% ] transition  5 / 50, remaining: 0 s.
+ [ 11:05:16 |  18% ] transition 10 / 50, remaining: 0 s.
+ [ 11:05:16 |  28% ] transition 15 / 50, remaining: 0 s.
+ [ 11:05:16 |  38% ] transition 20 / 50, remaining: 0 s.
+ [ 11:05:16 |  48% ] transition 25 / 50, remaining: 0 s.
+ [ 11:05:16 |  58% ] transition 30 / 50, remaining: 0 s.
+ [ 11:05:16 |  68% ] transition 35 / 50, remaining: 0 s.
+ [ 11:05:16 |  78% ] transition 40 / 50, remaining: 0 s.
+ [ 11:05:16 |  88% ] transition 45 / 50, remaining: 0 s.
+ [ 11:05:16 |  98% ] transition 50 / 50, remaining: 0 s.
+ Finished calculation of matrix elements at 11:05:16.
+ Elapsed time: 0 s.
+ 
+ Preparing simple convergence tests with 10 unoccupied bands.
+ 
+ Started building polarizability matrix with 24 processor(s) at 11:05:16.
+ [ 11:05:16 |   0% ] processor  1 / 24.
+ [ 11:05:16 |   8% ] processor  3 / 24, remaining: 0 s.
+ [ 11:05:16 |  17% ] processor  5 / 24, remaining: 0 s.
+ [ 11:05:16 |  29% ] processor  8 / 24, remaining: 0 s.
+ [ 11:05:16 |  38% ] processor 10 / 24, remaining: 0 s.
+ [ 11:05:16 |  46% ] processor 12 / 24, remaining: 0 s.
+ [ 11:05:16 |  58% ] processor 15 / 24, remaining: 0 s.
+ [ 11:05:16 |  67% ] processor 17 / 24, remaining: 0 s.
+ [ 11:05:16 |  79% ] processor 20 / 24, remaining: 0 s.
+ [ 11:05:16 |  88% ] processor 22 / 24, remaining: 0 s.
+ [ 11:05:16 |  96% ] processor 24 / 24, remaining: 0 s.
+ Finished building polarizability matrix at 11:05:16.
+ Elapsed time: 0 s.
+ 
+ q-pt      6: Head of Epsilon         =    1.640583892250601E+000   5.322911998545645E-018
+ q-pt      6: Epsilon(2,2)            =    1.505803746499387E+000  -1.700158940869621E-018
+ q-pt      6: Head of Epsilon Inverse =    7.622987179918604E-001  -3.417687789032171E-018
+ q-pt      6: Epsilon Inverse(2,2)    =    7.914652846355290E-001  -5.626174416893246E-020
+
+ Writing dielectric matrix to file
+ Ok
+
+================================================================================
+ 11:05:16   Dealing with q =  0.200000  0.400000  0.000000                 7 / 7
+================================================================================
+
+ This is a regular non-zero q-point.
+ Rank of the polarizability matrix (nmtx): 32
+ 
+ BLACS processor grid:   4 x   6; BLOCKSIZE =    5
+ 
+ Number of k-points in the irreducible BZ(q) (nrk): 25
+ 
+ Started calculation of matrix elements with 50 transition(s) at 11:05:16.
+ [ 11:05:16 |   0% ] transition  1 / 50.
+ [ 11:05:16 |   4% ] transition  3 / 50, remaining: 0 s.
+ [ 11:05:16 |   8% ] transition  5 / 50, remaining: 0 s.
+ [ 11:05:16 |  18% ] transition 10 / 50, remaining: 0 s.
+ [ 11:05:16 |  28% ] transition 15 / 50, remaining: 0 s.
+ [ 11:05:16 |  38% ] transition 20 / 50, remaining: 0 s.
+ [ 11:05:16 |  48% ] transition 25 / 50, remaining: 0 s.
+ [ 11:05:16 |  58% ] transition 30 / 50, remaining: 0 s.
+ [ 11:05:16 |  68% ] transition 35 / 50, remaining: 0 s.
+ [ 11:05:16 |  78% ] transition 40 / 50, remaining: 0 s.
+ [ 11:05:16 |  88% ] transition 45 / 50, remaining: 0 s.
+ [ 11:05:16 |  98% ] transition 50 / 50, remaining: 0 s.
+ Finished calculation of matrix elements at 11:05:16.
+ Elapsed time: 0 s.
+ 
+ Preparing simple convergence tests with 10 unoccupied bands.
+ 
+ Started building polarizability matrix with 24 processor(s) at 11:05:16.
+ [ 11:05:16 |   0% ] processor  1 / 24.
+ [ 11:05:16 |   8% ] processor  3 / 24, remaining: 0 s.
+ [ 11:05:16 |  17% ] processor  5 / 24, remaining: 0 s.
+ [ 11:05:16 |  29% ] processor  8 / 24, remaining: 0 s.
+ [ 11:05:16 |  38% ] processor 10 / 24, remaining: 0 s.
+ [ 11:05:16 |  46% ] processor 12 / 24, remaining: 0 s.
+ [ 11:05:16 |  58% ] processor 15 / 24, remaining: 0 s.
+ [ 11:05:16 |  67% ] processor 17 / 24, remaining: 0 s.
+ [ 11:05:16 |  79% ] processor 20 / 24, remaining: 0 s.
+ [ 11:05:16 |  88% ] processor 22 / 24, remaining: 0 s.
+ [ 11:05:16 |  96% ] processor 24 / 24, remaining: 0 s.
+ Finished building polarizability matrix at 11:05:16.
+ Elapsed time: 0 s.
+ 
+ q-pt      7: Head of Epsilon         =    1.343161797111907E+000  -9.536611728975756E-019
+ q-pt      7: Epsilon(2,2)            =    1.343161796637730E+000   5.948259517506451E-018
+ q-pt      7: Head of Epsilon Inverse =    8.393998489867887E-001  -3.175568558284625E-019
+ q-pt      7: Epsilon Inverse(2,2)    =    8.393998474910788E-001  -4.443949064285304E-018
+
+ Writing dielectric matrix to file
+ Ok
+
+ 
+ Timing information
+ 
+                             CPU (s)        WALL (s)          #
+ - Eps (I/O) Comm:
+                 (root)        0.080           0.842          7
+ - Eps (I/O) IO:
+                 (root)        0.030           0.103          7
+ - Input I/O:
+                 (root)        0.010           0.078        239
+ - Input Comm:
+                 (root)        0.010           0.009        239
+ - Fft Zero:
+                 (root)        0.030           0.025        540
+ - Fft Put:
+                 (root)        0.020           0.014        540
+ - Fft Plan:
+                 (root)        0.820           0.214        810
+ - Fft Exec:
+                 (root)        0.160           0.334        810
+ - Fft Mltply:
+                 (root)        0.090           0.011        270
+ - Fft Conjg:
+                 (root)        0.030           0.007        270
+ - Fft Get:
+                 (root)        0.080           0.007        270
+ - INPUT:
+                 (root)        0.050           1.457          1
+ - INPUT_Q:
+                 (root)        0.010           0.070          1
+ - FULLBZ:
+                 (root)       -0.000           0.021          1
+ - GVEC:
+                 (root)        0.010           0.007          7
+ - SUBGRP:
+                 (root)        0.000           0.000          7
+ - IRRBZ:
+                 (root)        0.000           0.013          7
+ - GENWF:
+                 (root)        0.970           0.441        270
+ - MTXEL:
+                 (root)        1.460           0.767        270
+ - RQSTAR:
+                 (root)        0.000           0.003        135
+ - GMAP:
+                 (root)        0.220           0.024        135
+ - EPSINV (TOTAL):
+                 (root)        0.000           0.000         14
+ - CHI SUM (COMM):
+                 (root)        0.050           0.009        168
+ - CHI SUM (TOTAL):
+                 (root)        0.410           0.257          7
+ - GENWF (VAL):
+                 (root)        0.790           0.265        270
+ - GENWF (COND):
+                 (root)        0.140           0.166        135
+ - EPSINV (VCOUL):
+                 (root)        0.010           0.004          7
+ - JOB SETUP:
+                 (root)       -0.000           0.067          1
+ - Q LOOP SETUP:
+                 (root)        0.000           0.001          7
+ - INIT CUTOFF:
+                 (root)        0.000           0.001          7
+ - INIT SCALAPACK:
+                 (root)        0.000           0.037          7
+ - INIT ARRAYS:
+                 (root)        0.010           0.032          7
+ - CONVERGE TESTS:
+                 (root)       -0.000           0.010          7
+ - MTXEL (DENOM):
+                 (root)        0.010           0.002        270
+ - MTXEL (FFT):
+                 (root)        1.450           0.762        270
+ - GENWF (Ekin):
+                 (root)        0.090           0.021        270
+ - GENWF (Sort):
+                 (root)        0.630           0.341        270
+ - CHI SUM (zGEMM):
+                 (root)        0.030           0.149        168
+ - CHI SUM (PREP):
+                 (root)        0.060           0.036        168
+ - CHI SUM (ARRAY ALLOC):
+                 (root)        0.020           0.009        168
+ - EPSINV (I/O):
+                 (root)        0.150           1.095          7
+ - EPSINV (INVERT):
+                 (root)        0.110           0.410          7
+ - CHI SUM (BAR):
+                 (root)       -0.000           0.003          7
+ - FFT MLTPLY:
+                 (root)        0.020           0.012        270
+ - TOTAL:
+                 (root)        3.710           4.862          1
+ 
+ Job Done
+ 

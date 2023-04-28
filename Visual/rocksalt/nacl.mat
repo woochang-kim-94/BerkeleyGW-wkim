@@ -1,0 +1,20 @@
+
+name_of_matter sodium chloride
+number_of_species 2
+number_of_atoms 2
+
+lattice_constant angstrom
+       5.630000000
+
+lattice_origin latconst
+      -0.500000000  -0.500000000  -0.500000000
+
+lattice_vectors latconst
+       0.000000000   0.500000000   0.500000000
+       0.500000000   0.000000000   0.500000000
+       0.500000000   0.500000000   0.000000000
+
+atomic_species_and_atomic_positions latvec
+  11  -0.250000000  -0.250000000  -0.250000000
+  17   0.250000000   0.250000000   0.250000000
+

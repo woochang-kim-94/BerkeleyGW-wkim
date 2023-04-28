@@ -1,0 +1,17 @@
+epsilon_cutoff 7.0
+
+number_bands 18
+
+begin qpoints
+  0.000000000  0.000000000  0.001000000   1.0 1
+  0.000000000  0.000000000  0.500000000   1.0 0
+  0.000000000  0.500000000  0.500000000   1.0 0
+end
+
+frequency_dependence 2
+
+number_imaginary_freqs 3
+broadening 3.0
+frequency_low_cutoff 15.0
+ 
+nfreq_group 3

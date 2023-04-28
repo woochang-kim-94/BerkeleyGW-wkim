@@ -1,0 +1,228 @@
+Test    : GaAs with EPM (spinor,cplx) HDF5
+Enabled : Yes
+TestGroups : binary hdf5 serial parallel
+
+# no need to test gsphere, kgrid, symmetries, or eigenvalues,
+# as these calculations are identical
+
+Executable : epm2bgw.x
+Processors : serial
+Output : WFN.out
+Input  : WFN.in PIPE
+
+Output : WFNq.out
+Input  : WFNq.in PIPE
+
+Output : WFN_co.out
+Input  : WFN_co.in PIPE
+
+Output : WFN_fi.out
+Input  : WFN_fi.in PIPE
+
+Output : WFNq_fi.out
+Input  : WFNq_fi.in PIPE
+
+# run wfnmix_spinor
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFN WFN_spinor R
+Command : mv WFN_spinor WFN
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFNq WFNq_spinor R
+Command : mv WFNq_spinor WFNq
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFN_inner WFN_inner_spinor R
+Command : mv WFN_inner_spinor WFN_inner
+
+Executable: wfnmix_spinor_rho_vxc.x
+Processors : serial
+Arguments: RHO RHO RHO_spinor
+Command : mv RHO_spinor RHO
+
+Executable: wfnmix_spinor_rho_vxc.x
+Processors : serial
+Arguments: VXC VXC VXC_spinor
+Command : mv VXC_spinor VXC
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFN_fi WFN_fi_spinor R
+Command : mv WFN_fi_spinor WFN_fi
+
+Executable: wfnmix_spinor.x
+Processors : serial
+Arguments: WFNq_fi WFNq_fi_spinor R
+Command : mv WFNq_fi_spinor WFNq_fi
+
+# testing begins here
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFN WFN.h5  >  WFN_wfn2hdf.out ; echo "SUCCESS"  $? >> WFN_wfn2hdf.out
+match ; WFN.h5 SUCCESS ; GREP(WFN_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFNq WFNq.h5  >  WFNq_wfn2hdf.out ; echo "SUCCESS"  $? >> WFNq_wfn2hdf.out
+match ; WFNq.h5 SUCCESS ; GREP(WFNq_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFN_inner WFN_inner.h5  >  WFN_inner_wfn2hdf.out ; echo "SUCCESS"  $? >> WFN_inner_wfn2hdf.out
+match ; WFN_inner.h5 SUCCESS ; GREP(WFN_inner_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFN_fi WFN_fi.h5  >  WFN_fi_wfn2hdf.out ; echo "SUCCESS"  $? >> WFN_fi_wfn2hdf.out
+match ; WFN_fi.h5 SUCCESS ; GREP(WFN_fi_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFNq_fi WFNq_fi.h5  >  WFNq_fi_wfn2hdf.out ; echo "SUCCESS"  $? >> WFNq_fi_wfn2hdf.out
+match ; WFNq_fi.h5 SUCCESS ; GREP(WFNq_fi_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_static.out
+Input  : epsilon_spinor.inp epsilon.inp
+
+Precision : 1e-13
+match ; Re chi(q1,0,0)       ; LINE(chi_converge.dat, 30, 2) ; -0.57760029E-06
+match ; Re chi(q1,Gmax,Gmax) ; LINE(chi_converge.dat, 30, 4) ; -0.76795260E-03
+match ; Re chi(q1,0,0)       ; LINE(chi_converge.dat, 92, 2) ; -0.24928474E-01
+match ; Re chi(q1,Gmax,Gmax) ; LINE(chi_converge.dat, 92, 4) ; -0.12781391E-02
+Precision : 3e-11
+match ; epsilon q1 ; GREP(eps_static.out, "q-pt      1: Head of Epsilon",         7, 0); 14.9234176133623
+Precision : 2e-13
+match ; eps inv q1 ; GREP(eps_static.out, "q-pt      1: Head of Epsilon Inverse", 8, 0); 0.0770203148897139
+match ; epsilon q2 ; GREP(eps_static.out, "q-pt      2: Head of Epsilon",         7, 0); 2.97351207417238
+match ; eps inv q2 ; GREP(eps_static.out, "q-pt      2: Head of Epsilon Inverse", 8, 0); 0.390620255028178
+match ; epsilon q3 ; GREP(eps_static.out, "q-pt      3: Head of Epsilon",         7, 0); 2.8027495957472
+match ; eps inv q3 ; GREP(eps_static.out, "q-pt      3: Head of Epsilon Inverse", 8, 0); 0.396981083283834
+match ; epsilonInv Head      ; GREP(epsilon.log, "inverse epsilon", 7, 1); 0.07702031
+
+Command : mv epsilon.log eps_static.log
+
+Command : echo "use_wfn_hdf5" >>  epsilon.inp
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_static.out
+Input  : NONE
+
+Precision : 1e-13
+match ; Re chi(q1,0,0)       ; LINE(chi_converge.dat, 30, 2) ; -0.57760029E-06
+match ; Re chi(q1,Gmax,Gmax) ; LINE(chi_converge.dat, 30, 4) ; -0.76795260E-03
+match ; Re chi(q1,0,0)       ; LINE(chi_converge.dat, 92, 2) ; -0.24928474E-01
+match ; Re chi(q1,Gmax,Gmax) ; LINE(chi_converge.dat, 92, 4) ; -0.12781391E-02
+Precision : 3e-11
+match ; epsilon q1 ; GREP(eps_static.out, "q-pt      1: Head of Epsilon",         7, 0); 14.9234176133623
+Precision : 2e-13
+match ; eps inv q1 ; GREP(eps_static.out, "q-pt      1: Head of Epsilon Inverse", 8, 0); 0.0770203148897139
+match ; epsilon q2 ; GREP(eps_static.out, "q-pt      2: Head of Epsilon",         7, 0); 2.97351207417238
+match ; eps inv q2 ; GREP(eps_static.out, "q-pt      2: Head of Epsilon Inverse", 8, 0); 0.390620255028178
+match ; epsilon q3 ; GREP(eps_static.out, "q-pt      3: Head of Epsilon",         7, 0); 2.8027495957472
+match ; eps inv q3 ; GREP(eps_static.out, "q-pt      3: Head of Epsilon Inverse", 8, 0); 0.396981083283834
+match ; epsilonInv Head      ; GREP(epsilon.log, "inverse epsilon", 7, 1); 0.07702031
+
+Command : mv epsilon.log eps_static.log
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFN_inner WFN_inner.h5  >  WFN_inner_wfn2hdf.out ; echo "SUCCESS"  $? >> WFN_inner_wfn2hdf.out
+match ; WFN_inner.h5 SUCCESS ; GREP(WFN_inner_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+Executable : sigma.cplx.x
+Processors : 4
+Output : sig_GPP.out
+Input  : sig_GPP_spinor.inp sigma.inp
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n4, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 6);   8.045074
+match ; n4, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 6); -14.252939
+match ; n4, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 6);   9.330292
+match ; n4, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1", 11, 6);  -6.607926
+match ; n4, k1 CH + Static Remainder; GREP(sigma_hp.log, "ik =   1",  6, 6);  -7.415517
+match ; n4, k1 Linear QP Correction ; GREP(sigma_hp.log, "ik =   1", 10, 6);  -1.885657
+
+match ; k-point 2 z-coordinate       ; GREP(sigma_hp.log, "ik =   2",  5, 0);    0.500000
+match ; n10, k2 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   2",  2, 12);   9.905659
+match ; n10, k2 Exchange             ; GREP(sigma_hp.log, "ik =   2",  4, 12);  -4.676235
+match ; n10, k2 Screened Exchange    ; GREP(sigma_hp.log, "ik =   2",  5, 12);   2.736528
+match ; n10, k2 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   2", 11, 12);  -6.215881
+match ; n10, k2 CH + Static Remainder; GREP(sigma_hp.log, "ik =   2",  6, 12);  -6.884029
+match ; n10, k2 Linear QP Correction ; GREP(sigma_hp.log, "ik =   2", 10, 12);   2.827626
+
+Command : mv sigma_hp.log sig_hp_GPP.log
+
+# HDF5
+Command : echo "use_wfn_hdf5" >> sigma.inp
+
+Executable : sigma.cplx.x
+Processors : 4
+Output : sig_GPP_WFN_HDF5.out
+Input  : NONE
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n4, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 6);   8.045074
+match ; n4, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 6); -14.252939
+match ; n4, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 6);   9.330292
+match ; n4, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1", 11, 6);  -6.607926
+match ; n4, k1 CH + Static Remainder; GREP(sigma_hp.log, "ik =   1",  6, 6);  -7.415517
+match ; n4, k1 Linear QP Correction ; GREP(sigma_hp.log, "ik =   1", 10, 6);  -1.885657
+
+match ; k-point 2 z-coordinate       ; GREP(sigma_hp.log, "ik =   2",  5, 0);    0.500000
+match ; n10, k2 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   2",  2, 12);   9.905659
+match ; n10, k2 Exchange             ; GREP(sigma_hp.log, "ik =   2",  4, 12);  -4.676235
+match ; n10, k2 Screened Exchange    ; GREP(sigma_hp.log, "ik =   2",  5, 12);   2.736528
+match ; n10, k2 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   2", 11, 12);  -6.215881
+match ; n10, k2 CH + Static Remainder; GREP(sigma_hp.log, "ik =   2",  6, 12);  -6.884029
+match ; n10, k2 Linear QP Correction ; GREP(sigma_hp.log, "ik =   2", 10, 12);   2.827626
+
+Command : mv sigma_hp.log sig_hp_GPP_WFN_HDF5.log
+
+# Kernel
+Command : ln -s WFN_inner.h5 WFN_co.h5
+Copy : kernel_spinor.inp kernel.inp
+Command : echo "use_wfn_hdf5" >> kernel.inp
+Command : echo "wfn_hdf5_min_band_block  2" >> kernel.inp
+
+Executable : kernel.cplx.x
+Processors : 4
+Output : kernel_WFN_HDF5.out
+Input  : NONE
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel_WFN_HDF5.out, " - Head :", 4); 3.615681327116E+0001
+match ; Norm of wing; GREP(kernel_WFN_HDF5.out, " - Wing :", 4); 6.204297070686E+0000
+match ; Norm of body; GREP(kernel_WFN_HDF5.out, " - Body :", 4); 4.455704229486E+0001
+match ; Norm of x   ; GREP(kernel_WFN_HDF5.out, " - X    :", 4); 4.415164943164E+0001
+
+# BSE with velocity operator
+Copy : absorption_spinor.inp absorption.inp
+Command : echo "use_wfn_hdf5" >> absorption.inp
+Command : echo "wfn_hdf5_min_band_block  2" >> absorption.inp
+
+Executable : absorption.cplx.x
+Output : absp_WFN_HDF5.out
+Input  : NONE
+
+Precision : 0.0001
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4); 1728
+match ; Eigenvalue 4           ; LINE(eigenvalues.dat,  8, 1);  0.22832093E+01
+Precision : 8e-5
+match ; Transition mtxel 1     ; LINE(eigenvalues.dat,  8, 2);  0.12481063E+03
+match ; Eigenvalue 40          ; LINE(eigenvalues.dat, 44, 1);  0.37584270E+01
+Precision : 5e-4
+match ; Transition mtxel 10    ; LINE(eigenvalues.dat, 44, 2);  0.76727871E+01
+Precision : 2e-7
+match ; Sum rule               ; GREP(absp_WFN_HDF5.out, "Sum rule (BSE)", 5);  0.84269128363060053
+
+

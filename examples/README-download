@@ -1,0 +1,15 @@
+================================================================================
+BerkeleyGW Examples
+================================================================================
+
+  Version 2.0   (May, 2018)
+  To be announced.
+
+  Version 1.2   (Aug, 2016)
+  F. H. da Jornada, J. Deslippe, D. Vigil-Fowler, J. I. Mustafa, T. Rangel,
+  F. Bruneval, F. Liu, D. Y. Qiu, D. A. Strubbe, G. Samsonidze, J. Lischner.
+
+--------------------------------------------------------------------------------
+
+Please run the `download-examples.sh` scripts to download the examples folder,
+or manually go to: https://github.com/BerkeleyGW/BerkeleyGW-examples .

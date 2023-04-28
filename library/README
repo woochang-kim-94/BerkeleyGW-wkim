@@ -1,0 +1,32 @@
+================================================================================
+BerkeleyGW library
+================================================================================
+
+  Version 2.0   (May, 2018)
+  To be announced.
+
+  Version 1.2   (Aug, 2016)
+  F. H. da Jornada, J. Deslippe, D. Vigil-Fowler, J. I. Mustafa, T. Rangel,
+  F. Bruneval, F. Liu, D. Y. Qiu, D. A. Strubbe, G. Samsonidze, J. Lischner.
+
+  Version 1.1   (June, 2014)
+  Version 1.0	(July, 2011) J. Deslippe, M. Jain, D. A. Strubbe, G. Samsonidze
+  Version 0.5	J. Deslippe, D. Prendergast, L. Yang, F. Ribeiro, G. Samsonidze (2008)
+  Version 0.2	M. L. Tiago, C. Spataru, S. Ismail-Beigi (2004)
+
+--------------------------------------------------------------------------------
+
+To build other codes with BerkeleyGW output support, type 'make library'
+to create libBGW_wfn.a and wfn_rho_vxc_io_m.mod (and dependent modules),
+and then compile with -I library/ and link library/libBGW_wfn.a with
+the other code.
+
+An m4 macro for configure scripts is provided in this directory, for
+use in linking to this library. Codes linking the library should 'use'
+the module 'wfn_rho_vxc_io_m'.
+
+To generate real wavefunctions, a Gram-Schmidt process should be used.
+The appropriate parallelization scheme etc. will be dependent on the code,
+and cannot be easily handled in a general manner here, but examples can
+be found in MeanField/SIESTA/real.f90 and MeanField/ESPRESSO/pw2bgw.f90
+(routine real_wfng).

@@ -1,0 +1,48 @@
+# include this file in PP/Makefile
+
+all : pw2bgw.x bgw2pw.x
+
+#BEGIN_INTERNAL_ONLY
+MODFLAGS += $(MOD_FLAG)../PH
+PHOBJS = ../PH/libph.a
+pw2bgw.o : ../PH/davcio_drho.o
+pw2bgw.o : ../PH/phcom.o
+pw2bgw.o : ../PH/ph_restart.o
+#END_INTERNAL_ONLY
+
+BGWPPOBJS = openfil_pp.o stop_pp.o
+
+pw2bgw.x : pw2bgw.o $(PHOBJS) $(BGWPPOBJS) $(MODULES) $(LIBOBJS)
+	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	- ( cd ../bin ; ln -fs ../PP/$@ . )
+
+bgw2pw.x : bgw2pw.o $(BGWPPOBJS) $(MODULES) $(LIBOBJS)
+	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	- ( cd ../bin ; ln -fs ../PP/$@ . )
+
+pw2bgw.o : ../Modules/atom.o
+pw2bgw.o bgw2pw.o : ../Modules/cell_base.o
+pw2bgw.o bgw2pw.o : ../Modules/constants.o
+pw2bgw.o bgw2pw.o : ../Modules/control_flags.o
+pw2bgw.o bgw2pw.o : ../Modules/environment.o
+pw2bgw.o : ../Modules/funct.f90
+pw2bgw.o bgw2pw.o : ../Modules/io_files.o
+pw2bgw.o bgw2pw.o : ../Modules/io_global.o
+pw2bgw.o : ../Modules/ions_base.o
+pw2bgw.o bgw2pw.o : ../Modules/kind.o
+pw2bgw.o bgw2pw.o : ../Modules/mp.o
+pw2bgw.o bgw2pw.o : ../Modules/mp_global.o
+pw2bgw.o : ../Modules/mp_wave.o
+pw2bgw.o bgw2pw.o : ../Modules/parallel_include.o
+pw2bgw.o : ../Modules/recvec_subs.f90
+pw2bgw.o : ../Modules/uspp.o
+pw2bgw.o bgw2pw.o : ../Modules/wavefunctions.o
+pw2bgw.o : ../Modules/paw_variables.o
+pw2bgw.o : ../PW/becmod.o
+pw2bgw.o : ../PW/noncol.f90
+pw2bgw.o bgw2pw.o : ../PW/pwcom.o
+pw2bgw.o bgw2pw.o : ../PW/scf_mod.o
+pw2bgw.o bgw2pw.o : ../PW/symm_base.o
+bgw2pw.o : ../iotk/src/iotk_module.o
+bgw2pw.o : ../Modules/xml_io_base.o
+bgw2pw.o : ../PW/io_rho_xml.o

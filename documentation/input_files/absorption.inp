@@ -1,0 +1,623 @@
+# absorption.inp
+
+##########################################
+# OPTIONS FOR BOTH ABSORPTION AND INTEQP #
+##########################################
+
+# Number of occupied bands on fine (interpolated) k-point grid, `WFNq_fi`.
+number_val_bands_fine 3
+
+# Number of occupied bands on coarse (input) k-point grid, `WFN_co`.
+number_val_bands_coarse 3
+
+# Number of unoccupied bands on fine (interpolated) k-point grid, `WFN_fi`.
+number_cond_bands_fine 3
+
+# Number of unoccupied bands on coarse (input) k-point grid, `WFN_co`.
+number_cond_bands_coarse 3
+
+# ### Band occupation
+# In metallic systems, PARATEC often outputs incorrect occupation
+# levels in wavefunctions. Use this to override these values.
+# lowest_occupied_band should be 1 unless you have some very
+# exotic situation. 
+#
+#
+#lowest_occupied_band vmin
+#highest_occupied_band vmax
+
+%include screening.inp
+%include scissors.inp
+%include common.inp
+
+# Read WFN_fi/WFNq_fi/WFN_co/WFNq_co in HDF5 format (i.e. read from WFN_fi.h5/WFNq_fi.h5/WFN_co.h5/WFNq_co.h5).
+#use_wfn_hdf5
+#
+# Define minimum band block size when reading WFN, default is a block of 128 Mb minimum,
+# used mainly for debugging.
+#wfn_hdf5_min_band_block  2
+
+# ### K-point unfolding and symmetries
+#
+# These flags define whether to use symmetries to unfold
+# the Brillouin zone or not in files.
+# The following files are read by BerkleyGW depending on which
+# flags you use:
+#
+# - `WFN_fi`: [[use_symmetries_fine_grid]], [[no_symmetries_fine_grid]];
+# - `WFNq_fi`: [[use_symmetries_shifted_grid]], [[no_symmetries_shifted_grid]]; and
+# - `WFN_co`: [[use_symmetries_coarse_grid]], [[no_symmetries_coarse_grid]].
+#
+# !!! warning
+#     **Default is always not to unfold!**
+#     You probably want to use symmetries to unfold the grid in
+#     `WFN_co`, i.e., [[use_symmetries_coarse_grid]], but not to use symmetries
+#     when unfolding files `WFN_fi` and `WFNq_fi` when they are randomly shifted,
+#     i.e., [[no_symmetries_fine_grid]] and [[no_symmetries_shifted_grid]].
+#     The idea is that, if apply a random shift to `WFN_fi` or
+#     `WFNq_fi`, these files will contain the full Monkhorst-Pack
+#     grid. If you apply symmetry elements on top of that,
+#     you will get a non-uniform grid.
+#
+# !!! warning
+#     Make sure that you pick either [[no_symmetries_coarse_grid]] or
+#     [[use_symmetries_coarse_grid]] consistently with your
+#     [`kernel`](kernel-keywords.md) calculation!
+#
+#
+# Don't use symmetries to unfold the k-points from `WFN_fi`. This is
+# a good idea when you use a random shift in your fine grid.
+#no_symmetries_fine_grid
+#
+# Use symmetries to unfold the k-points from `WFN_fi`. Use this whenever
+# your `WFN_fi` contains a full, unshifted k-point grid.
+#use_symmetries_fine_grid
+#
+#
+# Don't use symmetries to unfold the k-points from `WFNq_fi`. This is a
+# good idea when you use a random shift in your q-shifted fine grid and in your
+# `WFN_fi` files.
+#no_symmetries_shifted_grid
+#
+# Use symmetries to unfold the k-points from `WFNq_fi`. Use this whenever
+# both your `WFN_fi` and `WFNq_fi` contain a full, unshifted k-point grid. In
+# this case, you will need to generate the shifted grid using the same
+# procedure as generating the shifted grid for an  epsilon calculation. i.e.
+# use non-zero small q-shift in `kgrid.inp`.
+#use_symmetries_shifted_grid
+#
+#
+# Don't use symmetries to unfold the coarse k-points from `WFN_co`.
+# Make sure to use the same parameter that you used in `kernel`!
+#no_symmetries_coarse_grid
+#
+# Use symmetries to unfold the coarse k-points from `WFN_co`.
+# Make sure to use the same parameter that you used in `kernel`!
+#use_symmetries_coarse_grid
+
+# Regular grid used to calculate qpt_averages.
+# Default is the kgrid in the `WFN_fi` file.
+# It matters only if you want to perform minicell averages.
+#regular_grid n1 n2 n3
+
+# ### Dipole transition matrix elements
+# How to calculate optical transition probabilities?
+#
+# - For absorption, there is no default, one must be specified.
+# - For inteqp, default is [[use_momentum]].
+#
+# Note: for [[use_momentum]] and [[use_dos]], only `WFN_fi` is used.
+# For [[use_velocity]], the valence bands come from `WFNq_fi`. 
+#
+#
+# Recommended option for absorption calculations. The dipole matrix
+# elements are rigorously computed using two wave function files,
+# `WFN_fi`, and `WFNq_fi`, which includes effects such as the non-local
+# part of the pseudopotential in the transition matrix elements.
+#use_velocity
+#
+#
+# When you use the momentum operator, you are throwing away the contribution
+# from the non-local part of the pseudopotential to the dipole transition matrix
+# elements. However, you won't need to specify a `WFNq_fi` file. This option
+# is very useful to debug calculations, but use it with caution!
+#use_momentum
+#
+#
+# For Haydock there is also a third option to calculate
+# Joint density of states. Diagonalization computes this for free.
+# This is equivalent to setting the dipole transition matrix elements
+# to a constant.
+#use_dos
+
+# The average potential on the faces of the unit cell
+# in the non-periodic directions for the bands in WFN_inner
+# This is used to correct for the vacuum level
+# The default is zero, avgpot is in eV
+#
+#avgpot   0.0
+
+# EXPERIMENTAL FEATURES FOR TESTING PURPOSES ONLY (ABSORPTION AND INTEQP)
+
+# ### BZ unfolding (experimental)
+#
+# The 'unfolded BZ' refers to symmetry-unfolded set of k-points in the `WFN*`
+# files, while 'full BZ' is generated from the k-grid parameters in the WFN
+# file See comments in `Common/checkbz.f90` for more details.
+#
+#
+# Replace unfolded BZ with full BZ
+#fullbz_replace
+# Write unfolded BZ and full BZ to files
+#fullbz_write
+
+# Advanced flag: read k-points from the `kpoints` file.
+# The default is to read k-points from the wfn file.
+#read_kpoints
+
+# This is needed only with [[read_kpoints]] and if you selected velocity operator above.
+# This should match the shift between `WFN_fi` and `WFNq_fi`.
+#q_shift s1 s2 s3
+
+# The requested number of valence or conduction bands cannot break degenerate subspace.
+# Use the following keyword to suppress this check.
+# Note that you must still provide one more band in
+# wavefunction file in order to assess degeneracy.
+# For inteqp, only the coarse grid is checked.
+#degeneracy_check_override
+
+# Request calculation of the fully-relativistic form of the BSE, using spinor wavefunctions
+#spinor
+
+#####################################
+# OPTIONS ONLY FOR ABSORPTION BELOW #
+#####################################
+
+# Which algorithm do we use to solve the BSE? We can either do a full
+# diagonalization with ScaLAPACK or LAPACK) or use the Haydock iterative
+# solver. Note that the [[lanczos]] solver below also requires you to
+# specify [[diagonalization]] here.
+#
+#
+#diagonalization
+#haydock
+
+#BEGIN_INTERNAL_ONLY
+# Use the PRIMME library to diagonalize the BSE. You will also need to provide
+# a value for [[number_eigenvalues]]. Use this flag instead of the
+# [[diagonalization]] or [[haydock]] flags. This also requires the code to be
+# compiled with the -DUSEPRIMME flag and properly linked against the PRIMME
+# library. See also the [[primme_tol]] [[primme_max_basis_size]] and
+# [[primme_max_block_size]] flags.
+#diagonalization_primme
+
+# Tolerance for the convergence of eigenvalues using PRIMME.
+#primme_tol 1d-6
+
+# Maximum basis set used in PRIMME before restarting the Krylov subspace.
+#primme_max_basis_size 256
+
+# Maximum number of simultaneous matrix-vector operations to be done in PRIMME.
+#primme_max_block_size 8
+#END_INTERNAL_ONLY
+
+# In adittion to the solver above, you can also use the Lanczos iterative
+# solver, which requires ScaLAPACK, but works with both TDA and full BSE.
+# If you want to use the [[lanczos]] solver, you also need to set the
+# [[diagonalization]] flag.
+#lanczos
+
+# For the [[lanczos]] scheme, you can specify whether you can do use the average
+# Gaussian quadrature, which typically speeds up convergence with respect
+# to the number of iterations by a factor of 2. The default is to use it.
+#
+#
+#lanczos_gauss_quadrature
+#no_lanczos_gauss_quadrature
+
+# Compute only the lowest neig eigenvalues/eigenvectors.
+# The default is to calculate all $n_v n_c n_k$ of them.
+# Only for [[diagonalization]], not for [[haydock]].
+#number_eigenvalues neig
+
+# If you are not performing full diagonalization (eg: if using [[haydock]] or
+# [[diagonalization]] + [[lanczos]]), you must specify the number of
+# iterations.
+#number_iterations 100
+
+# Set this to use eigenvalues in `eqp.dat` and `eqp_q.dat`
+# If not set, these files will be ignored.
+#eqp_corrections
+
+# Set this to use eigenvalues in `eqp_co.dat`
+# These quasiparticle corrections will be interpolated to
+# the shifted and unshifted fine grids and written to `eqp.dat`,
+# eqp_q.dat, and bandstructure.dat. If not set, this file will be ignored.
+#eqp_co_corrections
+
+# Cutoff energy for averaging the Coulomb Interaction
+# in the Mini Brillouin Zones around the Gamma-point 
+# without Truncation or for Cell Wire or Cell Slab Truncation. 
+# The value is in Rydbergs, the default is `1.0d-12`.
+#cell_average_cutoff 1.0d-12
+
+# This is needed if you selected momentum operator above.
+# This vector will be normalized in the code.
+#polarization p1 p2 p3
+
+# If we have already calculated the optical matrix elements, 
+# do we read them from file to save time?
+#read_vmtxel
+
+# Read `eps2_moments` generated during previous run. Only for [[haydock]]
+# calculations.
+#read_eps2_moments
+
+# Reduce cost of calculation if we've already computed
+# the eigensolutions. This reads the eigenvalues and
+# transition matrix elements from the file `eigenvalues.dat`.
+#read_eigenvalues
+
+# If we only want the non-interacting spectra (i.e. no electron-
+# hole interaction, RPA). Only `WFN_fi` and `WFNq_fi` are needed as inputs.
+# With the [[read_eigenvalues]] flag, both `absorption_eh.dat` and 
+# `absorption_noeh.dat` will be created.
+#noeh_only
+
+# If already calculated, read the interpolation matrices `dvv`
+# and `dcc` from file `dtmat`.
+#read_dtmat
+
+# ### Numerical broadening
+#
+# Numerical broadening width and type for generating absorption spectrum.
+# Haydock only does Lorentzian broadening, and $\varepsilon_1(\omega)$ is always broadened with a Lorentzian profile.
+# The width is controlled by the [[energy_resolution]] flag, and $\varepsilon_2(\omega)$
+# can be broadened with the diagonalization algorithm with either a Gaussian or Lorentzian curve.
+#
+#
+# By how much each peak in $\varepsilon_2(\omega)$ should be broadened, in eV.
+energy_resolution 0.1
+#
+# Use a Lorentzian curve to broaden $\varepsilon_2(\omega)$. This is the only
+# option with the Haydock algorithm.
+#lorentzian_broadening
+#
+# Use a Gaussian curve to broaden $\varepsilon_2(\omega)$. This is the default
+# with the diagonalization algorithm.
+#gaussian_broadening
+#
+# Use a Voigt profile to broaden $\varepsilon_2(\omega)$, i.e., a convolution
+# of a Lorentzian with a Gaussian curve. This is only available with the
+# diagonalization algorithm. See parameters [[energy_resolution_sigma]] and
+# [[energy_resolution_gamma]]. Note that the Voigt profile becomes Lorentzian
+# as [[energy_resolution_sigma]] approaches 0, and a Gaussian as
+# [[energy_resolution_gamma]] approaches 0. However, the parametrization
+# of the Voigt function diverges at [[energy_resolution_sigma]] = 0.
+#voigt_broadening
+#
+# Broadening of the Gaussian contribution to the Voigt profile, in eV.
+#energy_resolution_sigma 0.1
+#
+# Broadening of the Lorentzian contribution to the Voigt profile, in eV.
+#energy_resolution_gamma 0.01
+
+# Frequency step, in eV, for generating absorption spectrum.
+#delta_frequency 0.01
+
+# This specifies what kind of epsilon we read.
+# Default is to read epsmat and eps0mat, but if
+# this flag is present we read file epsdiag.dat instead.
+# epsdiag.dat contains only the diagonal part of eps(0)mat
+# which is all that is needed by absorption. It is always created
+# by an absorption run for use in future runs, to save time reading.
+#read_epsdiag
+
+# Determines output of eigenvectors (eigenvectors).
+#
+# - eig = 0 : do not write eigenvectors (default)
+# - eig < 0 : write all eigenvectors
+# - eig > 0 : write eig eigenvectors
+#
+#write_eigenvectors eig
+
+# ### Spin transition to compute
+#
+# Options are:
+#
+# - [[spin_triplet]]: direct kernel only, appropriate only for
+#   spin-unpolarized calculations (no exchange).
+# - [[spin_singlet]] (default): direct + exchange, appropriate for
+#   spin-polarized too.
+# - [[local_fields]]: local-fields + RPA (exchange only)
+#
+# !!! warning 
+#     Triplet transition matrix elements would be exactly zero for
+#     electric-dipole transitions, so we give instead the spin part of a
+#     magnetic-dipole interaction.
+#
+# Note that triplet kernel only applies to a spin-unpolarized system; for a
+# spin-polarized system, the solutions naturally include both singlets and
+# triplets (or other multiplicities for a magnetic system).
+#
+#
+#spin_triplet
+#spin_singlet
+#local_fields
+
+# Write the bare Coulomb potential $v(q+G)$ to file.
+#write_vcoul
+
+# If your two grids are the same, use this flag to skip interpolation and
+# reduce the time/memory you need.  Then you should use `eqp_corrections` with
+# `eqp.dat` (and `eqp_q.dat`).
+# !!! warning
+#     Do not use this if you have a different
+#     fine grid from the coarse grid, as for velocity operator.
+#
+#skip_interpolation
+
+
+# ### K-point interpolation scheme
+#
+#
+# The interpolation algorithm is based on the Delaunay tessellation of the
+# k-points. This guarantees that the interpolant is a continuous function, and
+# that we are always interpolating, and never extrapolating. (default)
+#delaunay_interpolation
+# You can also use the previous interpolation method, which might give
+# interpolants that are not continuous.
+#greedy_interpolation
+
+
+# ### K-point interpolation transformation
+#
+#
+# Do a linear interpolation of the quasiparticle corrections over k. The
+# band structure may acquire a spurious linear dispersion around band extrema
+# instead of being parabolic. However, band structures will appear smoother
+# when interpolated from a coarse k-point sampling.
+#kpt_interpolation_linear
+# Transform the quasiparticle corrections to an exponential form which
+# preserves the quadratic dispersion around band extrema. This preserves
+# the correct parabolic dispersion near the VBM/CBM, which the band structure
+# appears wiggly when interpolated from a coarse k-point sampling. (default)
+#kpt_interpolation_exp_transform
+
+
+# EXPERIMENTAL FEATURES FOR TESTING PURPOSES ONLY (ABSORPTION ONLY)
+
+# Average the head of W in addition to the head of V using a model
+# for the inverse dielectric matrix. This is done for insulators for
+# all truncation schemes. The W average is limited only to the first
+# minibz even if cell_average_cutoff != 0. Currently it is always done
+# regardless whether average_w is included in the input file or not.
+#average_w
+
+# Multiply kernel by arbitrary factor. Default is 1.0 of course.
+#kernel_scaling 1.0
+
+# Use the same flag as in [`kernel.inp`](kernel-keywords.md#extended_kernel).
+#extended_kernel
+
+# Solve the full Bethe-Salpeter equation without using the Tamm-Dancoff
+# approximation. This flag automatically turns on the [[extended_kernel]] flag.
+#full_bse
+
+# Zero the coupling (H_B) block in the full Bethe-Salpeter equation. This is
+# useful to test the diagonalization routine.
+#zero_coupling_block
+
+# Perform the coarse-fine WFN transformation and eqp interpolation without
+# restricting the character of the coefficients.
+#
+# ??? info "Details"
+#     Without this flag, we would otherwise restrict the character of the
+#     states when computing transformation coefficients. For instance, in the
+#     default approach, we approximate a valence state $v$ in the fine grid as
+#     $$
+#     |v\rangle \approx \sum_{v'} d_{vv'} |v'\rangle,
+#     $$
+#     where $|v'\rangle$ is a valence state in the coarse grid for a fixed k-point.
+#     
+#     With the [[unrestricted_transformation]] flag, we instead approximate a
+#     valence state in the fine grid as
+#     $$
+#     |v\rangle \approx \sum_n d_{vn'} |n'\rangle,
+#     $$
+#     where $n'$ now runs over all valence *and* conduction states in the coarse
+#     grid for a fixed k-point.
+#
+# The [[unrestricted_transformation]] flag is a very good idea for metallic
+# systems, but it does not work so well for semiconductors because of the
+# inherit approximation used in the interpolation. Notes:
+#
+# - If [[extended_kernel]] is not set, we restrict the $d_{vn'}$ and $d_{cn'}$
+#   coefficients to the subspaces of $d_{cc'}$ and $d_{vv'}$ after the eqp
+#   interpolation.
+# - If [[extended_kernel]] is set, this flag is automatically turned on, and we
+#   keep the unrestricted $d_{vn'}$ and $d_{cn'}$ coefficients for the kernel
+#   interpolation.
+# - See also: [[zero_unrestricted_contribution]]
+#
+# !!! warning
+#     Don't use the [[unrestricted_transformation]] flag with semiconducting
+#     systems!
+#
+#unrestricted_transformation
+
+# Zero out all $d_{vc'}$/$d_{cv'}$ coefficients. Use this flag together with
+# extended_kernel to reproduce the result of a restricted kernel calculation.
+# See also: [[unrestricted_transformation]].
+#zero_unrestricted_contribution
+
+# The averaging scheme performed for the $q=0$ term of the BSE Hamiltonian
+# yields exciton binding energies that do not converge variationally. One
+# can fix this issue by zeroing out the $q=0$ term of the interaction, either
+# before or after the interpolation of the kernel of the BSE.
+# See Figure 7 of PRB 93, 235435 (2016).
+#
+# Possible values for `n` are:
+#
+# - 0: don't zero the $W(q=0)$ term (default).
+# - 1: zero $W(q=0)$ term after interpolation.
+# - 2: zero $W(q=0)$ before interpolation (not recommended)
+#
+#zero_q0_element n
+
+# This option turns on the [clustered sampled interpolation (CSI)](../CSI) method.
+#
+# For 1D and 2D systems, kernel interpolation may not work well if the coarse 
+# k-grid is too coarse to capture fast variations in screening at small q. 
+# The [[subsample_line]] flag lets you replace the interpolated matrix elements with 
+# matrix elements from a different (subsampled) `bsemat` file for $|q|$ < cutoff.
+# The subsampled bsemat can be calculated on a small patch around each coarse point,
+# thus allowing for very fine effective k-point sampling.
+#
+# When this flag is present, during kernel interpolation, a fine k-point,
+# $|k_\mathrm{fi}\rangle$, is expanded over the closest coarse point,
+# $|k_\mathrm{co}\rangle$, while $|k_\mathrm{fi}'\rangle$ is expanded over
+# over a k-point, $|k_\mathrm{sub}\rangle$, in the subsampled `bsemat` file
+# such that $|k_\mathrm{co}-k_\mathrm{sub}|$ is as close as possible
+# to $|k_\mathrm{fi}-k_\mathrm{fi}'|$. The current implementation assumes
+# that the BSE kernel is isotropic in the Voronoi cell around each coarse point.
+# Use of this flag requires a `subsample.inp` file in the same directory.
+# The cutoff is in a.u.
+#subsample_line cutoff
+
+# Setting subsample_algo to 1 will ensure that the code selects the coarse point
+# that is as close as possible to the fine k-point. However, this will break
+# the testsuite because it becomes possible to select different coarse points
+# which are just as close to the same fine k-point, i.e. degenerate. When coarse
+# points are degenerate, different compilers may select different coarse points
+# to interpolate a fine k-point. A testsuite (that insists on high precision)
+# may break because using different coarse k-points to interpolate the same fine
+# k-point will lead to slightly different interpolated kernels.
+# Setting to 0 will use the default algorithm, which uses the first coarse
+# point identified by the code, that may not necessarily be the closest to the
+# fine k-point, but highly reproducible by all compilers.
+#subsample_algo 1
+
+
+# Whether to use ELPA to diagonalize the BSE Hamiltonian. Defaults to use ELPA
+# if compiled with ELPA, otherwise use ScaLAPACK.
+#
+#use_elpa
+#dont_use_elpa
+
+# Diagonalize BSE with finite Q kernel (see [`Kernel Overview`](kernel-overview.md)). 
+# This flag should only be used if [`kernel.inp`](kernel-keywords.md#exciton_Q_shift) 
+# is specified. Use this flag as follows:
+#
+# `exciton_Q_shift Qflag Qx Qy Qz`
+#
+# where
+#
+# 1. `Qflag`  0 : read $\psi_{vk+Q}$ from `WFNq_co`
+# 2. `Qflag`  1 : standard kernel calculation, ($Q=0$)
+# 3. `Qflag`  2 : $Q$ shift is assumed commensurate with the kgrid so that $\psi_{vk+Q}$
+# can be read from `WFN_co`.
+#
+# `Qx` `Qy` `Qz`, specify the shift between the `WFN_co` and `WFNq_co` in crystal coordinates. 
+# Note: this $Q$ shift is not the center-of-mass momentum for the exciton being computed. There is a 
+# relative negative sign! See [`Kernel Overview`](kernel-overview.md). 
+#
+# !!! Warning
+#     Does not work with [[use_symmetries_coarse_grid]], WFN_co and WFNq_co must be
+#     computed on the full BZ.
+#
+#exciton_Q_shift
+
+#BEGIN_INTERNAL_ONLY
+# Specify this to do a finite-Q calculation.
+# finite q calculation - specify a q shift.
+#
+# Options are:
+#
+# - `qflag` = 0 : use WFNq_co
+# - `qflag` = 1 : no finite Q
+# - `qflag` = 2 : use finite Q commensurate with coarse grid
+#
+# Warning: `qflag`=0 is currently under development and does not work!
+#use_center_of_mass_q qflag qx qy qz
+
+# Don't use any dipole matrix elements.
+# Use this if you want to get the eigenvectors, but if you don't care
+# about the oscillator strength/absorption spectrum.
+# This is useful for finite-Q calculations, since the coupling Hamiltonian
+# might not be $A\cdot\hat{v}$.
+#dont_use_matrix_elements
+
+# Set this to use eigenvalues in `eqp_co_q.dat` for the shifted coarse grid.
+# Only relevant when [[qflag]]=0
+#eqp_co_q_corrections
+
+
+# Experimental Supercell Box Truncation Option. 
+#supercell_box_truncation
+
+# Don't renormalize the interpolation transformation coefficients. This is
+# only meant as a debugging tool while non-TDA is not available, and it's
+# useful if you are interested in the region near the absorption edge of a 
+# doped system, where there might be significant cc' and vv' overlaps.
+#no_renormalization
+
+# This flags enables the simplest case of non-uniform sampling, where WFN*_fi
+# files are "decimated" wavefunctions, and they contain a subset of the
+# k-points spanned by their kgrids. We assume that these k-points are patches
+# with a uniform sampling, so the mini-BZ around each k-point is constant.
+# The size of the mini-BZ is given by kgrid, which gives the total number of
+# k-points before the decimation.
+#
+# Caveats:
+#
+# - Always check your answer with a full calculation.
+# - Do not mix k-points with different mini-BZs, .i.e. make the patch uniform.
+# - Eqp corrections and reading from dtmat doesn`t work.
+# - Only use this flag if you know what you are doing! Result can be garbage!
+#
+#patched_sampling
+
+# Use this flag when patched sampling is used for WFN_co and the kernel.
+# If patched sampling is used for coarse grid, it must also be used for the 
+# fine grid or interpolation will make no sense.
+# Please be careful and check your answer with the full calculation.
+#patched_sampling_co
+
+# When this flag is present, we perform the kernel interpolation over the
+# k-points and over bands, just like for the QP interpolation. Otherwise,
+# we only expand the kernel over the closest coarse-grid k-point.
+#kernel_k_interpolation
+
+# BSE calculation (default)
+#bse
+# or TD Hartree-Fock/TDDFT calculation
+#tddft
+
+# Setting several range-separation hybrid parameters
+# when doing TDDFT in the code. The code will decide whether to do
+# just TDHF or also do TDDFT based on these parameters. For now
+# these are not implemented correctly -- but will be soon
+#short_range_frac_fock
+#long_range_frac_fock
+#screening_length
+
+# This is needed if you are doing TDDFT
+# This vector is the same that you gave in the kernel calculation
+#q0vec p1 p2 p3
+
+# where n means:
+# 0: don't zero the q=0 term, perform miniBZ average for divergent v(q==0) (default)
+# 1: zero q=0 term after the kernel interpolation
+# 2: zero q=0 term before the kernel interpolation
+# NOTE: we always keep the diagonal term of the BSE D=(Eck-Evk) delta_kkp
+
+# Whether we want to check WFN norms. Use with pseudobands.
+#dont_check_norms
+
+# Multiply the exchange or direct terms by a constant factor.
+# Can be useful for debugging. Default is 1.0, of course.
+#exchange_factor 1.0
+#direct_factor 1.0
+
+#END_INTERNAL_ONLY

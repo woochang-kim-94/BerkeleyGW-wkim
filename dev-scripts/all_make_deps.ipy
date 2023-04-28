@@ -1,0 +1,16 @@
+#!/usr/bin/env ipython
+
+import make_deps
+
+fnames = !find . \( -name Makefile -or -name common-rules.mk \) -exec grep -l 'include.*make_deps\.mk' '{}' \;
+bdir = %pwd
+for p in fnames.p:
+    dname = p.parent
+    s = 'Dealing with directory {}.'.format(dname)
+    print(s)
+    print('-'*len(s))
+    %cd -q {dname}
+    make_deps.main()
+    %cd -q {bdir}
+    print()
+    print()

@@ -1,0 +1,220 @@
+Test    : Silane with PARATEC (cplx)
+Enabled : Yes
+TestGroups : binary hdf5 serial parallel
+
+# There is no k-grid since Gamma-only for a molecule
+# but this is to test the symmetries.
+Copy : kgrid.in
+
+Executable : kgrid.x
+Processors : serial
+Arguments : kgrid.in kgrid.out kgrid.log
+
+match ; Space group (lattice)       ; GREP(kgrid.log, "symmetries of the Bravais lattice", 3, 2);  221
+match ; Space group (crystal)       ; GREP(kgrid.log, "symmetries of the crystal without FFT grid", 3, 2);  215
+match ; Number of symmetries        ; GREP(kgrid.log, "symmetries of the crystal without FFT grid", 1, 1);  24
+
+Unpack  : DFT_inputs.tar.gz
+
+Executable : mf_convert_wrapper.sh
+Arguments : WFN_asc WFN > wfn.out
+
+Executable : mf_convert_wrapper.sh
+Arguments : RHO_asc RHO > rho.out
+
+Executable : mf_convert_wrapper.sh
+Arguments : VXC_asc VXC > vxc.out
+
+Command: ln -s WFN WFNq
+
+Executable : scissors2eqp.x
+Processors : serial
+Arguments : WFN 0 0 0 0 0 0 > scissors2eqp.out
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps.out
+Input  : epsilon.inp
+
+Precision : 1e-13
+match ; Re chi(q1,0,0)        ; LINE(chi_converge.dat, 7, 4) ;  -0.42645312E-03
+match ; Re chi(q1,0,0) extrap ; LINE(chi_converge.dat, 7, 5) ;  -0.25672189E-02
+match ; epsilonInv Head       ; GREP(epsilon.log, "inverse epsilon", 7, 3);  0.67494024
+
+# For tricking eps0sym we link eps0mat.h5 to eps0mat
+#Command : if [ -f eps0mat.h5 ]; then ln -s eps0mat.h5 eps0mat ; fi
+
+#Executable : eps0sym.cplx.x
+#Arguments : eps0mat eps0mat_sym > eps0sym.out
+#Precision : 0.0011
+#match ; max symmetry discrepancy ; GREP(eps0sym.out, "The max error in your matrix is", 8, 0); 0.14103E-09
+#Command : mv eps0mat_sym eps0mat
+#Command : if [ -f eps0mat.h5 ]; then mv eps0mat_sym eps0mat.h5 ; fi
+# This makes no detectable difference to the later results.
+
+Command : ln -s WFN WFN_inner
+
+Executable : sigma.cplx.x
+Output : sig_GPP.out
+Input  : sig_GPP.inp sigma.inp
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n2, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 4);  -3.894326
+match ; n2, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 4); -16.063506
+match ; n2, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 4);   2.669430
+match ; n2, k1 VXC                  ; GREP(sigma_hp.log, "ik =   1",  8, 4); -11.317655
+match ; n2, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1",  6, 4);  -2.360319
+match ; n2, k1 Linear QP Correction ; GREP(sigma_hp.log, "ik =   1", 10, 4);  -8.069760
+
+match ; n4 x n8 k1 Re Exchange      ; GREP(sigma_hp.log, "4   8   6   real",  5, 0);  -0.835207
+match ; n4 x n8 k1 Im Exchange      ; GREP(sigma_hp.log, "4   8   6   imag",  5, 0);   0.427935
+match ; n4 x n8 k1 Re SX-X          ; GREP(sigma_hp.log, "4   8   6   real",  6, 0);   0.116464
+match ; n4 x n8 k1 Im SX-X          ; GREP(sigma_hp.log, "4   8   6   imag",  6, 0);  -0.059673
+match ; n4 x n8 k1 Re Coulomb Hole  ; GREP(sigma_hp.log, "4   8   6   real",  7, 0);   0.152130
+match ; n4 x n8 k1 Im Coulomb Hole  ; GREP(sigma_hp.log, "4   8   6   imag",  7, 0);  -0.077947
+match ; n4 x n8 k1 Re VXC           ; GREP(sigma_hp.log, "4   8   6   real",  9, 0);  -0.471388
+match ; n4 x n8 k1 Im VXC           ; GREP(sigma_hp.log, "4   8   6   imag",  9, 0);   0.241525
+
+Command : mv sigma_hp.log sig_hp_GPP.log
+Command : ln -s  WFN  WFN_co
+Command : ln -sf WFNq WFN_fi
+
+Executable : kernel.cplx.x
+Output : kernel.out
+Input  : kernel.inp
+
+Precision : 1e-10
+match ; Norm of head; GREP(kernel.out, " - Head :", 4); 4.898979485566E+0000
+match ; Norm of wing; GREP(kernel.out, " - Wing :", 4); 0.000000000000E+0000
+match ; Norm of body; GREP(kernel.out, " - Body :", 4); 5.986383274212E+0000
+match ; Norm of x   ; GREP(kernel.out, " - X    :", 4); 7.989403004200E+0000
+
+# BSE with momentum operator
+Executable : absorption.cplx.x
+Output : absp_mom.out
+Input  : absp_mom.inp absorption.inp
+
+Precision : 1e-5
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4); 24
+
+# most of the excitons are three-fold degenerate, and only the sum squared of their
+# mtxels is invariant to unitary rotations, so that is the best thing to test.
+Executable : sum_degenerate_excitons.py
+Arguments : > eigenvalues_mom_sum.dat
+
+match ; Eigenvalue 1           ; LINE(eigenvalues_mom_sum.dat, 2, 1);  -1.313862
+match ; Transition mtxel 1     ; LINE(eigenvalues_mom_sum.dat, 2, 3);   3.897099
+match ; Eigenvalue 6           ; LINE(eigenvalues_mom_sum.dat, 7, 1);   3.711824
+match ; Transition mtxel 6     ; LINE(eigenvalues_mom_sum.dat, 7, 3);   0.000000
+
+Command : mv eigenvalues.dat eigenvalues_mom.dat
+
+# BSE with momentum operator and no skip_interpolation
+Executable : absorption.cplx.x
+Output : absp_mom_ns.out
+Input  : absp_mom_ns.inp absorption.inp
+
+Precision : 1e-5
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4); 24
+
+# most of the excitons are three-fold degenerate, and only the sum squared of their
+# mtxels is invariant to unitary rotations, so that is the best thing to test.
+Executable : sum_degenerate_excitons.py
+Arguments : > eigenvalues_mom_sum_ns.dat
+
+match ; Eigenvalue 1           ; LINE(eigenvalues_mom_sum_ns.dat, 2, 1);  -1.313862
+match ; Transition mtxel 1     ; LINE(eigenvalues_mom_sum_ns.dat, 2, 3);   3.897099
+match ; Eigenvalue 6           ; LINE(eigenvalues_mom_sum_ns.dat, 7, 1);   3.711824
+match ; Transition mtxel 6     ; LINE(eigenvalues_mom_sum_ns.dat, 7, 3);   0.000000
+
+Command : mv eigenvalues.dat eigenvalues_mom_ns.dat
+
+# BSE with momentum operator and scissor corrections
+Executable : absorption.cplx.x
+Output : absp_scis.out
+Input  : absp_scis.inp absorption.inp
+
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4); 24
+
+Executable : sum_degenerate_excitons.py
+Arguments : > eigenvalues_scis_sum.dat
+
+match ; Eigenvalue 1           ; LINE(eigenvalues_scis_sum.dat, 2, 1);   1.919104
+match ; Transition mtxel 1     ; LINE(eigenvalues_scis_sum.dat, 2, 3);   3.739433
+match ; Eigenvalue 6           ; LINE(eigenvalues_scis_sum.dat, 7, 1);   7.858465
+match ; Transition mtxel 6     ; LINE(eigenvalues_scis_sum.dat, 7, 3);   0.000000
+
+Command : mv eigenvalues.dat eigenvalues_scis.dat
+
+Executable : eqp.py
+Arguments : eqp1 sig_hp_GPP.log eqp.dat > eqp.out
+
+match ; LDA Eigenvalue 6       ; LINE(eqp.dat, 7, 3);  4.422291000
+match ; GW  Eigenvalue 6       ; LINE(eqp.dat, 7, 4);  8.753550000
+
+# BSE with momentum operator and EQP corrections
+Executable : absorption.cplx.x
+Output : absp_eqp.out
+Input  : absp_eqp.inp absorption.inp
+
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4); 24
+
+Executable : sum_degenerate_excitons.py
+Arguments : > eigenvalues_eqp_sum.dat
+
+match ; Eigenvalue 1           ; LINE(eigenvalues_eqp_sum.dat, 2, 1);   6.739186
+match ; Transition mtxel 1     ; LINE(eigenvalues_eqp_sum.dat, 2, 3);   3.731551
+match ; Eigenvalue 6           ; LINE(eigenvalues_eqp_sum.dat, 7, 1);  12.586518
+match ; Transition mtxel 6     ; LINE(eigenvalues_eqp_sum.dat, 7, 3);   0.000000
+Precision : 1e-10
+
+Command : mv eigenvalues.dat eigenvalues_eqp.dat
+
+# Epsilon Sphere
+
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_sphere.out
+Input  : eps_sphere.inp epsilon.inp
+
+Precision : 1e-13
+match ; Re chi(q1,0,0)        ; LINE(chi_converge.dat, 7, 4) ;  -0.42645312E-03
+match ; Re chi(q1,0,0) extrap ; LINE(chi_converge.dat, 7, 5) ;  -0.25672189E-02
+match ; epsilonInv Head       ; GREP(epsilon.log, "inverse epsilon", 7, 3);  0.89172414
+
+# Treating first valence state as a core state to be excluded in the epsilon and sigma
+# summations.
+Executable : epsilon.cplx.x
+Processors : 4
+Output : eps_core_excl.out
+Input  : epsilon_core_excl.inp epsilon.inp
+
+Precision : 1e-13
+match ; Re chi(q1,0,0)        ; LINE(chi_converge.dat, 7, 4) ;  -0.36942140E-03
+match ; Re chi(q1,0,0) extrap ; LINE(chi_converge.dat, 7, 5) ;  -0.22212688E-02
+match ; epsilonInv Head       ; GREP(epsilon.log, "inverse epsilon", 7, 3);  0.71857740
+
+Executable : sigma.cplx.x
+Output : sig_GPP_core_excl.out
+Input  : sig_GPP_core_excl.inp sigma.inp
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n2, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 4);  -3.894326
+match ; n2, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 4); -13.840505
+match ; n2, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 4);   1.409855
+match ; n2, k1 VXC                  ; GREP(sigma_hp.log, "ik =   1",  8, 4); -11.317655
+match ; n2, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1",  6, 4);  -1.522058
+match ; n2, k1 Linear QP Correction ; GREP(sigma_hp.log, "ik =   1", 10, 4);  -6.425563
+
+match ; n4 x n8 k1 Re Exchange      ; GREP(sigma_hp.log, "4   8   6   real",  5, 0);  -0.978198
+match ; n4 x n8 k1 Im Exchange      ; GREP(sigma_hp.log, "4   8   6   imag",  5, 0);   0.501200
+match ; n4 x n8 k1 Re SX-X          ; GREP(sigma_hp.log, "4   8   6   real",  6, 0);   0.411171
+match ; n4 x n8 k1 Im SX-X          ; GREP(sigma_hp.log, "4   8   6   imag",  6, 0);  -0.210672
+match ; n4 x n8 k1 Re Coulomb Hole  ; GREP(sigma_hp.log, "4   8   6   real",  7, 0);  -0.108768
+match ; n4 x n8 k1 Im Coulomb Hole  ; GREP(sigma_hp.log, "4   8   6   imag",  7, 0);   0.055730
+match ; n4 x n8 k1 Re VXC           ; GREP(sigma_hp.log, "4   8   6   real",  9, 0);  -0.471388
+match ; n4 x n8 k1 Im VXC           ; GREP(sigma_hp.log, "4   8   6   imag",  9, 0);   0.241525
+
+Command : mv sigma_hp.log sig_hp_GPP_core_excl.log

@@ -1,0 +1,176 @@
+================================================================================
+GW code: Epsilon
+================================================================================
+
+  Version 2.0   (May, 2018)
+  To be announced.
+
+  Version 1.2   (Aug, 2016)
+  F. H. da Jornada, J. Deslippe, D. Vigil-Fowler, J. I. Mustafa, T. Rangel,
+  F. Bruneval, F. Liu, D. Y. Qiu, D. A. Strubbe, G. Samsonidze, J. Lischner.
+
+  Version 1.1   (June, 2014)
+  Version 1.0	(September, 2011)
+  Version 0.5	J. Deslippe, D. Prendergast, L. Yang, F. Ribeiro, G. Samsonidze (2008)
+  Version 0.2	S. Ismail-Beigi (2002)
+  Version 0.1	G. M. Rignanese, E. Chang, X. Blase  (1998)
+  Version 0.0	M. Hybertsen (1985)
+
+-------------------------------------------------------------------------------
+
+Description:
+
+Epsilon is the name of the code that generates the polarizability matrix and 
+the inverse dielectric matrix for a bulk or nanoscale system. The main 
+result of the Epsilon code is the generation of epsmat which can be used
+in a Sigma or BSE calculation.
+
+-------------------------------------------------------------------------------
+
+Required Input:
+
+	epsilon.inp	Input parameters. See example in this directory. 
+	WFN		This is linked to the unshifted grid. 
+	WFNq		This is linked to the shifted grid.
+			When a shift is not required, this can be the same file as WFN
+			(i.e. for semiconductor or graphene screening with spherical or
+			box truncation).
+
+Auxiliary Files: (output files from previous runs, used as input to speed up calculation)
+
+	chimat(.h5)	Polarizability matrix. No need to recalculate matrix elements.
+			The file has a ".h5" extension if the code is compiled
+			with HDF5 support (for specification, see epsmat.h5.spec).
+	chi0mat(.h5)	Polarizability matrix at q=0. No need to recalculate matrix elements.
+			The file has a ".h5" extension if the code is compiled
+			with HDF5 support (for specification, see epsmat.h5.spec).
+
+
+        The files below are used if eqp_corrections is set in epsilon.inp.
+        The corrected eigenvalues are used for constructing the polarizability matrix.
+        eqp.dat         A list of quasiparticle energy corrections for the bands in WFN.
+        eqp_q.dat       A list of quasiparticle energy corrections for the bands in WFNq.
+
+-------------------------------------------------------------------------------
+
+	epsilon.inp	Please see example epsilon.inp in this directory
+			for more complete options.
+
+-------------------------------------------------------------------------------
+
+Output Files: 
+	
+	espmat(.h5)		Inverse dielectric matrix (q<>0).
+				The file has a ".h5" extension if the code is compiled
+				with HDF5 support (for specification, see epsmat.h5.spec).
+	eps0mat(.h5)		Inverse dielectric matrix (q->0).
+				The file has a ".h5" extension if the code is compiled
+				with HDF5 support (for specification, see epsmat.h5.spec).
+
+
+	epsilon.log		The log file containing values of chimat and epsmat.
+        chi_converge.dat	Convergence chi with respect to empty orbitals.
+                                Columns: number of conduction bands,
+                                Re chi(G=0,G'=0,q),     extrapolated Re chi(G=0,G'=0,q),
+				Re chi(G=Max,G'=Max,q), extrapolated Re chi(G=Max,G'=Max,q)
+
+-------------------------------------------------------------------------------
+
+Tricks and hints:
+
+1. Comments on convergence of epsilon_cutoff
+
+There are many ways to check convergence of this parameter:
+
+-Ideally, the inverse epsilon matrix is almost diagonal for large 
+G vectors. So, for small ( G , G' ) it is usually large but, for 
+ G or G' close to G_max, it is smaller by a factor of 100, more or 
+less. Check if the ratio between the greatest and lowest matrix 
+elements is large.
+
+-Alternatively, one can check if epsinv( G_max , G'_max ) is close 
+to 1 for G = G'. It should be about 0.999 or so. Note that 0.9 isn't 
+"close to 1" in this case! Also check if epsinv( G_max , G'_max ) is 
+indeed small for G != G'.
+
+2. Comments on the null point
+
+The null point (Gamma point) is treated in a special manner. In input, 
+declare it as slightly shifted from the true Gamma point:
+
+  0.0000    0.0050    0.0050   1.0   1
+
+This is the only k-point with itestq=1 instead of 0!
+
+The magnitude of this vector must be small: of order 0.01 or smaller 
+for less than 100 points in full Brillouin zone. If the density 
+of points in BZ increases, that magnitude should decrease accordingly.
+
+3. Macroscopic dielectric constant
+
+In GW, the screened interaction gives the formula:
+
+  eps(G,G';q) = delta_GG' - [4pi e^2/(q+G)^2 ] chi(G,G';q) 
+
+where chi(G,G';q) is the polarizability (P in the literature).
+
+  if G=0  and q=0
+
+  then we let
+
+   eps(0,G';q) = delta_0G' - lim(q->0) [4pi/(q)^2] chi(0,G';q)
+
+always check chi(0,0;q->0) and eps^(-1)(0,0;q->0)
+in epsilon.log
+
+1/eps^(-1)(0,0;q->) should be the macroscopic epsilon, 
+                    local-field effects
+1/(1-4*pi*chi(0,0;q->0)*V_c(0) should also be (roughly) the macroscopic epsilon,
+                              without local-field effects
+
+4. Merging epsmat files
+
+The Epsilon code is complicated and involves lots of computation. Frequently, 
+it is useful to calculate the epsilon matrix for a small number 
+of q-points, and later put all those pieces of matrix into a big
+epsmat file. Use epsmat_merge to do this. See below.
+
+Notes:
+-epsilon cutoff *must* be the same for all files to be merged
+-The ordering of q-points in the input file must correspond to the ordering of
+epsmat files: the first file has the first set of points, the second file 
+has the second and so on.
+
+5. Utilities:
+
+-------------------------------------------------------------------------------
+Epsilon: binary/ASCII conversion
+-------------------------------------------------------------------------------
+
+TOOLS: epsbinasc, epsascbin
+
+USAGE: simply type name of executable. 
+
+The input file is named epsconv.inp.
+
+-------------------------------------------------------------------------------
+--------  WFN/RHO/VXC binary/ASCII conversion ------------------------
+-------------------------------------------------------------------------------
+
+TOOL: mf_convert_wrapper.sh
+
+USAGE: ./mf_convert_wrapper.sh infile outfile
+
+Real/complex, bin/asc, file type, is automatically detected.
+
+-------------------------------------------------------------------------------
+Epsilon: merging
+-------------------------------------------------------------------------------
+
+TOOL: epsmat_merge
+
+USAGE: epsmat_merge.[real/cplx].x
+
+Merges the content of multiple binary epsmat files into an output file
+called 'epsmat', concatenating data. See input file epsmat_merge.inp,
+for specification of cutoff, q-points, and input epsmat filenames.

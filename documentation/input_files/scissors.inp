@@ -1,0 +1,29 @@
+# ### Scissors operator
+# Scissors operator (linear fit of the quasiparticle
+# energy corrections) for the bands in `WFN` and `WFNq`.
+# For valence-band energies:
+#
+# - `ev_cor = ev_in + evs + evdel * (ev_in - ev0)`
+#
+# For conduction-band energies:
+#
+# - `ec_cor = ec_in + ecs + ecdel * (ec_in - ec0)`
+#
+# Defaults is zero for all entries, i.e., no scissors corrections.
+# `evs`, `ev0`, `ecs`, `ec0` are in eV.
+# If you have `eqp.dat` and `eqp_q.dat` files
+# this information is ignored in favor of the eigenvalues
+# in eqp.dat and eqp_q.dat.
+# One can specify all parameters for scissors operator
+# in a single line with `cvfit evs ev0 evdel ecs ec0 ecdel`
+#
+#
+#evs     0.0
+#ev0     0.0
+#evdel   0.0
+#ecs     0.0
+#ec0     0.0
+#ecdel   0.0
+#
+#cvfit   0.0 0.0 0.0 0.0 0.0 0.0
+

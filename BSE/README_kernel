@@ -1,0 +1,138 @@
+================================================================================
+BSE code: Kernel
+================================================================================
+
+  Version 1.2   (Aug, 2016)
+  F. H. da Jornada, J. Deslippe, D. Vigil-Fowler, J. I. Mustafa, T. Rangel,
+  F. Bruneval, F. Liu, D. Y. Qiu, D. A. Strubbe, G. Samsonidze, J. Lischner.
+
+  Version 1.1   (June, 2014)
+  Version 1.0	(July, 2011) J. Deslippe, M. Jain, D. A. Strubbe, G. Samsonidze.
+  Version 0.5	J. Deslippe, D. Prendergast, L. Yang, F. Ribeiro, G. Samsonidze (2008)
+  Version 0.2	C. Spataru, S. Ismail-Beigi (2004)
+  Version 0.1	M. L. Tiago, E. Chang, G. M. Rignanese (1999)
+
+--------------------------------------------------------------------------------
+
+Description:
+
+This code constructs the direct and exchange Kernel matrix on
+the coarse grid.  This is done essentially by computing Eqs 34,
+35 and 42-46 of Rohlfing and Louie.
+
+--------------------------------------------------------------------------------
+
+Required Input:
+
+	kernel.inp	Input parameters.  See detailed explanation below.
+	WFN_co		Wavefunctions on coarse grid. Recommended: use an unshifted
+                        grid of the same size as the q-grid in epsmat.
+                        Shift will increase number of q-vectors needed in epsmat.
+
+#BEGIN_INTERNAL_ONLY
+        WFNq_co		Coarse-grid wavefunctions for Finite Q.
+#END_INTERNAL_ONLY
+	epsmat(.h5)	Inverse dielectric matrix (q<>0). Created using Epsilon.
+			Must contain the all q=k-k' generated from WFN_co, including
+			with symmetry if use_symmetries_coarse_grid is set.
+			The file has a ".h5" extension if the code was built
+			with HDF5 support.
+	eps0mat(.h5)	Inverse dielectric matrix (q->0). Created using Epsilon.
+			The file has a ".h5" extension if the code was built
+			with HDF5 support.
+
+			Note Kernel does not require quasiparticle eigenvalues. It
+			may be run in parallel with Sigma.
+
+--------------------------------------------------------------------------------
+
+	kernel.inp	Please see example kernel.inp in this directory
+			for more complete options.
+
+--------------------------------------------------------------------------------
+
+Output Files:
+
+	bsedmat		Direct kernel matrix elements on unshifted coarse grid.
+	bsexmat		Exchange kernel matrix elements on unshifted coarse grid.
+
+	or
+
+	bsemat.h5	Includes data from both of above if compiled with HDF5 support.
+			For specification, see bsemat.h5.spec. Note that
+			you can use the bsemat_hdf5_upgrade.py utility to
+			upgrade a bsemat.h5 file generated with BerkeleyGW
+			prior to 1.2 (r6974).
+
+--------------------------------------------------------------------------------
+
+A Note About the Wings of Epsilon (for Semiconductors Only):
+
+The wings of Chi have terms of the following form:
+
+< vk | e^(i(G+q)r) | ck+q >< ck+q | e^(-iqr) | vk > (1)
+
+The matrix element on the right is < u_ck+q | u_vk > where u is the periodic part 
+of the Bloch function. From k.p perturbation theory, this matrix element is proportional
+to q. The matrix element on the left with a non-zero G is typically roughly
+a constant as a function of q for small q (q being a small addition to G).
+
+Thus for a general G-vector, Chi_wing(G,q) \propto q. This directly leads 
+to the wings of the screened untruncated Coulomb interaction being proportional 
+to 1/q. Note that this function changes sign as q -> -q. Thus, when treating the 
+q=0 point, we set the value of the wing to zero (the average of its value in the 
+mini-Brillouin zone (mBZ).
+
+For G-vectors on high-symmetry lines, some of the matrix elements on the left of (1)
+will be zero for q=0, and therefore proportional to q. For such cases,
+Chi_wing(G,q) \propto q^2, and the wings of the screened Coulomb interaction
+are constant as a function of q. However, setting the q->0 wings to zero still 
+gives us, at worst, linear convergence to the final answer with increased k-point 
+sampling, because the q->0 point represents an increasingly smaller area in the 
+BZ. Thus, we still zero out the q->0 wings, as discussed in
+A Baldereschi and E Tosatti, Phys. Rev. B 17, 4710 (1978).
+
+In the future, it may be worthwhile to have the user calculate chi / epsilon at 
+two q-points (a third q-point at q=0 is known) in order to compute the linear 
+and quadratic coefficients of each chi_wing(G,q) so that all the correct analytic
+limits can be taken. This requires a lot of messy code and more work for the user
+for only marginally better convergence with respect to k-points (the wings tend
+to make a small difference, and this procedure would matter for only a small set
+of the G-vectors). 
+
+It is important, as always, for the user to converge their calculation 
+with respect to both the coarse k-point grid used in sigma and kernel as well
+as with the fine k-point grid in absorption.
+
+-JRD+MJ
+
+--------------------------------------------------------------------------------
+
+Tricks and hints:
+
+1. To optimize distribution of work among PEs, do the following:
+
+Choose processors to divide:
+
+nk^2 (if npes < nk^2)
+nk^2*nc^2 (if npes < nk^2*nc^2)
+nk^2*nc^2*nv^2 (if npes < nk^2*nc^2*nv^2)
+
+2. All input and output files (except kernel.inp) are in 
+binary format.
+
+3. The interaction matrices are calculated in full! i.e. not only the 
+upper triangle. In diag, currently only the upper triangle is used.
+
+4. The Brillouin zone is built using a Wigner-Seitz construction, 
+this way the head matrix elements are easily calculated.
+
+5. The dielectric matrix is by default stored in memory.
+
+6. The parameters scc (screened_coulomb_cutoff) and bcc 
+(bare_coulomb_cutoff) are the same as scc and bcc used in Simga. 
+The parameters scc and bcc should be equal to or less than the 
+epsilon_cutoff and wavefunction_cutoff used in Epsilon and DFT, 
+respectively. See Sigma/README for more details.
+
+Converters from old versions of file formats to current version are available in version 2.4.

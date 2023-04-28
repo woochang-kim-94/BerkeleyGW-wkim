@@ -1,0 +1,80 @@
+&input_pw2bgw
+   prefix = 'silicon'       ! same as in espresso
+   real_or_complex = 1      ! 1 for real or 2 for complex
+   wfng_flag = .true.       ! write wavefunction in G-space
+   wfng_file = 'WFN'        ! wavefunction file name
+   wfng_kgrid = .false.     ! overwrite k-grid in wavefunction file
+   wfng_nk1 = 4             ! ( if espresso input file contains the
+   wfng_nk2 = 4             !   manual list of k-points, the k-grid
+   wfng_nk3 = 4             !   parameters in espresso are set to zero;
+   wfng_dk1 = 0.5           !   since Sigma and absorption both need to know
+   wfng_dk2 = 0.5           !   the k-grid dimensions, we patch these
+   wfng_dk3 = 0.5           !   parameters into the wave-function file )
+   wfng_occupation = .true. ! overwrite occupations in wavefunction file
+   wfng_nvmin = 1           ! ( set min/max valence band indices; identical to
+   wfng_nvmax = 4           !   scissors operator for LDA-metal/GW-insulator )
+   rhog_flag = .true.       ! write charge density in G-space
+   rhog_file = 'RHO'        ! charge density file name
+   vxcg_flag = .true.       ! write exchange-correlation potential in G-space
+   vxcg_file = 'VXC'        ! exchange-correlation potential file name
+   vxc0_flag = .true.       ! write Vxc(G=0)
+   vxc0_file = 'vxc0.dat'   ! Vxc(G=0) file name
+   vxc_flag = .false.       ! write matrix elements of Vxc
+   vxc_file = 'vxc.dat'     ! Vxc matrix elements file name
+   vxc_integral = 'g'       ! compute Vxc matrix elements in R- or G-space
+   vxc_diag_nmin = 0        ! min band index for diagonal Vxc matrix elements
+   vxc_diag_nmax = 0        ! max band index for diagonal Vxc matrix elements
+   vxc_offdiag_nmin = 0     ! min band index for off-diagonal Vxc matrix elements
+   vxc_offdiag_nmax = 0     ! max band index for off-diagonal Vxc matrix elements
+   input_dft = 'sla+pz'     ! same as in espresso
+   exx_flag = .false.       ! set to .true. for hybrids
+   vnlg_flag = .false.      ! write Kleinman-Bylander projectors in G-space
+   vnlg_file = 'KBproj'     ! Kleinman-Bylander projectors file name
+#BEGIN_INTERNAL_ONLY
+   dfpt_type = 0            ! 0 = none (if you don't want DFPT), 1 = ionic, 2 = electric
+   dfpt_file = 'dfpt.dat'   ! files will be called dfpt_file_mode######
+   dfpt_mode_start = 1      ! begin calculating DFPT matrix elements with this mode
+   dfpt_mode_end = 0        ! end calculating DFPT matrix elements with this mode (0 = do all)
+#END_INTERNAL_ONLY
+   vxc_zero_rho_core = .true. ! NLCC: remove core charge when calculating Vxc
+/
+
+# above are typical values for Si. below are the defaults.
+   prefix = 'prefix'
+   real_or_complex = 2
+   wfng_flag = .false.
+   wfng_file = 'WFN'
+   wfng_kgrid = .false.
+   wfng_nk1 = 0
+   wfng_nk2 = 0
+   wfng_nk3 = 0
+   wfng_dk1 = 0.0
+   wfng_dk2 = 0.0
+   wfng_dk3 = 0.0
+   wfng_occupation = .false.
+   wfng_nvmin = 0
+   wfng_nvmax = 0
+   rhog_flag = .false.
+   rhog_file = 'RHO'
+   vxcg_flag = .false.
+   vxcg_file = 'VXC'
+   vxc0_flag = .false.
+   vxc0_file = 'vxc0.dat'
+   vxc_flag = .false.
+   vxc_file = 'vxc.dat'
+   vxc_integral = 'g'
+   vxc_diag_nmin = 0
+   vxc_diag_nmax = 0
+   vxc_offdiag_nmin = 0
+   vxc_offdiag_nmax = 0
+   input_dft = 'sla+pz'
+   exx_flag = .false.
+   vnlg_flag = .false.
+   vnlg_file = 'VNL'
+#BEGIN_INTERNAL_ONLY
+   dfpt_type = 0
+   dfpt_file = 'dfpt.dat'
+   dfpt_mode_start = 1
+   dfpt_mode_end = 0
+#END_INTERNAL_ONLY
+   vxc_zero_rho_core = .true.

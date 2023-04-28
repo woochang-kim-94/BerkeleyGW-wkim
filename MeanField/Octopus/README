@@ -1,0 +1,3 @@
+Octopus is a real-space DFT and TDDFT code available under the GPL from http://www.tddft.org/programs/octopus.
+Support for BerkeleyGW output is implemented in Octopus since version 4.1.0.
+For more information, see the Octopus wiki: http://www.tddft.org/programs/octopus/wiki/index.php/BerkeleyGW.

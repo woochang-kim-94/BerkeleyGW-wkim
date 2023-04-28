@@ -1,0 +1,34 @@
+
+This directory contains a patch for denchar-1.4 and 
+grid2cube-1.1.1 in siesta-3.1 that adds support 
+for non-orthogonal cells. The modified versions 
+generate Gaussian Cube files on real-space grid. 
+To apply the patch execute the following command 
+in the directory where you have siesta-3.1:
+
+% patch -p0 -i siesta-3.1-patch
+
+Use the following keywords in siesta input file:
+
+WaveFuncKPointsScale ReciprocalLatticeVectors
+%block WaveFuncKPoints
+0.000  0.000  0.000
+%endblock WaveFuncKPoints
+WriteDenchar T
+SaveRho T
+SaveElectrostaticPotential T
+SaveTotalPotential T
+MeshCutoff 240.0 Ry
+
+Then run denchar for wavefunctions and grid2cube for 
+charge density and potentials. In denchar input file, 
+use keywords LatticeConstant and LatticeVectors same as 
+in siesta input file. Keywords Denchar.{Min|Max}{X|Y|Z} 
+will be ignored. In grid2cube input file, 3rd and 4th 
+lines (shift of the origin of coordinates and nskip) 
+will be ignored.
+
+There is also irrbz.py that extracts irreducible wedge 
+from siesta output files prefix.KP and prefix.EIG. 
+This is needed because siesta reduces k-points by 
+time-reversal symmetry only.

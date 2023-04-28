@@ -1,0 +1,235 @@
+Test    : Silicon with EPM (real) HDF5
+Enabled : Yes
+TestGroups : binary hdf5 serial parallel
+
+# This file is automatically turned into a corresponding complex version.
+# It also should be closely mirrored by the spin-polarized version Si_cplx_spin.test.
+# If you change this file, make corresponding changes to that file too, and the
+# reference values must be identical.
+
+Command: cp $TESTDIR/WFN*.in $WORKDIR/
+# FHJ: The following sed is only executed in CPLX tests, thanks to make_complex_test.sh
+Command: case '(real)' in *complex*) sed -i.bak 's/^real_or_complex.*/real_or_complex 2/' WFN*.in;; esac
+
+Executable : epm2bgw.x
+Processors : serial
+Output : WFN.out
+Input  : WFN.in PIPE NOCOPY
+
+Precision : 6e-15
+match ; Eigenvalue  1 at k-pt 1   ; GREP(WFN.out,   "kpoint          1", 2,  1); -0.1283435360829054
+match ; Eigenvalue 10 at k-pt 1   ; GREP(WFN.out,   "kpoint          1", 2, 10);  1.3282472551260550
+match ; Eigenvalue 18 at k-pt 2   ; GREP(WFN.out,   "kpoint          2", 2, 18);  2.3490532646407310
+
+Output : WFNq.out
+Input  : WFNq.in PIPE NOCOPY
+
+match ; Eigenvalue  1 at k-pt 1   ; GREP(WFNq.out,   "kpoint          1", 2,  1); -0.1278872033838455
+match ; Eigenvalue  1 at k-pt 2   ; GREP(WFNq.out,   "kpoint          2", 2,  1); -0.1287983831755248
+match ; Eigenvalue  4 at k-pt 3   ; GREP(WFNq.out,   "kpoint          3", 2,  4);  0.6800817811482534
+
+Output : WFN_co.out
+Input  : WFN_co.in PIPE NOCOPY
+
+match ; Eigenvalue  1 at k-pt 1   ; GREP(WFN_co.out, "kpoint          1", 2,  1); -0.1875783994953054
+match ; Eigenvalue  1 at k-pt 3   ; GREP(WFN_co.out, "kpoint          3", 2,  1);  0.1223225560313585
+match ; Eigenvalue 18 at k-pt 3   ; GREP(WFN_co.out, "kpoint          3", 2, 18);  2.2892013856110280
+
+Output : WFN_fi.out
+Input  : WFN_fi.in PIPE NOCOPY
+
+match ; Eigenvalue  1 at k-pt 1   ; GREP(WFN_fi.out, "kpoint          1", 2, 1);  -0.1699064558009724
+match ; Eigenvalue  4 at k-pt 1   ; GREP(WFN_fi.out, "kpoint          1", 2, 4);   0.7222736945499569
+match ; Eigenvalue  6 at k-pt 7   ; GREP(WFN_fi.out, "kpoint          7", 2, 6);   1.0573090701231470
+
+Output : WFNq_fi.out
+Input  : WFNq_fi.in PIPE NOCOPY
+
+match ; Eigenvalue  1 at k-pt 2   ; GREP(WFNq_fi.out, "kpoint          2", 2, 1);  -0.0628178651675045
+match ; Eigenvalue  4 at k-pt 5   ; GREP(WFNq_fi.out, "kpoint          5", 2, 4);   0.5510534752750740
+match ; Eigenvalue  3 at k-pt 20  ; GREP(WFNq_fi.out, "kpoint         20", 2, 3);   0.4468196210876209
+
+# TEST HDF5
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFNq  WFNq.h5  >  WFNq_wfn2hdf.out ; echo "SUCCESS"  $? >> WFNq_wfn2hdf.out
+match ; WFNq.h5 SUCCESS ; GREP(WFNq_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFN  WFN.h5  >  WFN_wfn2hdf.out ; echo "SUCCESS"  $? >> WFN_wfn2hdf.out
+match ; WFN.h5 SUCCESS ; GREP(WFN_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFN_inner WFN_inner.h5  >  WFN_inner_wfn2hdf.out ; echo "SUCCESS"  $? >> WFN_inner_wfn2hdf.out
+match ; WFN_inner.h5 SUCCESS ; GREP(WFN_inner_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFN_fi WFN_fi.h5  >  WFN_fi_wfn2hdf.out ; echo "SUCCESS"  $? >> WFN_fi_wfn2hdf.out
+match ; WFN_fi.h5 SUCCESS ; GREP(WFN_fi_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+Executable : wfn2hdf.x
+Processors : serial
+Arguments : BIN  WFNq_fi WFNq_fi.h5  >  WFNq_fi_wfn2hdf.out ; echo "SUCCESS"  $? >> WFNq_fi_wfn2hdf.out
+match ; WFNq_fi.h5 SUCCESS ; GREP(WFNq_fi_wfn2hdf.out, "SUCCESS", 2, 0); 0
+
+#Test full epsilon with HDF5 WFN
+Copy : epsilon.inp
+Command : echo "use_wfn_hdf5" >> epsilon.inp
+
+Processors : 4
+Executable : epsilon.real.x
+Output : eps_static_WFN_HDF5.out
+Input  : NONE
+
+Precision : 2e-11
+match ; epsilon q1 ; GREP(eps_static_WFN_HDF5.out, "q-pt      1: Head of Epsilon",         7, 0); 16.9619547514149
+Precision : 2e-13
+match ; eps inv q1 ; GREP(eps_static_WFN_HDF5.out, "q-pt      1: Head of Epsilon Inverse", 8, 0); 0.0650198678428007
+match ; epsilon q2 ; GREP(eps_static_WFN_HDF5.out, "q-pt      2: Head of Epsilon",         7, 0); 3.1043208107546914
+match ; eps inv q2 ; GREP(eps_static_WFN_HDF5.out, "q-pt      2: Head of Epsilon Inverse", 8, 0); 0.36141535117630236
+match ; epsilon q3 ; GREP(eps_static_WFN_HDF5.out, "q-pt      3: Head of Epsilon",         7, 0); 2.8944796695309591
+match ; eps inv q3 ; GREP(eps_static_WFN_HDF5.out, "q-pt      3: Head of Epsilon Inverse", 8, 0); 0.36570423105364530
+Command : mv epsilon.log eps_static_WFN_HDF5.log
+
+# Sigma WFN HDF5
+Copy : sig_GPP.inp sigma.inp
+Command : echo "use_wfn_hdf5" >> sigma.inp
+
+Processors : 4
+Executable : sigma.real.x
+Output : sig_GPP_wfnHDF5.out
+Input  : NONE
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n2, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 4);  10.035862
+match ; n2, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 4); -14.234668
+match ; n2, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 4);   9.582573
+match ; n2, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1", 11, 4);  -6.836764
+match ; n2, k1 CH + Static Remainder; GREP(sigma_hp.log, "ik =   1",  6, 4);  -7.628986
+match ; n2, k1 Linear QP Correction ; GREP(sigma_hp.log, "ik =   1", 10, 4);   0.163878
+match ; n2, k1 Znk                  ; GREP(sigma_hp.log, "ik =   1", 15, 4);   0.803837
+
+# offdiagonals
+# this is a diagonal actually and must match exactly the unsymmetrized diagonal value
+match ; n1 x n1 k1 Exchange         ; GREP(sigma_hp.log, "1   1   1   real",  5, 0); -17.224976
+match ; n1 x n1 k1 Screened Exchange; GREP(sigma_hp.log, "1   1   1   real",  6, 0);  12.367894
+match ; n1 x n1 k1 Coulomb Hole     ; GREP(sigma_hp.log, "1   1   1   real", 10, 0);  -6.360950
+# this is some other offdiagonal
+match ; n1 x n8 k1 Exchange         ; GREP(sigma_hp.log, "1   8   1   real",  5, 0);   0.000026
+match ; n1 x n8 k1 Screened Exchange; GREP(sigma_hp.log, "1   8   1   real",  6, 0);   0.003215
+match ; n1 x n8 k1 Coulomb Hole     ; GREP(sigma_hp.log, "1   8   1   real", 10, 0);  -0.000765
+# this one is zero by symmetry
+Precision : 1e-6
+match ; n2 x n1 k1 Exchange         ; GREP(sigma_hp.log, "2   1   2   real",  5, 0);   0.000000
+match ; n2 x n1 k1 Screened Exchange; GREP(sigma_hp.log, "2   1   2   real",  6, 0);   0.000000
+match ; n2 x n1 k1 Coulomb Hole     ; GREP(sigma_hp.log, "2   1   2   real", 10, 0);   0.000000
+
+match ; k-point 2 z-coordinate      ; GREP(sigma_hp.log, "ik =   2",  5, 0);   0.500000
+match ; n5, k2 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   2",  2, 7);  11.989902
+match ; n5, k2 Exchange             ; GREP(sigma_hp.log, "ik =   2",  4, 7);  -4.919330
+match ; n5, k2 Screened Exchange    ; GREP(sigma_hp.log, "ik =   2",  5, 7);   2.770033
+match ; n5, k2 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   2", 11, 7);  -6.456372
+match ; n5, k2 CH + Static Remainder; GREP(sigma_hp.log, "ik =   2",  6, 7);  -7.200217
+match ; n5, k2 Linear QP Correction ; GREP(sigma_hp.log, "ik =   2", 10, 7);   4.516284
+
+# HDF5 and sigma pools
+Command : echo "number_sigma_pools  2" >> sigma.inp
+
+Processors : 4
+Executable : sigma.real.x
+Output : sig_GPP_wfnHDF5_2pools.out
+Input  : NONE
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n2, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 4);  10.035862
+match ; n2, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 4); -14.234668
+match ; n2, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 4);   9.582573
+match ; n2, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1", 11, 4);  -6.836764
+match ; n2, k1 CH + Static Remainder; GREP(sigma_hp.log, "ik =   1",  6, 4);  -7.628986
+match ; n2, k1 Linear QP Correction ; GREP(sigma_hp.log, "ik =   1", 10, 4);   0.163878
+match ; n2, k1 Znk                  ; GREP(sigma_hp.log, "ik =   1", 15, 4);   0.803837
+
+# offdiagonals
+# this is a diagonal actually and must match exactly the unsymmetrized diagonal value
+match ; n1 x n1 k1 Exchange         ; GREP(sigma_hp.log, "1   1   1   real",  5, 0); -17.224976
+match ; n1 x n1 k1 Screened Exchange; GREP(sigma_hp.log, "1   1   1   real",  6, 0);  12.367894
+match ; n1 x n1 k1 Coulomb Hole     ; GREP(sigma_hp.log, "1   1   1   real", 10, 0);  -6.360950
+# this is some other offdiagonal
+match ; n1 x n8 k1 Exchange         ; GREP(sigma_hp.log, "1   8   1   real",  5, 0);   0.000026
+match ; n1 x n8 k1 Screened Exchange; GREP(sigma_hp.log, "1   8   1   real",  6, 0);   0.003215
+match ; n1 x n8 k1 Coulomb Hole     ; GREP(sigma_hp.log, "1   8   1   real", 10, 0);  -0.000765
+# this one is zero by symmetry
+Precision : 1e-6
+match ; n2 x n1 k1 Exchange         ; GREP(sigma_hp.log, "2   1   2   real",  5, 0);   0.000000
+match ; n2 x n1 k1 Screened Exchange; GREP(sigma_hp.log, "2   1   2   real",  6, 0);   0.000000
+match ; n2 x n1 k1 Coulomb Hole     ; GREP(sigma_hp.log, "2   1   2   real", 10, 0);   0.000000
+
+match ; k-point 2 z-coordinate      ; GREP(sigma_hp.log, "ik =   2",  5, 0);   0.500000
+match ; n5, k2 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   2",  2, 7);  11.989902
+match ; n5, k2 Exchange             ; GREP(sigma_hp.log, "ik =   2",  4, 7);  -4.919330
+match ; n5, k2 Screened Exchange    ; GREP(sigma_hp.log, "ik =   2",  5, 7);   2.770033
+match ; n5, k2 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   2", 11, 7);  -6.456372
+match ; n5, k2 CH + Static Remainder; GREP(sigma_hp.log, "ik =   2",  6, 7);  -7.200217
+match ; n5, k2 Linear QP Correction ; GREP(sigma_hp.log, "ik =   2", 10, 7);   4.516284
+
+Command : mv sigma_hp.log sig_hp_GPP_wfnHDF5_2pools.log
+
+# kernel WFN HDF5
+Command : mv WFN_inner.h5 WFN_co.h5
+Copy : kernel.inp
+Command : echo "use_wfn_hdf5" >> kernel.inp
+Command : echo "wfn_hdf5_min_band_block  2" >> kernel.inp
+
+Executable : kernel.real.x
+Processors : 4
+Output : kernel_res_wfnHDF5.out
+Input  : NONE
+
+Precision : 1e-8
+match ; Norm of head (res); GREP(kernel_res_wfnHDF5.out, " - Head :", 4); 2.3132138684155E+0001
+match ; Norm of wing (res); GREP(kernel_res_wfnHDF5.out, " - Wing :", 4); 3.3151235078540E+0000
+match ; Norm of body (res); GREP(kernel_res_wfnHDF5.out, " - Body :", 4); 2.7187084608215E+0001
+match ; Norm of x    (res); GREP(kernel_res_wfnHDF5.out, " - X    :", 4); 2.9710126990925E+0001
+
+# BSE with velocity operator
+Copy : absorption.inp
+Command : echo "use_wfn_hdf5" >> absorption.inp
+Command : echo "wfn_hdf5_min_band_block  2" >> absorption.inp
+
+Executable : absorption.real.x
+Output : absp_wfnHDF5.out
+Input  : NONE
+
+Precision : 0.0001
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4); 432
+match ; Singlet eigenvalue 1           ; LINE(eigenvalues.dat,  5, 1);  0.30491926E+01
+Precision : 1e-5
+match ; Singlet transition mtxel 1     ; LINE(eigenvalues.dat,  5, 2);  0.48635697E+02
+match ; Singlet eigenvalue 10          ; LINE(eigenvalues.dat, 14, 1);  0.39039572E+01
+match ; Singlet transition mtxel 10    ; LINE(eigenvalues.dat, 14, 2);  0.44774125E+02
+Precision : 1e-10
+match ; Sum rule               ; GREP(absp_wfnHDF5.out, "Sum rule (BSE)", 5);  0.88770513193490608
+
+Command : echo "spin_triplet" >> absorption.inp
+Executable : absorption.real.x
+Output : absp_triplet_wfnHDF5.out
+Input : NONE
+
+Precision : 0.0001
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4); 432
+match ; Triplet eigenvalue 1           ; LINE(eigenvalues.dat,  5, 1);  0.28850156E+01
+match ; Triplet transition mtxel 1     ; LINE(eigenvalues.dat,  5, 2);  0.56716714E+02
+match ; Triplet eigenvalue 12          ; LINE(eigenvalues.dat, 16, 1);  0.39620494E+01
+match ; Triplet transition mtxel 12    ; LINE(eigenvalues.dat, 16, 2);  0.13099597E+01
+Precision : 1e-10
+match ; Sum rule               ; GREP(absp_wfnHDF5.out, "Sum rule (BSE)", 5);  0.88770513193490608
+# the eigenvalues must be the same as the spin-polarized calculation,
+# but the transition matrix element rule will be similar to the singlet one since it is fake.
+# It seems the sum rule should be identical to the singlet one.
+

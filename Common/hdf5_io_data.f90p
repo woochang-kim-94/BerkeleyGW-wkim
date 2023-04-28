@@ -1,0 +1,678 @@
+! ${mako_signature}
+! ${dont_edit}
+
+!>=========================================================================
+!!
+!! Module:
+!!
+!! hdf5_io_data_m        Originally by FHJ     Last Modified 08/2019 (FHJ)
+!!
+!!     High-level routines to read and write data in HDF5 format.
+!!     This module uses python Mako template to generate Fortran code.
+!!     Make sure to run the `mako_preprocess.py` if you edit the source
+!!     .f90p file, and don`t edit the generated .f90 directly.
+!!
+!!     In the call signatures below:
+!!     - `loc_id` is the HDF5 file handle,
+!!     - `dset_name` is the path to the dataset
+!!     - `error` is an optional argument with the error code, which should
+!!       typically *not* be passed unless you want to do the error checking
+!!       yourself and don`t want the code to die in case the HDF5 library
+!!       fails.
+!!
+!!     Routines:
+!!     - hdf5_{read,write}_{int,double,complex,logical,scalar}
+!!       (loc_id, dset_name, buf, error):
+!!       integer(HID_T), intent(in) :: loc_id
+!!       character(len=*), intent(in) :: dset_name
+!!       {data_type}, intent({intent}), dimension(*) :: buf
+!!       integer, intent(out), optional :: error
+!!
+!!       Reads/writes a single element store in buffer `buf`.
+!!       When writing, the dataset in `dset_name` may or may not exist, but if
+!!       it already exist, it must have the correct type and shape.
+!!
+!!
+!!     - hdf5_{read,write}_{int,double,complex,logical,scalar}_array
+!!       (loc_id, dset_name, dims, buf, error):
+!!       integer(HID_T), intent(in) :: loc_id
+!!       character(len=*), intent(in) :: dset_name
+!!       integer, intent(in) :: dims(:)
+!!       {data_type}, intent({intent}), dimension(*) :: buf
+!!       integer, intent(out), optional :: error
+!!
+!!       Reads/writes an array of size `dims` from/to buffer `buf`.
+!!       This routine writes the full array, and not part thereof.
+!!       When writing, the dataset in `dset_name` may or may not exist, but if
+!!       it already exist, it must have the correct type and shape.
+!!
+!!
+!!     - hdf5_{read,write}_{int,double,complex,logical,scalar}_hyperslab
+!!       (loc_id, dset_name, rw_count, offset, buf, error)
+!!       integer(HID_T), intent(in) :: loc_id
+!!       character(len=*), intent(in) :: dset_name
+!!       integer, intent(in) :: rw_count(:)
+!!       integer, intent(in) :: offset(:)
+!!       {data_type}, intent({intent}), dimension(*) :: buf
+!!       integer, intent(out), optional :: error
+!!
+!!       Reads/writes part of an array stored in `buf`, where;
+!!       * `rw_count` is the number of elements read/written from/to
+!!         the daset for each dimension. This does not need to be the same
+!!         as the size of the dataset, but it is the overall size of the
+!!         output/input array `buf`
+!!       * `offset` is the offset for each dimension, relative to the HDF5
+!!         dataset when reading/writing from/to the HDF5 file.
+!!
+!!       Unlike the previous subroutines, the dataset must already exist
+!!       before calling it, since the size of the dataset in file may be
+!!       different than `rw_count`.
+!!
+!!     Notes:
+!!     - Logical datasets are stored as integers.
+!!       * When writing, we map .false.=>0 and .true.=>1
+!!       * When reading, we map 0=>.false. and nonzero=>.true.
+!!
+!!     - Because there is no native HDF5 support for complex data, we
+!!       read/write complex dataset as double dataset by appending one
+!!       extra fast dimension with size=2.
+!!
+!!     - There are interfaces for scalar dataset, which either read/write
+!!       complex or double data depending on the type of `buf`. However,
+!!       to make the number of dimensions the same for double or complex
+!!       scalar data, the scalar routines will **also append an extra
+!!       dimension with size=1** when reading/writing double data.
+!!       The code will not add an extra dimension if you call the
+!!       non-scalar routine to write a double buffer.
+!!
+!!       For example, suppose you want to write `buf(1:N)`:
+!!       * If `buf` is `real(DP)`:
+!!         - `write_double_array` writes a real dataset of dimension [N].
+!!         - `write_scalar_array` writes a real dataset of dimension [1,N].
+!!       * If `buf` is `complex(DPC)`:
+!!         - Both `write_complex_array` and `write_scalar_array` write
+!!           real datasets of dimension [2,N].
+!!
+!!=========================================================================
+
+#include "f_defs.h"
+<%
+# FHJ: General routines used by the Mako template
+
+_fortran_dtypes = {
+  'int': 'integer',
+  'double': 'real(DP)',
+  'complex': 'complex(DPC)',
+  'logical': 'logical'}
+
+_hdf5_subroutine_labels = {
+  'int': 'int',
+  'double': 'double',
+  'complex': 'double',
+  'logical': 'int'}
+
+_hdf5_dtypes = {
+  'int': 'H5T_NATIVE_INTEGER',
+  'double': 'H5T_NATIVE_DOUBLE',
+  'complex': 'H5T_NATIVE_DOUBLE',
+  'logical': 'H5T_NATIVE_INTEGER'}
+
+
+def get_subroutine_label(read_or_write, data_type, variant=None, rank=None):
+  """Return the label for a Fortran subroutine.
+
+  Parameters
+  ----------
+  read_or_write : {'read', 'write'}
+  data_type : Either a string in {'int', 'double', 'complex', 'scalar', 'logical'}, or
+              a tuple of two strings belonging to the set mentioned.
+  variant : {None, 'array', 'hyperslab', 'lowlevel'}
+  rank : None or integer, in case you want a routine with assumed-shape
+         instead of assumed-size dummy argument.
+  is_scalar : Whether this subroutine is for the interface to read/write
+              scalar datatypes.
+  """
+  assert read_or_write in ('read', 'write')
+  allowed_types = ('int', 'double', 'complex', 'scalar')
+  if not get_is_scalar(data_type):
+    data_type = (data_type,)
+  assert [dtype in allowed_types for dtype in data_type]
+  assert variant in (None, 'array', 'hyperslab', 'lowlevel')
+
+  data_type = '_'.join(data_type)
+  if variant is None:
+    return 'hdf5_{}_{}'.format(read_or_write, data_type)
+  else:
+    if rank is not None:
+      return 'hdf5_{}_{}_{}_{}'.format(read_or_write, data_type, variant, rank)
+    else:
+      return 'hdf5_{}_{}_{}'.format(read_or_write, data_type, variant)
+
+
+def get_fortran_dtype(data_type):
+  """Get the Fortran data type associted with the string `data_type`."""
+  if isinstance(data_type, tuple):
+    return _fortran_dtypes[data_type[1]]
+  else:
+    return _fortran_dtypes[data_type]
+
+
+def get_hdf5_dtype(data_dtype):
+  """Get the HDF5 data type associted with the string `data_type`."""
+  if isinstance(data_dtype, tuple):
+    return _hdf5_dtypes[data_type[1]]
+  else:
+    return _hdf5_dtypes[data_type]
+
+def get_is_scalar(data_type):
+  """Whether a data_type is a tuple of the form ('scalar',dtype)."""
+  if isinstance(data_type, tuple):
+    assert len(data_type)==2
+    assert data_type[0]=='scalar'
+    return True
+  else:
+    return False
+
+%>\
+
+module hdf5_io_data_m
+  use, intrinsic :: iso_c_binding
+  use global_m
+  use hdf5_io_safe_m
+#ifdef HDF5
+  use hdf5
+
+  implicit none
+
+  private
+
+  public :: &
+<%
+subs = []
+for data_type in ('int', 'double', 'complex', 'scalar', 'logical'):
+  for read_or_write in ('read', 'write'):
+    for variant in (None, 'array', 'hyperslab'):
+      subs.append('    ' + get_subroutine_label(read_or_write, data_type, variant))
+%>\
+${', &\n'.join(subs)}
+
+  ## Create interface for scalar routines
+  %for read_or_write in ('read', 'write'):
+
+  interface ${get_subroutine_label(read_or_write, 'scalar')}
+    module procedure \
+${get_subroutine_label(read_or_write, ('scalar','double'))}, \
+${get_subroutine_label(read_or_write, ('scalar','complex'))}
+  end interface
+    ## Very annoying: cannot use assumed-size arrays (*) in interfaces.
+    %for variant in ('array', 'hyperslab'):
+
+  interface ${get_subroutine_label(read_or_write, 'scalar', variant)}
+    module procedure &
+      %for rank in range(1,8):
+${get_subroutine_label(read_or_write, ('scalar','double'), variant, rank)}, \
+${get_subroutine_label(read_or_write, ('scalar','complex'), variant, rank)}${", &" if rank!=7 else ''}
+      %endfor
+  end interface
+    %endfor
+  %endfor
+
+contains
+
+
+!################################################
+!# High-level interfaces for general data types #
+!################################################
+
+%for data_type in ('int', 'double', 'complex', 'logical'):
+
+!-------------------------------
+! Routines for ${data_type} data type
+!-------------------------------
+  %for read_or_write in ('read', 'write'):
+<%
+    fortran_dtype = get_fortran_dtype(data_type)
+    intent = 'inout' if read_or_write=='read' else 'in'
+    hdf5_dtype = get_hdf5_dtype(data_type)
+    label_lowlevel = get_subroutine_label(read_or_write, data_type, 'lowlevel')
+%>\
+
+## RANK-0 version
+<%
+    label = get_subroutine_label(read_or_write, data_type)
+%>\
+!> ${read_or_write} ${data_type} value (rank-0 array) to/from an HDF5 file.
+subroutine ${label}(loc_id, dset_name, buf, error)
+  integer(HID_T), intent(in) :: loc_id !< HDF5 file id
+  character(len=*), intent(in) :: dset_name !< HDF5 dataset name
+  ${fortran_dtype}, intent(${intent}), target :: buf !< data buffer
+  integer, intent(out), optional :: error !< HDF5 error code
+
+  ${fortran_dtype}, pointer :: buf_1d(:)
+
+  PUSH_SUB(${label})
+  call c_f_pointer(c_loc(buf), buf_1d, [1])
+  call ${label_lowlevel}(loc_id, dset_name, [-1_HSIZE_T], buf_1d, error=error)
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+## ARRAY version
+<%
+    label = get_subroutine_label(read_or_write, data_type, 'array')
+%>\
+!> ${read_or_write} ${data_type} array to/from an HDF5 file.
+subroutine ${label}(loc_id, dset_name, dims, buf, error)
+  integer(HID_T), intent(in) :: loc_id !< HDF5 file id
+  character(len=*), intent(in) :: dset_name !< HDF5 dataset name
+  integer, intent(in), dimension(:) :: dims !< size of the buffer buf
+  ${fortran_dtype}, intent(${intent}), dimension(*) :: buf !< data buffer
+  integer, intent(out), optional :: error !< error code
+
+  PUSH_SUB(${label})
+  call ${label_lowlevel}(loc_id, dset_name, int(dims,kind=HSIZE_T), buf, error=error)
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+## HYPERSLAB version
+<%
+    label = get_subroutine_label(read_or_write, data_type, 'hyperslab')
+%>\
+!> ${read_or_write} section (hyperslab) of ${data_type} array to/from an HDF5 file.
+subroutine ${label}(loc_id, dset_name, rw_count, offset, buf, error)
+  integer(HID_T), intent(in) :: loc_id !< HDF5 file id
+  character(len=*), intent(in) :: dset_name !< HDF5 dataset name
+  !> Number of elements to read from or write to the dataset for each dimension.
+  !> This does not need to be the same as the size of the dataset.
+  integer, intent(in) :: rw_count(:)
+  !> Offset when reading dataset from file.
+  integer, intent(in) :: offset(:)
+  ${fortran_dtype}, intent(${intent}), dimension(*) :: buf !< data buffer
+  integer, intent(out), optional :: error !< error code
+
+  PUSH_SUB(${label})
+  call ${label_lowlevel}(loc_id, dset_name, int(rw_count,kind=HSIZE_T), buf, error, offsetf=offset)
+  POP_SUB(${label})
+
+end subroutine ${label}
+  %endfor
+%endfor
+
+!#######################################################
+!# End of high-level interfaces for general data types #
+!#######################################################
+
+
+!###############################################
+!# High-level interfaces for scalar data types #
+!###############################################
+
+%for data_type in (('scalar','double'), ('scalar','complex')):
+
+!-------------------------------
+! Routines for ${data_type} data type
+!-------------------------------
+  %for read_or_write in ('read', 'write'):
+<%
+    fortran_dtype = get_fortran_dtype(data_type)
+    intent = 'inout' if read_or_write=='read' else 'in'
+    hdf5_dtype = get_hdf5_dtype(data_type)
+    label_lowlevel = get_subroutine_label(read_or_write, data_type, 'lowlevel')
+%>\
+
+## RANK-0 version
+<%
+    label = get_subroutine_label(read_or_write, data_type)
+%>\
+!> ${read_or_write} ${data_type} value (rank-0 array) to/from an HDF5 file.
+subroutine ${label}(loc_id, dset_name, buf, error)
+  integer(HID_T), intent(in) :: loc_id !< HDF5 file id
+  character(len=*), intent(in) :: dset_name !< HDF5 dataset name
+  ${fortran_dtype}, intent(${intent}), target :: buf !< data buffer
+  integer, intent(out), optional :: error !< HDF5 error code
+
+  ${fortran_dtype}, pointer :: buf_1d(:)
+
+  PUSH_SUB(${label})
+  call c_f_pointer(c_loc(buf), buf_1d, [1])
+  call ${label_lowlevel}(loc_id, dset_name, [-1_HSIZE_T], buf_1d, error=error)
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+    %for rank in range(1,8):
+## ARRAY version, assumed shape.
+<%
+    label = get_subroutine_label(read_or_write, data_type, 'array', rank)
+%>\
+!> ${read_or_write} ${data_type} array to/from an HDF5 file.
+subroutine ${label}(loc_id, dset_name, dims, buf, error)
+  integer(HID_T), intent(in) :: loc_id !< HDF5 file id
+  character(len=*), intent(in) :: dset_name !< HDF5 dataset name
+  integer, intent(in), dimension(:) :: dims !< size of the buffer buf
+  ${fortran_dtype}, intent(${intent}), dimension(${','.join([':']*rank)}) :: buf !< data buffer
+  integer, intent(out), optional :: error !< error code
+
+  PUSH_SUB(${label})
+  call ${label_lowlevel}(loc_id, dset_name, int(dims,kind=HSIZE_T), buf, error=error)
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+## HYPERSLAB version, assumed shape
+<%
+    label = get_subroutine_label(read_or_write, data_type, 'hyperslab', rank)
+%>\
+!> ${read_or_write} section (hyperslab) of ${data_type} array to/from an HDF5 file.
+subroutine ${label}(loc_id, dset_name, rw_count, offset, buf, error)
+  integer(HID_T), intent(in) :: loc_id !< HDF5 file id
+  character(len=*), intent(in) :: dset_name !< HDF5 dataset name
+  !> Number of elements to read from or write to the dataset for each dimension.
+  !> This does not need to be the same as the size of the dataset.
+  integer, intent(in) :: rw_count(:)
+  !> Offset when reading dataset from file.
+  integer, intent(in) :: offset(:)
+  ${fortran_dtype}, intent(${intent}), dimension(${','.join([':']*rank)}) :: buf !< data buffer
+  integer, intent(out), optional :: error !< error code
+
+  PUSH_SUB(${label})
+  call ${label_lowlevel}(loc_id, dset_name, int(rw_count,kind=HSIZE_T), buf, error, offsetf=offset)
+  POP_SUB(${label})
+
+end subroutine ${label}
+    %endfor
+  %endfor
+%endfor
+
+!######################################################
+!# End of high-level interfaces for scalar data types #
+!######################################################
+
+
+!###############################################
+!# LOW LEVEL routines -- INT + DOUBLE versions #
+!###############################################
+
+%for read_or_write in ('read', 'write'):
+%for data_type in ('int', 'double'):
+<%
+    fortran_dtype = get_fortran_dtype(data_type)
+    intent = 'inout' if read_or_write=='read' else 'in'
+    hdf5_dtype = get_hdf5_dtype(data_type)
+    label = get_subroutine_label(read_or_write, data_type, 'lowlevel')
+    is_scalar = get_is_scalar(data_type)
+%>\
+
+!> ${read_or_write} ${data_type} to/from an HDF5 file.
+subroutine ${label}(loc_id, dset_name, countf, buf, error, offsetf)
+  integer(HID_T), intent(in) :: loc_id !< HDF5 file id
+  character(LEN=*), intent(in) :: dset_name !< HDF5 dataset name
+  !> Number of elements to read from the dataset for each dimension.
+  !! Pass (/-1/) to read/write a scalar rank-0 array.
+  integer(HSIZE_T), intent(in) :: countf(:)
+  !> Data buffer. We treat it as a flat contiguous 1D array.
+  ${fortran_dtype}, intent(${intent}), dimension(*) :: buf
+  integer, intent(out), optional :: error !< error code
+  !> Offset when reading dataset from file.
+  integer, intent(in), optional :: offsetf(:)
+
+
+  integer(HSIZE_T) :: hcountf(size(countf)) !< Count for file dataspace
+  integer(HSIZE_T) :: hcountm(1) !< Count for memory dataspace
+  integer(HSIZE_T) :: hoffsetf(size(countf)) !< Offset for file filespace_id
+  integer(HID_T) :: dset_id, filespace_id, memspace_id
+  integer :: errcode, rank
+  logical :: exists
+
+  PUSH_SUB(${label})
+
+  if (present(error)) error = 0
+  call h5lexists_f(loc_id, dset_name, exists, errcode)
+%if read_or_write=='read':
+  call hdf5_check_error('h5lexists_f', merge(0,1,exists.and.errcode==0), error)
+  if (present(error)) then; if (error/=0) return; endif
+%else:
+  if (.not.exists .and. present(offsetf)) then
+    ! FHJ: The developer should manually create the dataset, because countf
+    ! is *NOT* the total size of the dataset, so we don`t have enough into to
+    ! create the dataset.
+    call die('Internal error: cannot automatically create dataset with "offsetf" argument.', &
+      only_root_writes=.true.)
+  endif
+%endif
+
+  ! FHJ: Create or get file dataspace
+  if (present(offsetf)) then
+    hoffsetf(:) = offsetf(:)
+  else
+    hoffsetf(:) = 0
+  endif
+  hcountf(:) = countf(:)
+  rank = size(hcountf)
+  if (any(countf<1)) then
+    rank = 0
+    ! Note: hcountf and hoffsetf are not referenced if rank==0
+  endif
+
+  if (.not.exists) then
+    ! FHJ: Create file dataspace
+    call safe_h5screate_simple(rank, hcountf, filespace_id, error)
+    if (present(error)) then; if (error/=0) return; endif
+    ! FHJ: Create dataset
+    call safe_h5dcreate(loc_id, dset_name, ${hdf5_dtype}, filespace_id, dset_id, error)
+    if (present(error)) then; if (error/=0) return; endif
+  else
+    ! FHJ: Open dataset
+    call safe_h5dopen(loc_id, dset_name, dset_id, error)
+    if (present(error)) then; if (error/=0) return; endif
+    ! FHJ: Get file dataspace
+    call safe_h5dget_space(dset_id, filespace_id, error)
+    if (present(error)) then; if (error/=0) return; endif
+  endif
+
+  ! FHJ: Select hyperslab from file
+  if (rank>0) then
+    call safe_h5sselect_hyperslab(filespace_id, H5S_SELECT_SET_F, hoffsetf, hcountf, error)
+    if (present(error)) then; if (error/=0) return; endif
+  endif
+
+  ! FHJ: Create flat memory filespace_id
+  hcountm(1) = max(1, product(countf))
+  call safe_h5screate_simple(1, hcountm, memspace_id, error)
+  if (present(error)) then; if (error/=0) return; endif
+
+  ! FHJ: ${read_or_write} filespace_id
+  call h5d${read_or_write}_f(dset_id, ${hdf5_dtype}, buf, hcountm, errcode, &
+    memspace_id, filespace_id)
+  call hdf5_check_error('h5d${read_or_write}_f', errcode, error)
+  if (present(error)) then; if (error/=0) return; endif
+  call safe_h5sclose(memspace_id, errcode)
+  if (present(error)) then; if (error/=0) return; endif
+  call safe_h5sclose(filespace_id, errcode)
+  if (present(error)) then; if (error/=0) return; endif
+  call safe_h5dclose(dset_id, errcode)
+  if (present(error)) then; if (error/=0) return; endif
+
+  POP_SUB(${label})
+
+end subroutine ${label}
+
+  %endfor
+%endfor
+
+
+!########################################
+!# LOW LEVEL routine -- LOGICAL version #
+!########################################
+
+%for read_or_write in ('read', 'write'):
+<%
+  data_type = 'logical'
+  fortran_dtype = get_fortran_dtype(data_type)
+  intent = 'inout' if read_or_write=='read' else 'in'
+  hdf5_dtype = get_hdf5_dtype(data_type)
+  label_int = get_subroutine_label(read_or_write, 'int', 'lowlevel')
+  label = get_subroutine_label(read_or_write, data_type, 'lowlevel')
+%>\
+
+!> ${read_or_write} ${data_type} to/from an HDF5 file.
+!! Note that this just maps the logical data to integers, and calls ${label_int}.
+subroutine ${label}(loc_id, dset_name, countf, buf, error, offsetf)
+  integer(HID_T), intent(in) :: loc_id !< HDF5 file id
+  character(LEN=*), intent(in) :: dset_name !< HDF5 dataset name
+  !> Number of elements to read from the dataset for each dimension.
+  !! Pass (/-1/) to read/write a scalar rank-0 array.
+  integer(HSIZE_T), intent(in) :: countf(:)
+  !> Data buffer. We treat it as a flat contiguous 1D array.
+  ${fortran_dtype}, intent(${intent}), dimension(*) :: buf
+  integer, intent(out), optional :: error !< error code
+  !> Offset when reading dataset from file.
+  integer, intent(in), optional :: offsetf(:)
+
+  integer :: buf_int(max(1_HSIZE_T, product(countf)))
+  integer(HSIZE_T) :: siz
+
+  PUSH_SUB(${label})
+
+  siz = max(1_HSIZE_T, product(countf))
+%if read_or_write=='write':
+  where(buf(1:siz))
+    buf_int = 1
+  elsewhere
+    buf_int = 0
+  endwhere
+%endif
+  call ${label_int}(loc_id, dset_name, countf, buf_int, error=error, offsetf=offsetf)
+%if read_or_write=='read':
+  buf(1:siz) = buf_int(:) /= 0
+%endif
+
+  POP_SUB(${label})
+
+end subroutine ${label}
+%endfor
+
+
+#######################################################################
+## LOW LEVEL routine -- COMPLEX and scalar (COMPLEX,DOUBLE) versions ##
+#######################################################################
+
+%for read_or_write in ('read', 'write'):
+<%
+    intent = 'inout' if read_or_write=='read' else 'in'
+%>\
+
+%for scalar_type, scalar_sz in zip(('double', 'complex'),(1,2)):
+<%
+    data_type = ('scalar', scalar_type)
+    fortran_dtype = get_fortran_dtype(data_type)
+    hdf5_dtype = get_hdf5_dtype(data_type)
+    label = get_subroutine_label(read_or_write, data_type, 'lowlevel')
+    label_callee = get_subroutine_label(read_or_write, 'double', 'lowlevel')
+%>\
+!> ${read_or_write} ${data_type} to/from an HDF5 file.
+!! We map a scalar array of type ${scalar_type} to another double array by adding
+!! an extra dimension of size=${scalar_sz}. Adding this extra dimension makes the shape
+!! of the array consistent between scalar datasets of type complex and real.
+subroutine ${label}(loc_id, dset_name, countf, buf, error, offsetf)
+  integer(HID_T), intent(in) :: loc_id !< HDF5 file id
+  character(LEN=*), intent(in) :: dset_name !< HDF5 dataset name
+  !> Number of elements to read from the dataset for each dimension.
+  !! Pass (/-1/) to read/write a scalar rank-0 array.
+  integer(HSIZE_T), intent(in) :: countf(:)
+  !> Data buffer. We treat it as a flat contiguous 1D array.
+  ${fortran_dtype}, intent(${intent}), dimension(*), target :: buf
+  integer, intent(out), optional :: error !< error code
+  !> Offset when reading dataset from file.
+  integer, intent(in), optional :: offsetf(:)
+
+  integer :: rank_double
+  integer(HSIZE_T) :: size_double
+  integer(HSIZE_T) :: countf_double(size(countf)+1)
+  integer :: offsetf_double(size(countf)+1)
+%if scalar_type=='complex':
+  real(DP), pointer :: buf_double(:)
+%endif
+
+  PUSH_SUB(${label})
+
+  countf_double(1) = ${scalar_sz}
+  countf_double(2:) = countf
+  offsetf_double(:) = 0
+  if (any(countf<1)) then
+    ! Buf is a 0-d array, i.e., a number, stored in the HDF5 file as a rank-1 array.
+    rank_double = 1
+    size_double = ${scalar_sz}
+  else
+    ! Buf is a n-d array, stored in the HDF5 file as a rank-(n+1) array.
+    rank_double = 1 + size(countf)
+    size_double = ${scalar_sz}_HSIZE_T * product(countf)
+  endif
+
+%if scalar_type=='complex':
+  ! Need to cast complex array `buf` into a double array before calling ${label_callee}
+  call c_f_pointer(c_loc(buf), buf_double, [size_double])
+<%buf = 'buf_double'%>\
+%else:
+  ! Can pass double array `buf` directly when calling ${label_callee}
+<%buf = 'buf'%>\
+%endif
+  if (present(offsetf)) then
+    offsetf_double(2:) = offsetf
+    call ${label_callee}(loc_id, dset_name, countf_double(1:rank_double), &
+      ${buf}, error=error, offsetf=offsetf_double(1:rank_double))
+  else
+    call ${label_callee}(loc_id, dset_name, countf_double(1:rank_double), &
+      ${buf}, error=error)
+  endif
+
+  POP_SUB(${label})
+
+end subroutine ${label}
+%endfor
+
+<%
+    data_type = 'complex'
+    fortran_dtype = get_fortran_dtype(data_type)
+    hdf5_dtype = get_hdf5_dtype(data_type)
+    label = get_subroutine_label(read_or_write, data_type, 'lowlevel')
+    label_callee = get_subroutine_label(read_or_write, ('scalar','complex'), 'lowlevel')
+%>\
+!> ${read_or_write} ${data_type} to/from an HDF5 file.
+!! This subroutine just calls ${label_callee} directly, which appends an extra dimension.
+!! The behavior of this subroutine is slightly different from that of ${get_subroutine_label(read_or_write, 'double', 'lowlevel')},
+!! which does not add an extra dimension. That is because it is possible to
+!! natively store real numbers in HDF5 files, but not complex numbers.
+!! So, while both ${get_subroutine_label(read_or_write, ('scalar','complex'), 'lowlevel')} and
+!! ${get_subroutine_label(read_or_write, 'complex', 'lowlevel')} add an extra dimension to
+!! the array, only ${get_subroutine_label(read_or_write, ('scalar','double'), 'lowlevel')} adds the
+!! extra dimension (to make the number of dimensions the same as that in
+!! get_subroutine_label(read_or_write, ('scalar','double'), 'lowlevel'). However,
+!! ${get_subroutine_label(read_or_write, 'double', 'lowlevel')} will not add
+!! an extra dimension.
+subroutine ${label}(loc_id, dset_name, countf, buf, error, offsetf)
+  integer(HID_T), intent(in) :: loc_id !< HDF5 file id
+  character(LEN=*), intent(in) :: dset_name !< HDF5 dataset name
+  !> Number of elements to read from the dataset for each dimension.
+  !! Pass (/-1/) to read/write a scalar rank-0 array.
+  integer(HSIZE_T), intent(in) :: countf(:)
+  !> Data buffer. We treat it as a flat contiguous 1D array.
+  ${fortran_dtype}, intent(${intent}), dimension(*), target :: buf
+  integer, intent(out), optional :: error !< error code
+  !> Offset when reading dataset from file.
+  integer, intent(in), optional :: offsetf(:)
+
+  PUSH_SUB(${label})
+  call ${label_callee}(loc_id, dset_name, countf, buf, error, offsetf)
+  POP_SUB(${label})
+
+end subroutine ${label}
+%endfor
+
+#endif
+end module hdf5_io_data_m
+!! Local Variables:
+!! mode: f90
+!! coding: utf-8
+!! End:

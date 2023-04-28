@@ -1,0 +1,14 @@
+epsilon_cutoff 5.0
+
+number_bands 18
+
+begin qpoints
+  0.000000000000000  0.000000000000000  0.0000000000000   1.0 1
+end
+
+cell_box_truncation
+eqp_corrections
+#spherical_truncation
+#coulomb_truncation_radius   7.00
+
+#skip_epsilon

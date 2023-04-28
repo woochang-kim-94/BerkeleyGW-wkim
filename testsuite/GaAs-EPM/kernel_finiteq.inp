@@ -1,0 +1,8 @@
+number_val_bands 4
+number_cond_bands 4
+
+use_symmetries_coarse_grid
+
+screening_semiconductor
+energy_loss
+exciton_Q_shift 0 0.001 0.002 0.003

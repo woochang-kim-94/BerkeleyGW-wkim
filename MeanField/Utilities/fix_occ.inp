@@ -1,0 +1,4 @@
+WFN_in  ! input  WFN
+WFN_out ! output WFN
+0       ! original number of electrons in WFN_in (0 to autodetect)
+0       ! extra charge to put in

@@ -1,0 +1,4 @@
+1           # number of q-points
+epsmat.out  # output filename
+1           # number of input files (will be merged)
+epsmat.in   # input filenames

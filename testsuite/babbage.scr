@@ -1,0 +1,40 @@
+#!/bin/bash -l
+#SBATCH -J test_BGW.mic
+#SBATCH -N 4
+#SBATCH -p debug
+#SBATCH -t 00:30:00
+
+# Status: doesn't work b/c of a problem with NERSC's file system
+# Run me with: sbatch babbage.scr
+
+export TEMPDIRPATH=$SCRATCH/tmp
+#export TEMPDIRPATH=$HOME/tmp
+module load python
+
+# Modify the below to change the number of threads per 
+# MPI task if using OMP or threaded libraries
+export OMP_NUM_THREADS=118
+# FHJ: This is the best overall thread placement option for Xeon Phi
+export KMP_AFFINITY=balanced
+#export KMP_AFFINITY=compact
+#export KMP_PLACE_THREADS="59c,2t"
+
+# Uncomment below to set number of
+# procs in testsuite
+export BGW_TEST_MPI_NPROCS=8
+export SAVETESTDIRS=yes
+
+cd $TEMPDIRPATH
+get_micfile
+
+cd $SLURM_SUBMIT_DIR
+# Babbage doesn't have the Time::HiRes Perl module
+bash no_hires.sh
+HOSTFILE="$TEMPDIRPATH/micfile.$SLURM_JOB_ID"
+# Note: the "sleep" before the mpirun.mic is a workaround b/c of a bug in
+# NERSC's file systems
+#export MPIEXEC="`which sleep` 10; `which mpirun.mic` -hostfile $HOSTFILE -ppn 1"
+export MPIEXEC="`which mpirun.mic` -hostfile $HOSTFILE -ppn 1"
+make check-parallel &> test.out
+
+echo "Exit status = $?"

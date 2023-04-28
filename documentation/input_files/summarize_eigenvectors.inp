@@ -1,0 +1,7 @@
+.true.          ! Whether you used TDA. This will usually be .true.
+20              ! Number of eigenvectors in file.  Set to zero to use default ns*nv*nc*nk
+1.5 2.1         ! Emin Emax (eV). Energy window to print information about all states in
+3               ! Number of specific states to print A(k). Output files will be exciton_01 ... exciton_99
+1.56783332      ! Energy values (eV) of the states to print A(k)
+1.67345203
+1.96328918

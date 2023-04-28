@@ -1,0 +1,20 @@
+epsilon_cutoff 6.0
+
+number_bands 8
+
+cell_slab_truncation
+lin_denominator 0.5
+
+begin qpoints
+    0.00000000    0.0625    0.00000000  1.0  2
+end
+
+frequency_dependence 2
+frequency_dependence_method 0
+
+broadening 0.1
+delta_frequency 1.0
+frequency_low_cutoff 5.0
+frequency_high_cutoff 5.0
+
+gcomm_elements

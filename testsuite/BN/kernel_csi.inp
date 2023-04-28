@@ -1,0 +1,8 @@
+number_val_bands 2
+number_cond_bands 1
+
+no_symmetries_coarse_grid
+patched_sampling_co
+
+screening_semiconductor
+cell_slab_truncation

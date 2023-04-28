@@ -1,0 +1,14 @@
+&inputpp
+   prefix = 'benzene'
+   outdir = './'
+   filplot = 'homo'
+   plot_num = 7
+   kpoint = 1
+   kband = 15
+   lsign = .true.
+/
+&plot
+   iflag = 3
+   output_format = 6
+   fileout = 'homo.cube'
+/

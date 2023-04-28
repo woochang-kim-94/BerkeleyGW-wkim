@@ -1,0 +1,26 @@
+Test : Unit tests
+Enabled : Yes
+TestGroups : parallel
+
+Command: cp $TESTDIR/* $WORKDIR/
+
+
+# Test program
+Executable : test_evecs.cplx.x
+Processors : 4
+Output : test_evecs.out
+Input : NONE
+
+Precision : 1e-15
+match ; Number of errors  ; GREP(test_evecs.out,   "Number of errors", 5,  0); 0
+
+
+# Test program
+Executable : test_evecs.real.x
+Processors : 4
+Output : test_evecs_real.out
+Input : NONE
+
+Precision : 1e-15
+match ; Number of errors  ; GREP(test_evecs.out,   "Number of errors", 5,  0); 0
+

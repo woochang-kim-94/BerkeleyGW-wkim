@@ -1,0 +1,36 @@
+#!/bin/bash -l
+#SBATCH --partition=debug
+#SBATCH --nodes=1
+#SBATCH --time=00:30:00
+#SBATCH --job-name=my_job
+#SBATCH --license=SCRATCH
+#SBATCH -C haswell
+#SBATCH --ntasks-per-node=32
+ulimit -s unlimited
+export OMP_NUM_THREADS=1
+# run via: sbatch cori2_haswell.scr
+
+export TEMPDIRPATH=$SCRATCH/tmp
+export SAVETESTDIRS=yes
+
+# MW: If you only want to check certain directories,
+# add them using the following export commands
+export BGW_CHECK_FLAGS=" -d Si-Wire-EPM/ "
+#export BGW_CHECK_FLAGS=" -d GaAs-EPM/  "
+
+# Modify the below to change the number of threads per 
+# MPI task if using OMP or threaded libraries
+
+#export OMP_NUM_THREADS=1
+#export ELPA_DEFAULT_omp_threads=$OMP_NUM_THREADS
+
+# Uncomment below to set number of
+# procs in testsuite
+#export BGW_TEST_MPI_NPROCS=8
+export BGW_TEST_MPI_NPROCS=32
+
+export MPIEXEC="`which srun`"
+
+make check-parallel &> test.out
+
+echo "Exit status = $?"

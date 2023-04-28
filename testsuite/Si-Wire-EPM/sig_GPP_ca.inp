@@ -1,0 +1,19 @@
+number_bands 8
+
+band_index_min 2
+band_index_max 5
+
+screening_semiconductor
+
+cell_wire_truncation
+
+begin kpoints
+  0.000000000  0.000000000  0.000000000   1.0
+end
+
+exact_static_ch 1
+
+# this is just something arbitrary
+cvfit_outer 300 -1.3 -0.2 0.1 1.2 0.2
+
+cell_average_cutoff 0.3

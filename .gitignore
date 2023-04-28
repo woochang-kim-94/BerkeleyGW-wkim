@@ -1,0 +1,34 @@
+# This file list all files that should not be tracked by git
+# Developers should add to this list any file that will be generated
+# by configuring, compiling, or running various components of the package.
+# If you have any files that needs to be ignored only by you, you can add
+# ignore patterns in your .git/info/exclude file.
+
+# Configuration files
+arch.mk
+flavor.mk
+
+# Executables
+**.x
+bin/*.pl
+
+
+# Compilation byproducts
+**.o
+**.a
+**.p.f
+**.mod
+**.pyc
+
+manual.html
+
+# Old svn files
+.svn
+
+# Other
+**/tmp*
+svn-commit*.tmp
+tags
+*~
+*.DS_store
+**.x.dSYM

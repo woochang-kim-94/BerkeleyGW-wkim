@@ -1,0 +1,404 @@
+# epsilon.inp
+
+# Energy cutoff for the dielectric matrix, in Ry. The dielectric matrix
+# $\varepsilon_{GG'}$ will contain all G-vectors with kinetic energy $|q+G|^2$
+# up to this cutoff.
+#[unit=Ry]
+epsilon_cutoff           35.0
+
+# Total number of bands (valence+conduction) to sum over. Defaults to the
+# number of bands in the WFN file minus 1.
+#number_bands            1000
+
+# Read input wavefunction files in HDF5 format: `WFN.h5` instead of `WFN` and,
+# if required, `WFNq.h5` instead of `WFNq`.
+#use_wfn_hdf5
+
+# This flags specifies the frequency dependence of the inverse dielectric matrix:
+#
+# - Set to 0 to compute the static inverse dielectric matrix (default).
+# - Set to 2 to compute the full frequency dependent inverse dielectric matrix.
+# - Set to 3 to compute the two frequencies needed for Godby-Needs GPP model.
+#frequency_dependence 0
+
+# Plasma frequency (eV) needed for the contour-deformation method (i.e.,
+# [[frequency_dependence]]==2). The exact value
+# is unimportant, especially if you have enough imaginary frequency points. We
+# recommend you keep this value fixed at 2 Ry.
+#plasma_freq 27.21138506d0
+
+# For [[frequency_dependence]]==3, the value of the purely imaginary frequency, in eV:
+#imaginary_frequency 27.21138506d0
+
+
+# ### Parameters for full-frequency-dependent calculations
+# Three methods are available, depending on the value of [[frequency_dependence_method]]:
+#
+# - 0: Real-axis formalism with Adler-Wiser formula:
+#
+#     - A uniform frequency grid is set up from [[init_frequency]] (defaults to 0),
+#       up to [[frequency_low_cutoff]], with a spacing of [[delta_frequency]] between
+#       two frequencies.
+#     - A non-uniform frequency grid is setup from [[frequency_low_cutoff]] to
+#       [[frequency_high_cutoff]], where the frequency spacing gets increased by
+#       [[delta_frequency_step]].
+#
+# - 1: Real-axis formalism with spectral method:
+#
+#     - A uniform frequency grid is set up from [[init_frequency]] (defaults to 0),
+#       up to [[frequency_low_cutoff]], with a spacing of [[delta_frequency]] between
+#       two frequencies.
+#     - A non-uniform frequency grid is setup from [[frequency_low_cutoff]] to
+#       [[frequency_high_cutoff]], where the frequency spacing gets increased by
+#       [[delta_frequency_step]].
+#     - A separate frequency grid is set-up for the spectral function. The variables
+#       [[init_sfrequency]], [[delta_sfrequency]], [[delta_sfrequency_step]],
+#       [[sfrequency_low_cutoff]], and [[sfrequency_high_cutoff]] define this grid, in
+#       an analogy to the flags used to define the grid for the polarizability matrix.
+#
+# - 2: Contour-deformation formalism with Adler-Wiser formula (**default**).
+#
+#    - A uniform frequency grid is set up from [[init_frequency]] (defaults to 0),
+#      up to [[frequency_low_cutoff]], with a spacing of [[delta_frequency]] between
+#      two frequencies.
+#    - A frequency grid with [[number_imaginary_freqs]] is set-up on the imag axis.
+#
+#
+# Full frequency dependence method for the polarizability, if [[frequency_dependence]]==2:
+#
+# - 0: Real-axis formalism, Adler-Wiser formula.
+# - 1: Real-axis formalism, spectral method (PRB 74, 035101, (2006))
+# - 2: Contour-deformation formalism, Adler-Wiser formula.
+#frequency_dependence_method 2
+#
+#
+# Broadening parameter for each val->cond transition.
+# It should correspond to the energy resolution due to k-point sampling,
+# or a number as small as possible if you have a molecule.
+# The default value is 0.1 for method 0 and 1, and 0.25 for method 2.
+#broadening 0.1
+#
+# Lower bound for the linear frequency grid.
+#init_frequency 0.0
+#
+# Upper bound for the linear frequency grid.
+# For methods 0 and 1, it is also the lower bound for the non-uniform frequency grid.
+# Should be larger than the maximum transition, i.e., the
+# energy difference between the highest conduction band and the lowest valence band.
+# The default is 200 eV for method 0 and 1, and 10 eV for method 2.
+# For method 2, you can increase frequency_low_cutoff if you wish to use
+# the Sigma code and look into QP states deep in occupied manifold or high in
+# the unoccupied manifold.
+#frequency_low_cutoff 200.0
+#
+# Frequency step for full-frequency integration for the linear grid
+# Should be converged (the smaller, the better).
+# For molecules, delta_frequency should be the same as broadening.
+# Defaults to the value of broadening.
+#delta_frequency 0.1
+#
+# Number of frequencies on the imaginary axis for method 2.
+#number_imaginary_freqs 15
+#
+# Upper limit of the non-uniform frequency grid.
+# Defaults to 4*[[frequency_low_cutoff]]
+#frequency_high_cutoff 1000.0
+#
+# Increase in the frequency step for the non-uniform frequency grid.
+#delta_frequency_step 1.0
+#
+# Frequency step for the linear grid for the spectral function method.
+# Defaults to [[delta_frequency]].
+#delta_sfrequency 0.1
+#
+# Increase in frequency step for the non-uniform grid for the spectral function method.
+# Defaults to [[delta_frequency_step]]
+#delta_sfrequency_step 1.0
+#
+# Upper bound for the linear grid for the spectral function method
+# and lower bound for the non-uniform frequency grid.
+# Defaults to [[frequency_low_cutoff]]
+#sfrequency_low_cutoff 200.0
+#
+# Upper limit of the non-uniform frequency grid for the spectral function method.
+# Defaults to [[frequency_low_cutoff]]
+#sfrequency_high_cutoff 200.0
+
+# ### Static subspace approximation
+# Input parameters controlling the full-frequency static subspace approximation method. 
+# The method speeds up full-frequency calculations by expanding the
+# frequency-dependent part of the polarizability in the subspace basis formed by the
+# lowest eigenvectors of the static polarizability 
+# (see [Phys. Rev. B 99, 125128, 2019](https://journals.aps.org/prb/abstract/10.1103/PhysRevB.99.125128)). 
+# The method is implemented for the case of full-frequency contour-deformation formalism, i.e.,
+# [[frequency_dependence]]==2 and [[frequency_dependence_method]]==2.
+#
+#
+# Activate the static subspace approximation and define the screening threshold for
+# the eigenvalues of the static polarizability.
+#chi_eigenvalue_cutoff  1.0d-3
+#
+# Define a maximum fixed number of eigenvectors to be used (recommended). Set for example to 25% of the number of G-vectors 
+# employed for the expansion of chi0.
+#nbasis_subspace  -1
+#
+# Write frequency-dependent epsilon matrices in `eps0mat[.h5]` and `epsmat[.h5]` files using the subspace basis instead of the
+# full G-vector basis (recommended). This flag need to be specified to use the full-frequency static subspace approximation in sigma.
+#write_subspace_epsinv
+#
+# Discharge the output of the full static epsilon matrix in the `eps0mat[.h5]` and
+# `epsmat[.h5]` files.
+#subspace_dont_keep_full_eps_omega0
+#
+# If ELPA library is linked, specify to use ELPA for the diagonalization of the static
+# polarizability.
+#subspace_use_elpa
+#
+# Using [[comm_nonblocking_cyclic]]
+# force the algorithm to use buffers for communication with variable size, mainly used for debugging.
+#dont_keep_fix_buffers
+#
+# Replicate eigenvectors using collective operation in the basis transformation step,
+# performs in general worse than point to point, mainly used for debugging.
+#sub_collective_eigen_redistr
+
+# Within [[gcomm_matrix]], employs a non-blocking cyclic communication scheme
+# overlapping computation and communication in the evaluation of the polarizability
+# (drastically reduce the time spent in communication for large runs, but require more memory).
+#comm_nonblocking_cyclic
+
+# Logging convergence of the head & tail of polarizability matrix with respect to conduction bands:
+#
+# - Set to -1 for no convergence test
+# - Set to 0 for the 5 column format including the extrapolated values (default).
+# - Set to 1 for the 2 column format, real part only.
+# - Set to 2 for the 2 column format, real and imaginary parts.
+#full_chi_conv_log -1
+
+# qx qy qz 1/scale_factor is_q0
+#
+# scale_factor is for specifying values such as 1/3
+# is_q0 = 0 for regular, non-zero q-vectors (read val WFNs from `WFN`)
+# is_q0 = 1 for a small q-vector in semiconductors (read val WFNs from `WFNq`)
+# is_q0 = 2 for a small q-vector in metals (read val WFNs from `WFN`)
+#BEGIN_INTERNAL_ONLY
+# is_q0 = -1 for non-zero q-vectors used in non-uniform sampling (read val WFNs from `WFNq`)
+#
+# Use this flag to include only contributions from positive electron-hole
+# excitations in the polarizability (only works with full frequency for now)
+# use_tda
+#END_INTERNAL_ONLY
+# if present the small q-vector should be first in the list
+# You can generate this list with `kgrid.x`: just set the shifts to zero and use
+# same grid numbers as for `WFN`. Then replace the zero vector with q0.
+#
+begin qpoints
+  0.000000    0.000000    0.005000   1.0   1
+  0.000000    0.000000    0.062500   1.0   0
+  0.000000    0.000000    0.125000   1.0   0
+  0.000000    0.000000    0.187500   1.0   0
+  0.000000    0.000000    0.250000   1.0   0
+  0.000000    0.000000    0.312500   1.0   0
+  0.000000    0.000000    0.375000   1.0   0
+  0.000000    0.000000    0.437500   1.0   0
+  0.000000    0.000000    0.500000   1.0   0
+  0.000000    0.000000    0.562500   1.0   0
+  0.000000    0.000000    0.625000   1.0   0
+  0.000000    0.000000    0.687500   1.0   0
+  0.000000    0.000000    0.750000   1.0   0
+  0.000000    0.000000    0.812500   1.0   0
+  0.000000    0.000000    0.875000   1.0   0
+  0.000000    0.000000    0.937500   1.0   0
+end
+
+%include scissors.inp
+%include common.inp
+
+# Set this to use eigenvalues in eqp.dat and eqp_q.dat
+# If not set, these files will be ignored.
+#eqp_corrections
+
+# Write the bare Coulomb potential $v(q+G)$ to file
+#write_vcoul
+
+# Matrix Element Communication Method (Chi Sum Comm). Default is [[gcomm_matrix]]
+# which is good if $nk, nc, nv > nmtx, nfreq$. If $nk, nc, nv < nfreq, nmtx$
+# ($nk, nv < nfreq$ since $nc \sim nmtx$), use gcomm_elements. Only [[gcomm_elements]]
+# is supported with the spectral method.
+#
+#
+#gcomm_matrix
+#gcomm_elements
+
+# Number of pools for distribution of valence bands
+# The default is chosen to minimize memory in calculation
+#number_valence_pools 1
+
+# By default, the code computes the polarizability matrix, constructs
+# the dielectric matrix, inverts it and writes the result to file epsmat.
+# Use keyword skip_epsilon to compute the polarizability matrix and
+# write it to file chimat. Use keyword skip_chi to read the polarizability
+# matrix from file chimat, construct the dielectric matrix, invert it and
+# write the result to file epsmat.
+#
+#
+#skip_epsilon
+#skip_chi
+
+# When using [[skip_chi]] allows to control the max memory (in Mb) to use when reading in
+# block of columns of chimat in h5 format. 
+#read_chi_maxmem_per_block 256.0
+
+# (Full Frequency only) Calculates several frequencies in parallel. No "new"
+# processors are used here, the chi summation is simply done in another order
+# way to decrease communication. This also allows the inversion of multiple
+# dielectric matrices simultaneously via ScaLAPACK, circumventing ScaLAPACK's
+# scaling problems. Can be very efficient for system with lots of G-vectors and when
+# you have many frequencies. In general gives speedup. However, in order to
+# calculate N frequencies in parallel, the memory to store `pol%gme` is currently
+# multiplied by N as well.
+#
+#nfreq_group 1
+
+# EXPERIMENTAL FEATURES FOR TESTING PURPOSES ONLY
+
+# 'unfolded BZ' is from the kpoints in the WFN file
+# 'full BZ' is generated from the kgrid parameters in the WFN file
+# See comments in Common/checkbz.f90 for more details
+#
+#
+# Replace unfolded BZ with full BZ
+#fullbz_replace
+# Write unfolded BZ and full BZ to files
+#fullbz_write
+
+# The requested number of bands cannot break degenerate subspace
+# Use the following keyword to suppress this check
+# Note that you must still provide one more band in
+# wavefunction file in order to assess degeneracy
+#degeneracy_check_override
+
+# Instead of using the RHO FFT box to perform convolutions, we automatically
+# determine (and use) the smallest box that is compatible with your epsilon
+# cutoff. This also reduces the amount of memory needed for the FFTs.
+# Although this optimization is safe, you can disable it by uncommenting the
+# following line:
+#no_min_fftgrid
+
+# Use this flag if you would like to restart your Epsilon calculation
+# instead of starting it from scratch. Note that we can only reuse q-points
+# that were fully calculated. This flag is ignored unless you are running
+# the code with HDF5.
+#restart
+
+# Q-grid for the epsmat file. Defaults to the WFN k-grid.
+#qgrid 0 0 0
+
+
+# Use this option to generate an eps0mat file suitable for subsampled Sigma
+# calculations. The only thing this flag does is to allow a calculation with
+# more than one $q\rightarrow0$ points without complaining.
+#subsample
+
+#BEGIN_INTERNAL_ONLY
+# Use the following flag if your k-points are not in a uniform k-grid.
+# The code will perform a Voronoi tessellation of the BZ and assign a weight
+# to each k-point proportional to the volume of each Voronoi cell. Note that
+# you'll need to manually construct a shifted WFNq file (and use the -1 flag)
+# so that you have all $k \rightarrow k+q$ transitions. The Voronoi tessellation is based
+# on the k-points in WFN, not WFNq. This flag requires the code to be compiled
+# with -DUSEVORO.
+#
+#non_uniform
+
+# Use this flag if your WFN/WFNq files contain non-uniform patches of the BZ.
+# This is useful, together with the [[intraband_flag]], to sample only the
+# transitions that cross the Fermi Energy. Under the hood, this flag does the
+# following:
+# - Always uses WFNq to read valence states
+# - Disables symmetries when generating the full BZ
+# - Disables internal consistency checks
+# This flag is incompatible with the [[non_uniform]] option.
+#
+#patched_sampling
+
+# "EPSILON ON STEROIDS" OPTIMIZATIONS (under heavy development)
+
+# How to calculate/reuse FFTs for mtxel? Options (COMM_MPI only) are:
+# -1: Auto. Use the best scheme that doesn't blow the memory. [unsupported]
+#  0: Disabled.
+#  1: Saves FFTs of cond.-band WFNs for one kpt only. No memory overhead for
+#     systems with lots of kpts/few G-vecs. Up to ~50% CPU savings in MTXEL
+#     if there are several cond. bands/pool. [supported]
+#  2: Precalculates all the FFTs using all the available processors. Best
+#     optimization, but requires ~20x as much memory to hold the WFNs. Only
+#     systems with 1 kpt are currently supported. [supported]
+#
+#os_opt_ffts 0
+
+# This activates the linearized energy denominator method.
+# If the energy denominator is below lin_denominator, the method is
+# activated for that term in the Chi summation.
+# Currently, this is implemented only for 2D.
+# The z-direction is the "aperiodic direction".
+#
+#lin_denominator 0.1
+
+# Which kind of transition to compute?
+# 0 to calculate all transitions (default)
+# 1 to keep only intraband transitions
+# 2 to keep only interband transitions
+# 3 only include transitions inside the protection window (see below)
+# 4 block transitions inside the protection window (see below)
+# 5 block transitions outside the window for occupied states and inside the window for
+#   unoccupied states (see below)
+#intraband_flag 0
+
+# Defines a protection window in terms of two band indices. The code then
+# perform special actions for transitions depending on the value of
+# [[intraband_flag]]. For instance, if you set "[[protection_window]] 4 6" and
+# "[[intraband_flag]] 4", then the code will zero out the contribution to the
+# polarizability from the band-to-band transition $n \rightarrow m$ if both band indices
+# $n$ and $m$ are in the set (4, 5, 6). Note that the end indices of the band
+# window are included. This flag has effect only if [[intraband_flag]] is either 3 or 4.
+#
+# When the intraband_flag is 5, if you set "[[protection_window]] 4 6", then all transitions
+# where both iv<4 and ic<=6 will be blocked. Transitions with iv=4 are allowed.
+#
+#protection_window 0 0
+
+# A transition is consideres intraband if $|\langle u_{vk} | u_{ck+q}\rangle|^2$
+# is larger or equal to this value (defaults to 0.5)
+#intraband_overlap_min 0.5d0
+
+# Ignore all transitions if the conduction band has an index (starting from
+# 1=first valence band) smaller or equal to the following value. This number
+# must always be larger than the number of valence bands. Default is zero,
+# which means that we keep all transitions.
+#num_cond_bands_ignore 0
+
+# There is a small error introduced when one uses smooth, nodeless pseudowavefunctions
+# in GW calculations, which primarily exhibits itself in the bare exchange. To eliminate this error one
+# needs to explicitly include the core states in the mean-field calculation
+# so that the valence wavefunctions have the proper nodal structure. However,
+# the core states are often separated in space and energy from the valence states
+# and have little effect on the final result of a GW calculation. This flag lets
+# you exclude the number_core_excluded lowest core states from the sigma summations.
+# This saves computational time if the core states are not important other than
+# their effect on the nodal structure of the valence states. Note: only the farthest out
+# node matters, since nodes farther in have little effect on the calculation. Thus, only
+# the first shell of core states need be  included explicitly in the mean-field calculation.
+# NOTE: has not been tested with eqp corrections, so consider this feature unsupported if
+# if you want to use eqp_corrections. Also, the total charge calculated is still that
+# including the excluded core electrons, so ignore this number. This number is not actually
+# used in the calculation, so it does not affect the result. Both of these things will be fixed shortly.
+#
+#number_core_excluded 0
+
+# Whether we want to check WFN norms. Use with pseudobands.
+#dont_check_norms
+
+# Apply the first order Methfessel-Paxton smearing scheme to the band occupations. 
+#occ_broadening 0.0
+
+#END_INTERNAL_ONLY

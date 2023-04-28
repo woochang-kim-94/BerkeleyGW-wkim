@@ -1,0 +1,57 @@
+# inteqp.inp
+
+# Number of occupied bands on fine (interpolated) k-point grid, `WFNq_fi`.
+number_val_bands_fine 3
+
+# Number of occupied bands on coarse (input) k-point grid, `WFN_co`.
+number_val_bands_coarse 3
+
+# Number of unoccupied bands on fine (interpolated) k-point grid, `WFN_fi`.
+number_cond_bands_fine 3
+
+# Number of unoccupied bands on coarse (input) k-point grid, `WFN_co`.
+number_cond_bands_coarse 3
+
+
+# ### K-point interpolation scheme
+#
+#
+# The interpolation algorithm is based on the Delaunay tessellation of the
+# k-points. This guarantees that the interpolant is a continuous function, and
+# that we are always interpolating, and never extrapolating. (default)
+#delaunay_interpolation
+# You can also use the previous interpolation method, which might give
+# interpolants that are not continuous.
+#greedy_interpolation
+
+
+# ### K-point interpolation transformation
+#
+#
+# Do a linear interpolation of the quasiparticle corrections over k. The
+# band structure may acquire a spurious linear dispersion around band extrema
+# instead of being parabolic. However, band structures will appear smoother
+# when interpolated from a coarse k-point sampling.
+#kpt_interpolation_linear
+# Transform the quasiparticle corrections to an exponential form which
+# preserves the quadratic dispersion around band extrema. This preserves
+# the correct parabolic dispersion near the VBM/CBM, which the band structure
+# appears wiggly when interpolated from a coarse k-point sampling. (default)
+#kpt_interpolation_exp_transform
+
+
+# Symmetry specification
+#
+#
+#no_symmetries_coarse_grid
+#use_symmetries_coarse_grid
+#
+#no_symmetries_fine_grid
+#use_symmetries_fine_grid
+
+# The average potential on the faces of the unit cell
+# in the non-periodic directions for the bands in WFN_inner
+# This is used to correct for the vacuum level
+# The default is zero, avgpot is in eV
+#
+#avgpot   0.0

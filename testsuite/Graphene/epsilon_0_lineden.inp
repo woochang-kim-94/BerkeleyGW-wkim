@@ -1,0 +1,10 @@
+epsilon_cutoff 6.0
+
+number_bands 8
+
+cell_slab_truncation
+lin_denominator 0.5
+
+begin qpoints
+    0.00000000    0.0625    0.00000000  1.0  2
+end

@@ -1,0 +1,38 @@
+wfng_file_abi 'out_data/odat_WFK'
+wfng_flag .true.
+wfng_file 'WFN'
+wfng_nk1 2
+wfng_nk2 2
+wfng_nk3 2
+wfng_dk1 0
+wfng_dk2 0
+wfng_dk3 0
+rhog_file_abi '../01-Density/out_data/odat_DEN'
+rhog_flag .true.
+rhog_file 'RHO'
+cell_symmetry 0
+symrel_file_flag .false.
+vxcg_file_abi '../01-Density/out_data/odat_VXC'
+vxcg_flag .true.
+vxcg_file 'VXC'
+!
+! Documentation (please remove all these lines starting with an exclamation mark)
+! The order of the input keywords CANNOT BE CHANGED!
+!
+! wfng_file_abi 'out_data/odat_WFK' ! Wavefunction output by Abinit
+! wfng_flag .true.                  ! Whether to convert the wavefunction (written in complex flavor only)
+! wfng_file 'WFN'                   ! Name of the output file, in BerkeleyGW format
+! wfng_nk1 2                        ! Monkhorst-pack grid, kx
+! wfng_nk2 2                        ! Monkhorst-pack grid, ky
+! wfng_nk3 2                        ! Monkhorst-pack grid, kz
+! wfng_dk1 0                        ! Monkhorst-pack shift, dk1
+! wfng_dk2 0                        ! Monkhorst-pack shift, dk2
+! wfng_dk3 0                        ! Monkhorst-pack shift, dk3
+! rhog_file_abi '../01-Density/out_data/odat_DEN' ! Charge-density output by Abinit
+! rhog_flag .true.                                ! Whether to convert the charge-density (written in complex flavor only)
+! rhog_file 'RHO'                                 ! Name of the output file, in BerkeleyGW format
+! cell_symmetry 0                                 ! Not used
+! symrel_file_flag .false.                        ! Not used
+! vxcg_file_abi '../01-Density/out_data/odat_VXC' ! Vxc output by Abinit
+! vxcg_flag .true.                                ! Whether to convert the Vxc file
+! vxcg_file 'VXC'                                 ! Name of the output file, in BerkeleyGW format

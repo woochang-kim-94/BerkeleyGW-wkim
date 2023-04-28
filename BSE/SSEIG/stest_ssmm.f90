@@ -1,0 +1,82 @@
+PROGRAM TEST_SSSMM
+!
+IMPLICIT NONE
+!
+INTEGER            NMAX, OFFSET, MATLEN
+PARAMETER          ( NMAX = 32, OFFSET = 3, &
+                     MATLEN = (NMAX+OFFSET)*NMAX )
+REAL               A( MATLEN ), B( MATLEN ), &
+                   C( MATLEN ), CC( MATLEN )
+INTEGER            I, J, K, L, M, N, LDA, LDB, LDC, PASS, TOTAL
+CHARACTER          SIDE, UPLO
+INTEGER            ISEED( 4 )
+REAL               ALPHA, BETA, EPS, ERR, TOL, AMAX, BMAX, CMAX
+INTRINSIC          REAL
+EXTERNAL           SCOPY, SGEMM, SLACPY, SLAMCH, &
+                   SGENMAT, SGENSSMAT, SSSMM, SERRMAT
+REAL               SLAMCH, SERRMAT
+!
+ISEED( 1 ) = 0
+ISEED( 2 ) = 1
+ISEED( 3 ) = 2
+ISEED( 4 ) = 3
+!
+TOTAL = 0
+PASS = 0
+EPS = SLAMCH( 'P' )
+!
+DO M = 1, 28, 9
+DO N = 1, 28, 9
+DO LDA = MAX( M, N ), MAX( M, N )+OFFSET, OFFSET
+DO LDB = M, M+OFFSET, OFFSET
+DO LDC = M, M+OFFSET, OFFSET
+DO I = -1, 2
+DO J = -1, 2
+DO K = 0, 1
+DO L = 0, 1
+   IF ( K .LT. 1 ) THEN
+      UPLO = 'L'
+   ELSE
+      UPLO = 'U'
+   END IF
+   IF ( L .LT. 1 ) THEN
+      SIDE = 'L'
+      CALL SGENSSMAT( M, A, LDA, ISEED, AMAX )
+   ELSE
+      SIDE = 'R'
+      CALL SGENSSMAT( N, A, LDA, ISEED, AMAX )
+   END IF
+   ALPHA = REAL( I )
+   BETA = REAL( J )
+!
+   CALL SGENMAT( M, N, B, LDB, ISEED, BMAX )
+   CALL SGENMAT( M, N, C, LDC, ISEED, CMAX )
+   CALL SLACPY( 'A', M, N, C, LDC, CC, LDC )
+!
+   CALL SSSMM( SIDE, UPLO, M, N, ALPHA, A, LDA, B, LDB, BETA, &
+        C, LDC )
+   IF ( L .LT. 1 ) THEN
+      CALL SGEMM( 'N', 'N', M, N, M, ALPHA, A, LDA, B, LDB, &
+           BETA, CC, LDC )
+   ELSE
+      CALL SGEMM( 'N', 'N', M, N, N, ALPHA, B, LDB, A, LDA, &
+           BETA, CC, LDC )
+   END IF
+!
+   ERR = SERRMAT( 'A', M, N, C, LDC, CC, LDC )
+   TOL = 20 * EPS * N**1.5 * ( N * AMAX * BMAX + CMAX )
+   IF ( ERR .LE. TOL ) PASS = PASS + 1
+   TOTAL = TOTAL + 1
+END DO
+END DO
+END DO
+END DO
+END DO
+END DO
+END DO
+END DO
+END DO
+!
+WRITE(*,*), '%', PASS, 'out of', TOTAL, 'tests passed!'
+!
+END

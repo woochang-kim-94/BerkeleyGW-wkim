@@ -1,0 +1,287 @@
+Test    : Graphene, trunc (real)
+Enabled : Yes
+TestGroups : binary hdf5 serial parallel
+
+Unpack  : PARATEC_graphene.tar.xz
+Banner  : Testing all screenings at Sigma, graphene at Kernel + Absorption
+
+Copy : kgrid.in
+
+Executable : kgrid.x
+Processors : serial
+Arguments : kgrid.in kgrid.out kgrid.log
+
+match ; Space group (lattice)       ; GREP(kgrid.log, "symmetries of the Bravais lattice", 3, 2);  191
+match ; Space group (crystal)       ; GREP(kgrid.log, "symmetries of the crystal without FFT grid", 3, 2);  191
+match ; Number of symmetries        ; GREP(kgrid.log, "symmetries of the crystal without FFT grid", 1, 1);   24
+match ; Number of k-points (WFN_fi) ; GREP(kgrid.log, "k-points in the irreducible wedge", 1, 1);  102
+match ; y-coord of first k-point    ; LINE(kgrid.out,   3, 2);  0.0
+match ; Weight  of first k-point    ; LINE(kgrid.out,   3, 4);  1.0
+match ; y-coord of last k-point     ; LINE(kgrid.out, 104, 2);  0.34375
+match ; Weight  of last k-point     ; LINE(kgrid.out, 104, 4);  6.0
+
+#LINE(fname, lineno, col)
+#GREP(fname, col, delta_LINEs)
+
+###########
+# epsilon #
+###########
+
+Command : ln -s WFN_co WFN
+Command : ln -s WFN WFNq
+
+#use coarse WFN for q!=0 components
+Executable : epsilon.real.x
+Processors : 4
+Output : epsilon_ne0.out
+Input  : epsilon.inp
+
+Precision : 1e-13
+match ; Re chi(nc=1,0,0)       ; LINE(chi_converge.dat,  3, 2) ; -0.41630827E-02
+match ; Re chi(nc=4,Gmax,Gmax) ; LINE(chi_converge.dat,  6, 4) ; -0.13006732E-02
+match ; epsilonInv Head        ; GREP(epsilon.log, "inverse epsilon", 7, 3); 0.77401652
+
+Command : mv epsilon.log epsilon_ne0.log
+Command : ln -sf WFN_fi WFN
+
+#use fine WFN for q->0 component
+Executable : epsilon.real.x
+Processors : 4
+Output : epsilon_0.out
+Input  : epsilon_0.inp epsilon.inp
+
+Precision : 1e-13
+match ; Re chi(nc=1,0,0)       ; LINE(chi_converge.dat, 3, 2) ; -0.13300127E-02
+match ; Re chi(nc=4,Gmax,Gmax) ; LINE(chi_converge.dat, 6, 4) ; -0.12216995E-02
+match ; epsilonInv Head        ; GREP(epsilon.log, "inverse epsilon", 7, 3); 0.72968260
+
+Command : mv epsilon.log epsilon_0.log
+
+#########
+# sigma #
+#########
+
+Command : ln -s WFN_co WFN_inner
+Copy : sigma.inp sigma_orig.inp
+
+  ###################
+  #  semiconductor  #
+  ###################
+
+#put semiconductor screening
+Banner : Semiconductor Screening (Gamma)
+#only keep k=0
+Command : sed -e 's/\(screening_\).*/\1semiconductor/' -e '/^ 00/d' sigma_orig.inp > sigma.inp
+
+Executable : sigma.real.x
+Processors : 4
+Output : sigma_semi.out
+Input  : NONE
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n4, k1 initial eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 4);  -3.573425
+match ; n4, k1 exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 4); -21.393364
+match ; n4, k1 screened exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 4);  9.091556
+match ; n4, k1 Coulomb hole         ; GREP(sigma_hp.log, "ik =   1",  6, 4);  -5.242182
+match ; n4, k1 linear qp correction ; GREP(sigma_hp.log, "ik =   1", 10, 4);  -3.904248
+match ; n5, k1 initial eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 5);   1.648540
+match ; n5, k1 exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 5);  -1.131152
+match ; n5, k1 screened exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 5);  0.272264
+match ; n5, k1 Coulomb hole         ; GREP(sigma_hp.log, "ik =   1",  6, 5);  -1.719583
+match ; n5, k1 linear qp correction ; GREP(sigma_hp.log, "ik =   1", 10, 5);  2.681286
+
+Command : mv sigma_hp.log sigma_hp_semi.log
+
+  ###########
+  #  metal  #
+  ###########
+
+#put metal screening
+Banner : Metal Screening (Gamma)
+#only keep k=0
+Command : sed -e 's/\(screening_\).*/\1metal/' -e '/^ 00/d' sigma_orig.inp > sigma.inp
+
+Executable : sigma.real.x
+Processors : 4
+Output : sigma_metal.out
+Input  : NONE
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n4, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 4);  -3.573425
+match ; n4, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 4);  -19.936399
+match ; n4, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 4);  8.893858
+match ; n4, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1",  6, 4);  -5.143640
+match ; n4, k1 Linear QP Correction ; GREP(sigma_hp.log, "ik =   1", 10, 4);  -2.690917
+match ; n5, k1 Initial Eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 5);   1.648540
+match ; n5, k1 Exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 5);  -1.100480
+match ; n5, k1 Screened Exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 5);  0.271765
+match ; n5, k1 Coulomb Hole         ; GREP(sigma_hp.log, "ik =   1",  6, 5);  -1.601716
+match ; n5, k1 Linear QP Correction ; GREP(sigma_hp.log, "ik =   1", 10, 5);  2.818883
+
+Command : mv sigma_hp.log sigma_hp_metal.log
+
+  ##############
+  #  graphene  #
+  ##############
+
+#put graphene screening
+Banner : Graphene Screening (full)
+Command : sed 's/\(screening_\).*/\1graphene/' sigma_orig.inp > sigma.inp
+
+Executable : sigma.real.x
+Processors : 4
+Output : sigma_graphene.out
+Input  : NONE
+
+Precision : 2e-5
+match ; k-point 1 z-coordinate      ; GREP(sigma_hp.log, "ik =   1",  5, 0);   0.000000
+match ; n4, k1 initial eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 4);  -3.573425
+match ; n4, k1 exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 4); -21.393364
+match ; n4, k1 screened exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 4);  9.419652
+match ; n4, k1 Coulomb hole         ; GREP(sigma_hp.log, "ik =   1",  6, 4);  -5.406229
+match ; n4, k1 linear qp correction ; GREP(sigma_hp.log, "ik =   1", 10, 4);  -3.755513
+match ; n5, k1 initial eigenvalue   ; GREP(sigma_hp.log, "ik =   1",  2, 5);   1.648540
+match ; n5, k1 exchange             ; GREP(sigma_hp.log, "ik =   1",  4, 5);  -1.131152
+match ; n5, k1 screened exchange    ; GREP(sigma_hp.log, "ik =   1",  5, 5);  0.272264
+match ; n5, k1 Coulomb hole         ; GREP(sigma_hp.log, "ik =   1",  6, 5);  -1.883631
+match ; n5, k1 linear qp correction ; GREP(sigma_hp.log, "ik =   1", 10, 5);  2.516026
+
+match ; k-point 4 x-coordinate      ; GREP(sigma_hp.log, "ik =   4",  3, 0);   0.200000
+match ; n4, k4 initial eigenvalue   ; GREP(sigma_hp.log, "ik =   4",  2, 4);  -5.768060
+match ; n4, k4 exchange             ; GREP(sigma_hp.log, "ik =   4",  4, 4);  -16.622152
+match ; n4, k4 screened exchange    ; GREP(sigma_hp.log, "ik =   4",  5, 4);  8.123182
+match ; n4, k4 Coulomb hole         ; GREP(sigma_hp.log, "ik =   4",  6, 4);  -5.063067
+match ; n4, k4 linear qp correction ; GREP(sigma_hp.log, "ik =   4", 10, 4);  -6.252989
+match ; n5, k4 initial eigenvalue   ; GREP(sigma_hp.log, "ik =   4",  2, 5);   4.413003
+match ; n5, k4 exchange             ; GREP(sigma_hp.log, "ik =   4",  4, 5);  -7.822709
+match ; n5, k4 screened exchange    ; GREP(sigma_hp.log, "ik =   4",  5, 5);  2.981888
+match ; n5, k4 Coulomb hole         ; GREP(sigma_hp.log, "ik =   4",  6, 5);  -4.610470
+match ; n5, k4 linear qp correction ; GREP(sigma_hp.log, "ik =   4", 10, 5);  8.406463
+
+Command : mv sigma_hp.log sigma_hp_graphene.log
+
+Executable : eqp.py
+Arguments : eqp1 sigma_hp_graphene.log eqp_co.dat > eqp.out
+
+##########
+# kernel #
+##########
+
+Executable : kernel.real.x
+Processors : 4
+Output : kernel.out
+Input  : kernel.inp
+
+Precision : 1e-8
+match ; Norm of head; GREP(kernel.out, " - Head :", 4); 1.488398530167E+0001
+match ; Norm of wing; GREP(kernel.out, " - Wing :", 4); 3.333272152164E+0002
+match ; Norm of body; GREP(kernel.out, " - Body :", 4); 2.703132197877E+0002
+match ; Norm of x   ; GREP(kernel.out, " - X    :", 4); 3.800006825439E+0001
+
+########
+# diag #
+########
+
+Executable : absorption.real.x
+Processors : 4
+Output : absp.out
+Input  : absorption.inp
+
+Precision : 0.0001
+match ; Number of eigenvalues  ; GREP(eigenvalues.dat, "# neig  = ", 4);  512
+match ; Eigenvalue 1           ; LINE(eigenvalues.dat,  5, 1);  0.38118643E+01
+
+#FHJ: FIXME -- disabled because of non-unique Delaunay tesselation.
+#Precision : 1e-5
+#match ; dcmat_norm.dat (48) ik_co    ; LINE(dcmat_norm.dat, 48, 8); 9
+#match ; dcmat_norm.dat (48) dist     ; LINE(dcmat_norm.dat, 48,10); 0.158
+#match ; dcmat_norm.dat (48) |dcc|^2  ; LINE(dcmat_norm.dat, 48,11); 0.793362
+#match ; dvmat_norm.dat (60) ik_co    ; LINE(dvmat_norm.dat, 60, 8); 11
+#match ; dvmat_norm.dat (60) dist     ; LINE(dvmat_norm.dat, 60,10); 0.138
+#match ; dvmat_norm.dat (60) |dcc|^2  ; LINE(dvmat_norm.dat, 60,11);  0.984521
+
+#FHJ: FIXME -- using large threshold because of non-unique Delaunay tesselation.
+Precision : 2e-4
+match ; Transition mtxel 1     ; LINE(eigenvalues.dat,  5, 2);  0.69472480E-07
+match ; Eigenvalue 2           ; LINE(eigenvalues.dat,  6, 1);  0.38513493E+01
+match ; Transition mtxel 2     ; LINE(eigenvalues.dat,  6, 2);  0.21608803E-04
+match ; Eigenvalue 73          ; LINE(eigenvalues.dat, 77, 1);  0.74229718E+01
+match ; Transition mtxel 73    ; LINE(eigenvalues.dat, 77, 2);  0.15738209E-06
+match ; absorp0 energy 767     ; LINE(absorption_noeh.dat, 771, 1);  7.660000000
+match ; absorp0 eps2 767       ; LINE(absorption_noeh.dat, 771, 2);  0.827446252
+match ; absorp0 eps1 767       ; LINE(absorption_noeh.dat, 771, 3);  3.390958255
+match ; absorp0 dos 767        ; LINE(absorption_noeh.dat, 771, 4);  0.057228378
+match ; absorp energy 673      ; LINE(absorption_eh.dat,  677, 1);  6.720000000
+match ; absorp eps2 673        ; LINE(absorption_eh.dat,  677, 2);  0.219906935
+match ; absorp eps1 673        ; LINE(absorption_eh.dat,  677, 3);  0.583339742
+match ; absorp dos 673         ; LINE(absorption_eh.dat,  677, 4);  0.008994961
+
+#Precision : 4e-10
+match ; Sum rule               ; GREP(absp.out, "Sum rule (BSE)", 5); 0.27048226853231960
+
+
+#BEGIN_INTERNAL_ONLY
+##############################
+# epsilon0 / linearized eden #
+##############################
+
+Command : ln -sf WFN_fi WFN
+Copy : epsilon_0_lineden.inp
+Executable : epsilon.real.x
+Processors : 4
+Output : epsilon_0_lineden_static.out
+Input  : epsilon_0_lineden.inp epsilon.inp
+
+Precision : 1e-13
+match ; epsilonInv Head ; GREP(epsilon.log, "inverse epsilon", 7, 3); 0.72960347
+
+
+Copy : epsilon_0_lineden_ff_mat.inp
+Executable : epsilon.real.x
+Processors : 4
+Output : epsilon_0_lineden_ff_mat.out
+Input  : epsilon_0_lineden_ff_mat.inp epsilon.inp
+
+Precision : 1e-13
+match ; epsilonInv Head ; GREP(epsilon.log, "inverse epsilon", 7, 3); 0.72960899
+
+Precision : 4e-12
+match ; Re eps q1          ; GREP(epsilon_0_lineden_ff_mat.out, "q-pt      1: Head of Epsilon",          7, 0); 3.584958830364549E+000
+Precision : 1e-13
+match ; Im eps q1          ; GREP(epsilon_0_lineden_ff_mat.out, "q-pt      1: Head of Epsilon",          8, 0); 0.0
+match ; Re epsinv q1       ; GREP(epsilon_0_lineden_ff_mat.out, "q-pt      1: Head of Epsilon Inverse",  8, 0); 4.596465752070906E-001
+match ; Im epsinv q1       ; GREP(epsilon_0_lineden_ff_mat.out, "q-pt      1: Head of Epsilon Inverse",  9, 0); 0.0
+
+Precision : 1e-5
+match ; epsilon    Head 1.0 eV Re ; LINE(EpsDyn, 4, 2) ; 5.413032E+00
+match ; epsilon    Head 1.0 eV Im ; LINE(EpsDyn, 4, 3) ; 1.852719E-04
+match ; epsilonInv Head 2.0 eV Re ; LINE(EpsInvDyn, 5, 2) ; 1.336167E-01
+match ; epsilonInv Head 2.0 eV Im ; LINE(EpsInvDyn, 5, 3) ; -1.621920E-01
+#END_INTERNAL_ONLY
+
+
+# No support for elements communication yet!!
+#
+#Copy : epsilon_0_lineden_ff_el.inp
+#Executable : epsilon.real.x
+#Processors : 4
+#Output : epsilon_0_lineden_ff_el.out
+#Input  : epsilon_0_lineden_ff_el.inp epsilon.inp
+#
+#Precision : 1e-13
+#match ; epsilonInv Head ; GREP(epsilon.log, "inverse epsilon", 7, 3); 0.73003918
+#
+#Precision : 4e-12
+#match ; Re eps q1          ; GREP(epsilon_0_lineden_ff_el.out, "q-pt      1: Head of Epsilon",          7, 0); 4.201748677956912E+000
+#Precision : 1e-13
+#match ; Im eps q1          ; GREP(epsilon_0_lineden_ff_el.out, "q-pt      1: Head of Epsilon",          8, 0); 0.0
+#match ; Re epsinv q1       ; GREP(epsilon_0_lineden_ff_el.out, "q-pt      1: Head of Epsilon Inverse",  8, 0); 3.490631653101941E-001
+#match ; Im epsinv q1       ; GREP(epsilon_0_lineden_ff_el.out, "q-pt      1: Head of Epsilon Inverse",  9, 0); 0.0
+#
+#Precision : 1e-5
+#match ; epsilon    Head 1.0 eV Re ; LINE(EpsDyn, 4, 2) ; 1.469253E+00
+#match ; epsilon    Head 1.0 eV Im ; LINE(EpsDyn, 4, 3) ; 2.854474E+00
+#match ; epsilonInv Head 2.0 eV Re ; LINE(EpsInvDyn, 5, 2) ; 4.808785E-01
+#match ; epsilonInv Head 2.0 eV Im ; LINE(EpsInvDyn, 5, 3) ; -2.450798E-01

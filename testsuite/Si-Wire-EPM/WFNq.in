@@ -1,0 +1,36 @@
+real_or_complex 2
+wfng_flag T
+wfng_file WFNq
+
+DiagonalizationSwitch 0
+
+EnergyCutoff 3
+
+NumberOfDimensions 3
+LatticeConstant 1.0
+LatticeVectors
+20.0 0.0 0.0
+0.0 20.0 0.0
+0.0 0.0 8.9
+
+NumberOfAtoms 2
+NumberOfSpecies 1
+ChemicalSpeciesLabel
+1 14 Si
+AtomicCoordinatesFormat ScaledByLatticeVectors
+AtomicCoordinatesAndAtomicSpecies
+0.0 0.0 0.0 1
+0.0 0.0 0.45 1
+
+NumberOfBands 4
+NumberOfOccupiedBands 4
+
+KPointNumbers 1 1 4
+KPointOffsets 0.0 0.0 0.004
+KPointsScale ReciprocalLatticeVectors
+KPointsList 4
+  0.00000000  0.00000000  0.00100000   1.0
+  0.00000000  0.00000000  0.25100000   1.0
+  0.00000000  0.00000000  0.50100000   1.0
+  0.00000000  0.00000000  0.75100000   1.0
+

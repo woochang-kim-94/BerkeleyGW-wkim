@@ -1,0 +1,229 @@
+!===========================================================================
+!
+! Modules:
+!
+! elpa_interface_m    Originally By MDB      Last modified: 2017/10 (FHJ)
+!
+!   Functions, types, and interfaces for ELPA.
+!   Note: you have to use ELPA 20170403 or later.
+!
+!============================================================================
+
+#include "f_defs.h"
+
+module elpa_interface_m
+#ifdef USEELPA
+  use global_m
+  use scalapack_m
+  use elpa
+  use, intrinsic :: iso_c_binding
+
+  implicit none
+
+  private
+
+  public :: diagonalize_elpa
+
+  interface diagonalize_elpa
+    module procedure &
+        diagonalize_elpa_real, diagonalize_elpa_cplx
+  end interface
+
+contains
+
+
+subroutine diagonalize_elpa_real(scal, N, Neig, matrix, evals, evecs, comm)
+  type(scalapack), intent(in) :: scal
+  integer, intent(in) :: N
+  integer, intent(in) :: Neig
+  real(DP), intent(inout), target :: matrix(*)
+  real(DP), intent(out), target :: evals(*)
+  real(DP), intent(out), target :: evecs(*)
+  integer, intent(in), optional :: comm
+
+  integer :: nblk
+  integer :: np_rows, np_cols, na_rows, na_cols
+  integer :: my_prow, my_pcol, mpi_comm_rows, mpi_comm_cols
+  integer :: info, nprow, npcol
+  !complex(DP), parameter :: CZERO = (0d0,0d0)
+  integer :: success
+  class(elpa_t), pointer :: elpa_solver
+  type(c_ptr) :: matrix_ptr, evecs_ptr, evals_ptr
+  real(DP), pointer :: matrix_2d(:,:), evecs_2d(:,:)
+  real(DP), pointer :: evals_1d(:)
+  integer :: comm_
+  integer :: inode, iunit_
+
+  PUSH_SUB(diagonalize_elpa_real)
+
+  if (present(comm)) then
+    comm_ = comm
+  else
+    comm_ = MPI_COMM_WORLD
+  endif
+
+  iunit_ = 6
+  inode = peinf%inode
+
+  if (elpa_init(20170403) /= elpa_ok) then
+    call die("ELPA API version not supported", only_root_writes=.true.)
+  endif
+
+  if (comm_/=MPI_COMM_NULL) then
+    matrix_ptr = c_loc(matrix)
+    evecs_ptr = c_loc(evecs)
+    evals_ptr = c_loc(evals)
+    call c_f_pointer(matrix_ptr, matrix_2d, [scal%npr,scal%npc])
+    call c_f_pointer(evecs_ptr, evecs_2d, [scal%npr,scal%npc])
+    call c_f_pointer(evals_ptr, evals_1d, [N])
+
+    ! FIXME: should check value of `success`
+    !success = .true.
+    !evecs = CZERO
+    !evals = 0d0
+    nblk = scal%nbl
+    np_rows = scal%nprow
+    np_cols = scal%npcol
+    na_rows = scal%npr
+    na_cols = scal%npc
+    my_prow = scal%myprow
+    my_pcol = scal%mypcol
+
+    elpa_solver => elpa_allocate()
+    ! set parameters decribing the matrix and it`s MPI distribution
+    call elpa_solver%set("na", N, success)
+    call elpa_solver%set("nev", Neig, success)
+    call elpa_solver%set("local_nrows", scal%npr, success)
+    call elpa_solver%set("local_ncols", scal%npc, success)
+    call elpa_solver%set("nblk", scal%nbl, success)
+    call elpa_solver%set("mpi_comm_parent", comm_, success)
+    call elpa_solver%set("process_row", scal%myprow, success)
+    call elpa_solver%set("process_col", scal%mypcol, success)
+    success = elpa_solver%setup()
+    ! if desired, set tunable run-time options
+    call elpa_solver%set("solver", ELPA_SOLVER_2STAGE, success)
+
+    if (inode==0) then
+      write(iunit_,'(1x,a,i0)') 'Beginning ELPA diagonalization. Size: ', N
+      FLUSH(iunit_)
+    endif
+
+    ! use method solve to solve the evalsue problem to obtain evalsues
+    ! and eigenvectors
+    ! other possible methods are desribed in \ref elpa_api::elpa_t derived type
+    call elpa_solver%eigenvectors(matrix_2d, evals_1d, evecs_2d, success)
+
+    if (inode==0) then
+      write(iunit_,'(1x,a)') 'Done ELPA diagonalization'
+      FLUSH(iunit_)
+    endif
+
+    ! cleanup
+    call elpa_deallocate(elpa_solver)
+  endif
+
+  call elpa_uninit()
+
+  POP_SUB(diagonalize_elpa_real)
+
+end subroutine diagonalize_elpa_real
+
+subroutine diagonalize_elpa_cplx(scal, N, Neig, matrix, evals, evecs, comm)
+  type(scalapack), intent(in) :: scal
+  integer, intent(in) :: N
+  integer, intent(in) :: Neig
+  complex(DPC), intent(inout), target :: matrix(*)
+  real(DP), intent(out), target :: evals(*)
+  complex(DPC), intent(out), target :: evecs(*)
+  integer, intent(in), optional :: comm
+
+  integer :: nblk
+  integer :: np_rows, np_cols, na_rows, na_cols
+  integer :: my_prow, my_pcol, mpi_comm_rows, mpi_comm_cols
+  integer :: info, nprow, npcol
+  !complex(DP), parameter :: CZERO = (0d0,0d0)
+  integer :: success
+  class(elpa_t), pointer :: elpa_solver
+  type(c_ptr) :: matrix_ptr, evecs_ptr, evals_ptr
+  complex(DPC), pointer :: matrix_2d(:,:), evecs_2d(:,:)
+  real(DP), pointer :: evals_1d(:)
+  integer :: comm_
+  integer :: inode, iunit_
+
+  PUSH_SUB(diagonalize_elpa_cplx)
+
+  if (present(comm)) then
+    comm_ = comm
+  else
+    comm_ = MPI_COMM_WORLD
+  endif
+
+  iunit_ = 6
+  inode = peinf%inode
+
+  if (elpa_init(20170403) /= elpa_ok) then
+    call die("ELPA API version not supported", only_root_writes=.true.)
+  endif
+
+  if (comm_/=MPI_COMM_NULL) then
+    matrix_ptr = c_loc(matrix)
+    evecs_ptr = c_loc(evecs)
+    evals_ptr = c_loc(evals)
+    call c_f_pointer(matrix_ptr, matrix_2d, [scal%npr,scal%npc])
+    call c_f_pointer(evecs_ptr, evecs_2d, [scal%npr,scal%npc])
+    call c_f_pointer(evals_ptr, evals_1d, [N])
+
+    ! FIXME: should check value of `success`
+    !success = .true.
+    !evecs = CZERO
+    !evals = 0d0
+    nblk = scal%nbl
+    np_rows = scal%nprow
+    np_cols = scal%npcol
+    na_rows = scal%npr
+    na_cols = scal%npc
+    my_prow = scal%myprow
+    my_pcol = scal%mypcol
+
+    elpa_solver => elpa_allocate()
+    ! set parameters decribing the matrix and it`s MPI distribution
+    call elpa_solver%set("na", N, success)
+    call elpa_solver%set("nev", Neig, success)
+    call elpa_solver%set("local_nrows", scal%npr, success)
+    call elpa_solver%set("local_ncols", scal%npc, success)
+    call elpa_solver%set("nblk", scal%nbl, success)
+    call elpa_solver%set("mpi_comm_parent", comm_, success)
+    call elpa_solver%set("process_row", scal%myprow, success)
+    call elpa_solver%set("process_col", scal%mypcol, success)
+    success = elpa_solver%setup()
+    ! if desired, set tunable run-time options
+    call elpa_solver%set("solver", ELPA_SOLVER_2STAGE, success)
+
+    if (inode==0) then
+      write(iunit_,'(1x,a,i0)') 'Beginning ELPA diagonalization. Size: ', N
+      FLUSH(iunit_)
+    endif
+
+    ! use method solve to solve the evalsue problem to obtain evalsues
+    ! and eigenvectors
+    ! other possible methods are desribed in \ref elpa_api::elpa_t derived type
+    call elpa_solver%eigenvectors(matrix_2d, evals_1d, evecs_2d, success)
+
+    if (inode==0) then
+      write(iunit_,'(1x,a)') 'Done ELPA diagonalization'
+      FLUSH(iunit_)
+    endif
+
+    ! cleanup
+    call elpa_deallocate(elpa_solver)
+  endif
+
+  call elpa_uninit()
+
+  POP_SUB(diagonalize_elpa_cplx)
+
+end subroutine diagonalize_elpa_cplx
+#endif
+
+end module elpa_interface_m
+

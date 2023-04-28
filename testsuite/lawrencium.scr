@@ -1,0 +1,18 @@
+#!/bin/bash -l
+
+#PBS -N test_BGW
+#PBS -q lr_batch
+#PBS -l nodes=1:ppn=4
+#PBS -l walltime=1:00:00
+#PBS -V
+
+export TEMPDIRPATH=$SCRATCH/tmp
+
+cd $PBS_O_WORKDIR
+export MPIEXEC="`which mpiexec` --mca btl openib,self"
+
+export NO_STOP_MESSAGE=1
+# do not write silly FORTRAN STOP messages from PGI
+make check-parallel &> test.out
+
+echo "Exit status = $?"

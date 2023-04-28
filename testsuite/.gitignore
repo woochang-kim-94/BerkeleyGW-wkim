@@ -1,0 +1,6 @@
+test*.out
+*.log
+
+# The following test is automatically generated:
+Si-EPM/Si_cplx.test
+Si-EPM/Si_hdf5_cplx.test

@@ -1,0 +1,29 @@
+number_bands 18
+
+band_index_min 1
+band_index_max 8
+
+screening_semiconductor
+
+begin kpoints
+  0.000000000  0.000000000  0.000000000   1.0
+end
+
+exact_static_ch 1
+
+number_offdiag 3
+begin offdiag
+  1 1 1
+  1 8 1
+  2 1 2
+end
+no_symmetries_q_grid
+
+use_xdat
+
+frequency_dependence 2
+frequency_dependence_method 0
+frequency_grid_shift 1
+init_frequency_eval 0.85
+delta_frequency_eval 0.1
+number_frequency_eval 1

@@ -1,0 +1,230 @@
+! Converts the output files produced by pw.x to the input files for BerkeleyGW.
+! Note that `pw2bgw.x` is also distributed and automatically compiled within !
+! the Quantum ESPRESSO package, it cannot be compiled in the BerkeleyGW code
+! alone
+!
+! You cannot use USPP, PAW, or spinors in a pw.x run for BerkeleyGW.
+!
+! You cannot use "K_POINTS gamma" in a pw.x run for BerkeleyGW.
+! Use "K_POINTS { tpiba | automatic | crystal }" even for the
+! Gamma-point calculation.
+!
+! It is recommended to run a pw.x "bands" calculation with "K_POINTS crystal"
+! and a list of k-points produced by kgrid.x, which is a part of BerkeleyGW
+! package (see BerkeleyGW documentation for details).
+!
+! You can also run a pw.x "nscf" calculation instead of "bands", but in this
+! case pw.x may generate more k-points than provided in the input file of pw.x.
+! If this is the case for your calculation you will get errors in BerkeleyGW.
+!
+! Examples showing how to run BerkeleyGW on top of Quantum ESPRESSO including
+! the input files for pw.x and pw2bgw.x are distributed together with the
+! BerkeleyGW package.
+!
+! Documentation: (unless stated, all flags are optional)
+
+&INPUT_PW2BGW
+
+  ! (mandatory) prefix of files saved by program pw.x
+  prefix = 'si'
+
+  ! Same as used in the pw.x calculation
+  outdir = '.'
+
+
+  ! Set 1 for real flavor of BerkeleyGW (for systems with inversion symmetry
+  ! and time-reversal symmetry) or 2 for complex flavor of BerkeleyGW (for
+  ! systems without inversion symmetry and time-reversal symmetry)
+  real_or_complex = 2
+
+ ! Write wavefunctions in G-space to BerkeleyGW WFN file
+  wfng_flag = .false.
+
+  ! Name of BerkeleyGW WFN output file. Not used if wfng_flag = .false.
+  wfng_file = 'WFN'
+
+
+  ! Overwrite k-grid parameters in BerkeleyGW WFN file. Set this to .true.
+  ! when writing WFN files, or else the k-grid parameters in the output of pw.x
+  ! will be set to zero.
+  wfng_kgrid = .false.
+
+
+  ! Number of k-points along the b_1, b_2 and b_3 reciprocal lattice vector, as
+  ! in the first line of kgrid.inp. Not used if wfng_kgrid = .false.
+  wfng_nk1 = 0
+  wfng_nk2 = 0
+  wfng_nk3 = 0
+
+
+  ! K-grid offset (e.g. 0.0 unshifted, 0.5 shifted by half a grid step) along
+  ! the b_1, b_2 and b_3 reciprocal lattice vectors. Let dk = second line in
+  ! kgrid.inp, dq = third line in kgrid.inp. Then set wfng_dk1 = dk1 + wfng_nk1 * dq1.
+  ! Not used if wfng_kgrid = .false.
+  wfng_dk1 = 0d0
+  wfng_dk2 = 0d0
+  wfng_dk3 = 0d0
+
+
+  ! Overwrite occupations in BerkeleyGW WFN file. You will typically not
+  ! need to use this, unless you used smearing in your NSCF calculation,
+  ! which is not recommended.
+  wfng_occupation = .false.
+
+  ! Index of the lowest occupied band (normally = 1).
+  ! Not used if wfng_occupation = .false.
+  wfng_nvmin = 0
+
+  ! Index of the highest occupied band (normally the number of occupied bands).
+  ! Not used if wfng_occupation = .false.
+  wfng_nvmax = 0
+
+
+  ! Write charge density in G-space to BerkeleyGW RHO file. Only used for
+  ! the GPP model in Sigma code in BerkeleyGW.
+  rhog_flag = .false.
+
+  ! Name of BerkeleyGW RHO output file. Only used for the GPP model in the
+  ! Siga code in BerkeleyGW. Not used if rhog_flag = .false.
+  rhog_file = 'RHO'
+
+  ! Index of the lowest band used for calculation of charge density. This is
+  ! needed if one wants to exclude semicore states from charge density used for
+  ! the GPP model in sigma code in BerkeleyGW. Make sure to include the same
+  ! k-points as in scf calculation. Self-consistent charge density is used if
+  ! rhog_nvmin = 0 and rhog_nvmax = 0. Not used if rhog_flag = .false. BEWARE:
+  ! this feature is highly experimental and may not work at all in parallel,
+  ! with pools, with spins, etc.
+  rho_nvmin = 0
+
+  ! Index of the highest band used for calculation of charge.
+  ! See description of rhog_nvmin for more details.
+  rho_nvmin = 0
+
+
+  ! Write local part of exchange-correlation potential in G-space to
+  ! BerkeleyGW VXC file. Only used in the Sigma code in BerkeleyGW.
+  ! Works for all functionals other than hybrid functional. 
+  ! For hybrid functional, please use kih_flag = .true.
+  vxcg_flag = .false.
+
+  ! Name of BerkeleyGW VXC output file. Only used in the Sigma
+  ! code in BerkeleyGW. Not used if vxcg_flag = .false.
+  vxcg_file = 'VXC'
+
+
+  ! Write matrix elements of exchange-correlation potential to
+  ! text file. Only used in the Sigma code in BerkeleyGW.
+  ! Works for all functionals other than hybrid functional. 
+  ! For hybrid functional, please use kih_flag = .true.
+  vxc_flag = .false.
+
+  ! Name of output text file for Vxc matrix elements. Only used
+  ! in the Sigma code in BerkeleyGW. Not used if vxc_flag = .false.
+  vxc_file = 'vxc.dat'
+
+  ! Minimum band index for diagonal Vxc matrix elements.
+  ! Not used if vxc_flag = .false.
+  vxc_diag_nmin = 0
+
+  ! Maximum band index for diagonal Vxc matrix elements.
+  ! Not used if vxc_flag = .false.
+  vxc_diag_nmax = 0
+
+  ! Minimum band index for off-diagonal Vxc matrix elements.
+  ! Not used if vxc_flag = .false.
+  vxc_offdiag_nmin = 0
+
+  ! Maximum band index for off-diagonal Vxc matrix elements.
+  ! Not used if vxc_flag = .false.
+  vxc_offdiag_nmax = 0
+
+  ! Integration method used in the calculation of matrix elements of 
+  ! exchange-correlation potential. vxc_integral = 'g' uses integration
+  ! in G space, vxc_integral = 'r' uses integration in real space. The
+  ! two integration method should give the same answer. Only used in the
+  ! Sigma code in BerkeleyGW. Not used if vxc_flag = .false. 
+  vxc_integral = 'g'
+
+  ! Set to .true. to zero out NLCC or to .false. to keep NLCC when computing
+  ! exchange-correlation potential. This flag has no effect for pseudopotentials
+  ! without NLCC. BEWARE: setting vxc_zero_rho_core to .false. will produce
+  ! incorrect results. This functionality is only included for testing purposes
+  ! and is not meant to be used in a production environment.
+  vxc_zero_rho_core = .true.
+
+
+  ! Write matrix elements of the "KIH" energy (Kinetic energy + Ionic
+  ! potential + Hartree) to text file. Only used in the Sigma code in
+  ! BerkeleyGW. It supports all functionals (including standard LDA, GGA,
+  ! and now meta-GGA, hybrid functionals, etc.) as starting point for Sigma.
+  ! We recommend using the flag 'kih_flag = .true.', instead of using
+  ! vxc.dat or VXC, for all functionals, although for some cases vxc.dat
+  ! can still be used.
+  kih_flag = .false.
+
+  ! Name of output text file for matrix elements of "KIH" energy. Only used
+  ! in the Sigma code in BerkeleyGW. Not used if kih_flag = .false.
+  ! Minimum/maximum band index for diagonal matrix elements of "KIH" energy
+  ! are set using vxc_diag_nmin/vxc_diag_nmax. Minimum/maximum band index
+  ! for off-diagonal matrix elements of "KIH" energy are set using
+  ! vxc_offdiag_nmin/vxc_offdiag_nmax.
+  kih_file = 'kih.dat'
+
+  ! Write matrix elements of exchange-correlation potential to text file.
+  ! Only used for hybrid functionals. This is calculated using total band
+  ! energy - (Kinetic energy + Ionic potential + Hartree energy). Only used
+  ! in the Sigma code in BerkeleyGW.
+  vxc_hybrid_flag = .false.
+
+  ! Name of output text file for matrix elements of exchange-correlation
+  ! potential for hybrid functionals. Only used in the Sigma code in
+  ! BerkeleyGW. Not used if vxc_hybrid_flag = .false. Minimum/maximum
+  ! band index for diagonal matrix elements of exchange-correlation potential
+  ! are set using vxc_diag_nmin/vxc_diag_nmax. Minimum/maximum band index
+  ! for off-diagonal matrix elements of exchange-correlation potential are
+  ! set using vxc_offdiag_nmin/vxc_offdiag_nmax.
+  vxc_hybrid_file = 'vxc_hybrid.dat'
+
+
+  ! Write matrix elements of Hubbard potential to text file.
+  vhub_flag = .false.
+
+  ! Name of output text file for matrix elements of Hubbard potential.
+  ! Not used if vhub_flag = .false.
+  vhub_file = 'vhub.dat'
+
+  ! Minimum band index for diagonal matrix elements of Hubbard potential.
+  ! Not used if vhub_flag = .false.
+  vhub_diag_nmin = 0
+
+  ! Maximum band index for diagonal matrix elements of Hubbard potential.
+  ! Not used if vhub_flag = .false.
+  vhub_diag_nmax = 0
+
+  ! Minimum band index for off-diagonal matrix elements of Hubbard potential.
+  ! Not used if vhub_flag = .false.
+  vhub_offdiag_nmin = 0
+
+  ! Maximum band index for off-diagonal matrix elements of Hubbard potential.
+  ! Not used if vhub_flag = .false.
+  vhub_offdiag_nmax = 0
+
+
+  ! Write local part of self-consistent potential in G-space to BerkeleyGW
+  ! VSC file. Only used in the SAPO and ParaBands code in BerkeleyGW.
+  vscg_flag = .false.
+
+  ! Name of the BerkeleyGW VSC output file. Only used in the SAPO and
+  ! ParaBands codes in BerkeleyGW. Not used if vscg_flag = .false.
+  vscg_file = 'VSC'
+
+
+  ! Write the Kleinman-Bylander projectors in G-space to the BerkeleyGW
+  ! VKB file. Only used in the SAPO and ParaBands codes in BerkeleyGW.
+  vkbg_flag = .false.
+
+  ! Name of the BerkeleyGW VKB output file. Only used in the SAPO and
+  ! ParaBands codes in BerkeleyGW. Not used if vkbg_flag = .false.
+  vkbg_file = 'VKB'
+/

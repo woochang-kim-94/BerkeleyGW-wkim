@@ -1,0 +1,28 @@
+#!/bin/bash -l
+#SBATCH -J test_BGW
+#SBATCH -N 1
+#SBATCH -n 32
+#SBATCH -C haswell
+#SBATCH -p debug
+#SBATCH -t 00:30:00
+
+# run via: sbatch cori1.scr
+
+export TEMPDIRPATH=$SCRATCH/tmp
+
+# Modify the below to change the number of threads per 
+# MPI task if using OMP or threaded libraries
+export OMP_NUM_THREADS=4
+#export OMP_NUM_THREADS=1
+
+# Uncomment below to set number of
+# procs in testsuite
+export BGW_TEST_MPI_NPROCS=8
+#export BGW_TEST_MPI_NPROCS=32
+
+export MPIEXEC="`which srun` -c 8"
+#export MPIEXEC="`which srun` -c $OMP_NUM_THREADS"
+
+make check-parallel &> test.out
+
+echo "Exit status = $?"

@@ -1,0 +1,25 @@
+#!/bin/bash -l
+
+#SBATCH --job-name=test_BGW
+#SBATCH --partition=hbar1
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --time=2:00:00
+#SBATCH --export=ALL
+
+export TEMPDIRPATH=/clusterfs/hbar/home/$USER/tmp
+
+module load python
+module load numpy
+
+export MPIEXEC="`which mpiexec` --mca btl sm,self"
+
+# use something like this instead for threads:
+#export OMP_NUM_THREADS=2
+#export BGW_TEST_MPI_NPROCS=2
+
+export NO_STOP_MESSAGE=1
+# do not write silly FORTRAN STOP messages from PGI
+make check-parallel &> test.out
+
+echo "Exit status = $?"
